@@ -25,6 +25,8 @@
 	@token $40
 	@scope $40
 	@sleep $1
+	@s
+		&ptr $2
 	@r
 		&ptr $2
 	@p 
@@ -49,6 +51,7 @@ BRK
 	POP
 
 	;symbols JSR2
+	;resolve JSR2
 
 	( make rom )
 	;&rom-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
@@ -133,6 +136,44 @@ RTN
 	&buf $4
 	&pad 20
 	&end 0a
+
+@resolve ( -- )
+
+	;ref LDA2k #0000 !! JMP RTN
+	;ref
+	&while
+		DUP2 ;resolve-reference JSR2
+		( eol )
+		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+	POP2
+
+RTN
+
+@resolve-reference ( ref* -- )
+
+	STH2k
+	DUP2 LDA2 ;print JSR2
+	DUP2 #0002 ++ LDA EMIT
+	DUP2 #0003 ++ PRINT
+
+	( rune )
+	DUP2 #0002 ++ LDA
+	DUP LIT '. ! ,&no-litzp JCN
+		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		&no-litzp
+	DUP LIT ', ! ,&no-litrel JCN
+		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		&no-litrel
+	DUP LIT '; ! ,&no-litabs JCN
+		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		&no-litabs
+	DUP LIT ': ! ,&no-rawabs JCN
+		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		&no-rawabs
+	POP
+
+	POP2r
+RTN
 
 @find-token ( -- )
 
@@ -254,6 +295,7 @@ RTN
 
 @token-rawabs ( -- )
 
+	#aa DEBUG
 	;token INC2 LIT ': .p/ptr LDZ2 INC2 ;create-reference JSR2
 	#ffff ;write-short JSR2
 
@@ -331,15 +373,15 @@ RTN
 	DUP2 ;print/short JSR2 #20 EMIT OVR2 PRINT
 
 	( write ref )
-	;sym .r/ptr LDZ2 ++ STA2
-	.r/ptr LDZ2k #0002 ++ ROT STZ2
+	;sym .s/ptr LDZ2 ++ STA2
+	.s/ptr LDZ2k #0002 ++ ROT STZ2
 	( write string )
 	DUP2 ;slen JSR2 STH2
-	;sym .r/ptr LDZ2 ++ ;scpy JSR2
-	.r/ptr LDZ2k STH2r ++ ROT STZ2
+	;sym .s/ptr LDZ2 ++ ;scpy JSR2
+	.s/ptr LDZ2k STH2r ++ ROT STZ2
 	( null term )
-	#00 .r/ptr LDZ2 ++ STA2
-	.r/ptr LDZ2k INC2 ROT STZ2
+	#00 .s/ptr LDZ2 ++ STA2
+	.s/ptr LDZ2k INC2 ROT STZ2
 
 RTN
 
@@ -348,8 +390,29 @@ RTN
 	ROT STH
 	LIT '> EMIT
 	DUP2 ;print/short JSR2 STHkr EMIT OVR2 PRINT
-	STHr
-	POP POP2 POP2
+
+	STHr ,&rune STR
+	
+	( write ref )
+	;ref .r/ptr LDZ2 ++ STA2
+	.r/ptr LDZ2k #0002 ++ ROT STZ2
+	( write rune )
+	[ LIT &rune $1 ] ;ref .r/ptr LDZ2 ++ STA
+	.r/ptr LDZ2k INC2 ROT STZ2
+	( write string )
+	DUP2 ;slen JSR2 STH2
+	;ref .r/ptr LDZ2 ++ ;scpy JSR2
+	.r/ptr LDZ2k STH2r ++ ROT STZ2
+	( null term )
+	#00 .r/ptr LDZ2 ++ STA2
+	.r/ptr LDZ2k INC2 ROT STZ2
+
+RTN
+
+@find-label ( name* -- addr* )
+
+	PRINT
+	#0000
 
 RTN
 
