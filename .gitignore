@@ -1,8 +1,9 @@
 .DS*
-*jpg
-*png
-*bmp
+
 /bin
+
+*.rom
+*.sym
+
 *snarf
 *theme
-*rom

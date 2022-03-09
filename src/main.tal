@@ -48,6 +48,8 @@ BRK
 	;src ;first-pass JSR2
 	POP
 
+	;symbols JSR2
+
 	( make rom )
 	;&rom-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
 	;src .File/name DEO2
@@ -57,7 +59,6 @@ BRK
 	HALT
 
 BRK
-
 	&rom-ext "rom $1
 
 @first-pass ( src* -- )
@@ -90,6 +91,48 @@ BRK
 
 RTN
 	&c $1
+
+@symbols ( -- )
+
+	;&sym-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
+	;src .File/name DEO2
+	;ref
+	&while
+		DUP2 ;write-symbol JSR2
+		( eol )
+		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+	POP2
+
+RTN
+	&sym-ext "sym $1
+
+@write-symbol ( symbol* -- )
+
+	( addr )
+	DUP2
+	LDA2
+	SWP
+	DUP #04 SFT ;hexc JSR2 ;&buf STA
+	#0f AND ;hexc JSR2 ;&buf INC2 STA
+	DUP #04 SFT ;hexc JSR2 ;&buf INC2 INC2 STA
+	#0f AND ;hexc JSR2 ;&buf INC2 INC2 INC2 STA
+	#0004 .File/length DEO2
+	;&buf .File/write DEO2
+	( pad )
+	#0001 .File/length DEO2
+	;&pad .File/write DEO2
+	( name )
+	#0002 ++ 
+	DUP2 ;slen JSR2 .File/length DEO2
+	.File/write DEO2
+	( end )
+	#0001 .File/length DEO2
+	;&end .File/write DEO2
+
+RTN
+	&buf $4
+	&pad 20
+	&end 0a
 
 @find-token ( -- )
 
@@ -291,6 +334,9 @@ RTN
 	DUP2 ;slen JSR2 STH2
 	;ref .r/ptr LDZ2 ++ ;scpy JSR2
 	.r/ptr LDZ2k STH2r ++ ROT STZ2
+	( null term )
+	#00 .r/ptr LDZ2 ++ STA2
+	.r/ptr LDZ2k INC2 ROT STZ2
 
 RTN
 
@@ -419,6 +465,14 @@ RTN
 	&lc #57 - RTN
 
 RTN
+
+@hexc ( hex -- char )
+
+	DUP #0a < ,&digit JCN
+	#57 +
+
+RTN
+	&digit #30 + RTN
 
 ( helpers )
 
