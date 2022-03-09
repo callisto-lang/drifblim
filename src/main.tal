@@ -295,7 +295,6 @@ RTN
 
 @token-rawabs ( -- )
 
-	#aa DEBUG
 	;token INC2 LIT ': .p/ptr LDZ2 INC2 ;create-reference JSR2
 	#ffff ;write-short JSR2
 
@@ -391,10 +390,19 @@ RTN
 	LIT '> EMIT
 	DUP2 ;print/short JSR2 STHkr EMIT OVR2 PRINT
 
+	,&addr STR2
+
+	LDAk LIT '& ! ,&no-sublabel JCN
+		;scope ;&buf ;scpy JSR2 
+		LIT '/ ;&buf ;scap JSR2 STA
+		;&buf ;scat JSR2
+		;&buf
+		&no-sublabel
+
 	STHr ,&rune STR
 	
 	( write ref )
-	;ref .r/ptr LDZ2 ++ STA2
+	[ LIT2 &addr $2 ] ;ref .r/ptr LDZ2 ++ STA2
 	.r/ptr LDZ2k #0002 ++ ROT STZ2
 	( write rune )
 	[ LIT &rune $1 ] ;ref .r/ptr LDZ2 ++ STA
@@ -408,13 +416,27 @@ RTN
 	.r/ptr LDZ2k INC2 ROT STZ2
 
 RTN
+	&buf $40
 
 @find-label ( name* -- addr* )
 
-	PRINT
+	STH2
+
+	;sym
+	&while
+		DUP2 #0002 ++ STH2kr ;scmp-seg JSR2 #00 = ,&continue JCN
+			POP2r RTN
+			&continue
+		( eol )
+		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+	POP2
+
+	STH2r ;&error-invalid-label ;print-error JSR2
+
 	#0000
 
 RTN
+	&error-invalid-label "invalid-label $1
 
 @set-scope ( str* -- )
 
