@@ -46,11 +46,10 @@ BRK
 	POP 
 
 	( make rom )
-
 	;&rom-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
 	;src .File/name DEO2
-	.p/len LDZ2 .File/length DEO2
-	;dst .File/write DEO2
+	.p/len LDZ2 #0100 -- .File/length DEO2
+	;dst #0100 ++ .File/write DEO2
 
 	HALT
 
@@ -71,6 +70,7 @@ BRK
 				&no-sleep
 			LDAk #29 ! ,&no-wake JCN
 				#00 .sleep STZ
+				,&no-cap JMP
 				&no-wake
 			.sleep LDZ ,&no-cap JCN
 			( listen )
@@ -144,7 +144,7 @@ RTN
 	&error-invalid-hex "invalid-hex $1
 
 @token-opcode ( -- )
-	;token ;TODO ;print-error JSR2
+	( ;token ;TODO ;print-error JSR2 )
 
 RTN
 
@@ -227,6 +227,38 @@ RTN
 
 RTN
 
+@find-opcode ( name* -- byte )
+
+	STH2
+	#2000
+	&loop
+		#00 OVR #20 SFT2 ;opcodes ++ STH2kr ;scmp-seg JSR2 #00 = ,&continue JCN
+			NIP STH2r ,find-mode JSR + RTN
+			&continue
+		INC GTHk ,&loop JCN
+	POP2
+	POP2r
+	#00
+
+RTN
+
+@find-mode ( mode* -- byte )
+
+	LITr 00
+	;opcodes OVR2 ;scmp-seg JSR2 #70 SFT STH ADDr
+	#0003 ++
+	LDAk #00 = ,&end JCN
+	&while
+		LDAk LIT '2 = #50 SFT STH ADDr
+		LDAk LIT 'r = #60 SFT STH ADDr
+		LDAk LIT 'k = #70 SFT STH ADDr
+		INC2 LDAk ,&while JCN
+	&end
+	POP2
+	STHr
+
+RTN
+
 @TODO "TODO $1
 
 @syntax
@@ -278,9 +310,17 @@ RTN
 
 @is-opcode ( string* -- bool )
 
+	;&brk-txt OVR ;scmp-seg JSR2 #00 = ,&continue JCN
+		POP2 #01 RTN
+		&continue
+	;find-opcode JSR2 
+
 RTN
+	&brk-txt "BRK $1
 
 @is-macro ( string* -- bool )
+
+	POP2 #00
 
 RTN
 
@@ -387,6 +427,22 @@ RTN
 	#00 ROT ROT ,scap JSR #0001 -- STA
 
 RTN
+
+@scmp-seg ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr = ,&not-diff JCN
+			POP2 POP2r #00 JMP2r
+			&not-diff
+		INC2k LDA #00 ! ,&continue JCN
+			POP2 POP2r #01 JMP2r
+			&continue
+		INC2 INC2r
+		,&loop JMP
+	POP2 POP2r #00
+
+JMP2r
 
 @print ( short* -- )
 
