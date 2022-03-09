@@ -96,7 +96,7 @@ RTN
 
 	;&sym-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
 	;src .File/name DEO2
-	;ref
+	;sym
 	&while
 		DUP2 ;write-symbol JSR2
 		( eol )
@@ -171,6 +171,7 @@ RTN
 
 @token-label ( -- )
 
+	;token INC2 ;set-scope JSR2
 	;token INC2 .p/ptr LDZ2 ;create-label JSR2
 
 RTN
@@ -232,24 +233,28 @@ RTN
 
 @token-litzp ( -- )
 
+	;token INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2
 	#ff ;write-litbyte JSR2
 
 RTN
 
 @token-litrel ( -- )
 
+	;token INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2
 	#ff ;write-litbyte JSR2
 
 RTN
 
 @token-litabs ( -- )
 
+	;token INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2
 	#ffff ;write-litshort JSR2
 
 RTN
 
 @token-rawabs ( -- )
 
+	;token INC2 LIT ': .p/ptr LDZ2 INC2 ;create-reference JSR2
 	#ffff ;write-short JSR2
 
 RTN
@@ -325,18 +330,26 @@ RTN
 	LIT '- EMIT
 	DUP2 ;print/short JSR2 #20 EMIT OVR2 PRINT
 
-	OVR2 ;set-scope JSR2
-
 	( write ref )
-	;ref .r/ptr LDZ2 ++ STA2
+	;sym .r/ptr LDZ2 ++ STA2
 	.r/ptr LDZ2k #0002 ++ ROT STZ2
 	( write string )
 	DUP2 ;slen JSR2 STH2
-	;ref .r/ptr LDZ2 ++ ;scpy JSR2
+	;sym .r/ptr LDZ2 ++ ;scpy JSR2
 	.r/ptr LDZ2k STH2r ++ ROT STZ2
 	( null term )
 	#00 .r/ptr LDZ2 ++ STA2
 	.r/ptr LDZ2k INC2 ROT STZ2
+
+RTN
+
+@create-reference ( name* rune addr* -- )
+
+	ROT STH
+	LIT '> EMIT
+	DUP2 ;print/short JSR2 STHkr EMIT OVR2 PRINT
+	STHr
+	POP POP2 POP2
 
 RTN
 
@@ -581,6 +594,7 @@ RTN
 
 RTN
 
+@sym $4000
 @ref
 
 |8000 @dst
