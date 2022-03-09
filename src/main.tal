@@ -23,7 +23,10 @@
 
 	@src $40
 	@token $40
+	@scope $40
 	@sleep $1
+	@r
+		&ptr $2
 	@p 
 		&ptr $2
 		&len $2
@@ -43,7 +46,7 @@ BRK
 		;src ROT ;sput JSR2 BRK
 		&end
 	;src ;first-pass JSR2
-	POP 
+	POP
 
 	( make rom )
 	;&rom-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
@@ -112,14 +115,33 @@ RTN
 @unknown-token-txt "unknown-token $1
 
 @token-include ( -- )
+
 	;token ;TODO ;print-error JSR2
 
 RTN
 
 @token-macro ( -- )
+
 	;token ;TODO ;print-error JSR2
 
 RTN
+
+@token-label ( -- )
+
+	;token INC2 .p/ptr LDZ2 ;create-label JSR2
+
+RTN
+
+@token-sublabel ( -- )
+
+	;scope ;&sublabel ;scpy JSR2
+	LIT '/ ;&sublabel ;scap JSR2 STA
+	;token INC2 ;&sublabel ;scat JSR2
+
+	;&sublabel .p/ptr LDZ2 ;create-label JSR2
+
+RTN
+	&sublabel $40 
 
 @token-padabs ( -- )
 
@@ -144,17 +166,8 @@ RTN
 	&error-invalid-hex "invalid-hex $1
 
 @token-opcode ( -- )
-	( ;token ;TODO ;print-error JSR2 )
-
-RTN
-
-@token-litlabel ( -- )
-	;token ;TODO ;print-error JSR2
-
-RTN
-
-@token-litsublabel ( -- )
-	;token ;TODO ;print-error JSR2
+	
+	;token ;find-opcode JSR2 ;write-byte JSR2
 
 RTN
 
@@ -175,23 +188,26 @@ RTN
 	&error-invalid-hex "invalid-lithex $1
 
 @token-litzp ( -- )
-	;token ;TODO ;print-error JSR2
+
+	#ff ;write-litbyte JSR2
 
 RTN
 
 @token-litrel ( -- )
-	;token ;TODO ;print-error JSR2
+
+	#ff ;write-litbyte JSR2
 
 RTN
 
 @token-litabs ( -- )
-	;token ;TODO ;print-error JSR2
+
+	#ffff ;write-litshort JSR2
 
 RTN
 
 @token-rawabs ( -- )
 
-	;token ;TODO ;print-error JSR2
+	#ffff ;write-short JSR2
 
 RTN
 
@@ -224,6 +240,8 @@ RTN
 RTN
 
 @token-ignored ( -- )
+
+	( do nothing )
 
 RTN
 
@@ -259,12 +277,36 @@ RTN
 
 RTN
 
+@create-label ( name* addr* -- )
+
+	LIT '- EMIT
+	DUP2 ;print/short JSR2 #20 EMIT OVR2 PRINT
+
+	OVR2 ;set-scope JSR2
+
+	( write ref )
+	;ref .r/ptr LDZ2 ++ STA2
+	.r/ptr LDZ2k #0002 ++ ROT STZ2
+	( write string )
+	DUP2 ;slen JSR2 STH2
+	;ref .r/ptr LDZ2 ++ ;scpy JSR2
+	.r/ptr LDZ2k STH2r ++ ROT STZ2
+
+RTN
+
+@set-scope ( str* -- )
+
+	;scope #0040 ;mclr JSR2
+	;scope ;scpy JSR2
+
+RTN
+
 @TODO "TODO $1
 
 @syntax
 	'~ :token-include  '% :token-macro
 	'| :token-padabs   '$ :token-padrel
-	'@ :token-litlabel '& :token-litsublabel
+	'@ :token-label    '& :token-sublabel
 	'# :token-lithex   '. :token-litzp
 	', :token-litrel   '; :token-litabs
 	': :token-rawabs   '' :token-rawchr
@@ -380,6 +422,18 @@ RTN
 
 ( helpers )
 
+@mcpy ( src* dst* len* -- )
+
+	SWP2 STH2
+	OVR2 ++ SWP2
+	&loop
+		LDAk STH2kr STA INC2r
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POP2r
+
+JMP2r
+
 @mclr ( addr* len* -- )
 
 	OVR2 ++ SWP2
@@ -402,6 +456,12 @@ RTN
 	&while INC2 LDAk ,&while JCN
 
 RTN
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ++ ,scpy JSR
+
+JMP2r
 
 @scpy ( src* dst* -- )
 	
@@ -467,4 +527,6 @@ RTN
 
 RTN
 
-@dst
+@ref
+
+|8000 @dst
