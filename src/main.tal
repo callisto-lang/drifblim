@@ -16,9 +16,6 @@
 %++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 
-%=~ { EQUk NIP } %!~ { NEQk NIP }
-%<~ { LTHk NIP } %>~ { GTHk NIP }
-
 |0000
 
 	@src $40
@@ -152,9 +149,6 @@ RTN
 @resolve-reference ( ref* -- )
 
 	STH2k
-	DUP2 LDA2 ;print JSR2
-	DUP2 #0002 ++ LDA EMIT
-	DUP2 #0003 ++ PRINT
 
 	( rune )
 	DUP2 #0002 ++ LDA
@@ -163,7 +157,7 @@ RTN
 		&no-litzp
 	DUP LIT ', ! ,&no-litrel JCN
 		STH2kr #0003 ++ ;find-label JSR2 LDA2 
-		STH2kr LDA2 -- #0002 -- NIP DUP DEBUG STH2kr LDA2 ;dst ++ STA
+		STH2kr LDA2 -- #0002 -- NIP STH2kr LDA2 ;dst ++ STA
 		&no-litrel
 	DUP LIT '; ! ,&no-litabs JCN
 		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
@@ -369,9 +363,6 @@ RTN
 
 @create-label ( name* addr* -- )
 
-	LIT '- EMIT
-	DUP2 ;print/short JSR2 #20 EMIT OVR2 PRINT
-
 	( write ref )
 	;sym .s/ptr LDZ2 ++ STA2
 	.s/ptr LDZ2k #0002 ++ ROT STZ2
@@ -388,8 +379,6 @@ RTN
 @create-reference ( name* rune addr* -- )
 
 	ROT STH
-	LIT '> EMIT
-	DUP2 ;print/short JSR2 STHkr EMIT OVR2 PRINT
 
 	,&addr STR2
 
@@ -422,7 +411,6 @@ RTN
 @find-label ( name* -- addr* )
 
 	STH2
-
 	;sym
 	&while
 		DUP2 #0002 ++ STH2kr ;scmp JSR2 #00 = ,&continue JCN
@@ -431,9 +419,7 @@ RTN
 		( eol )
 		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
 	POP2
-
 	STH2r ;&error-invalid-label ;print-error JSR2
-
 	#0000
 
 RTN
@@ -575,18 +561,6 @@ RTN
 
 ( helpers )
 
-@mcpy ( src* dst* len* -- )
-
-	SWP2 STH2
-	OVR2 ++ SWP2
-	&loop
-		LDAk STH2kr STA INC2r
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	POP2r
-
-JMP2r
-
 @mclr ( addr* len* -- )
 
 	OVR2 ++ SWP2
@@ -630,14 +604,6 @@ JMP2r
 @sput ( str* char -- )
 
 	ROT ROT ,scap JSR STA
-
-RTN
-
-@spop ( str* -- )
-
-	LDAk ,&no-null JCN
-		POP2 RTN &no-null
-	#00 ROT ROT ,scap JSR #0001 -- STA
 
 RTN
 
