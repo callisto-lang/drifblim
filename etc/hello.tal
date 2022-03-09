@@ -1,7 +1,4 @@
-( init )
-
-@testa $10
-@testb $10
+( uxnasm etc/hello.tal hello.rom )
 
 |0100 @program
 	

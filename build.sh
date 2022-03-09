@@ -21,4 +21,4 @@ then
 fi
 
 echo "Running.."
-uxncli bin/drifblim.rom etc/hello.tal
+uxncli bin/drifblim.rom etc/hello.tal && uxncli etc/hello.rom

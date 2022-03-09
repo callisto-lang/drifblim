@@ -159,10 +159,11 @@ RTN
 	( rune )
 	DUP2 #0002 ++ LDA
 	DUP LIT '. ! ,&no-litzp JCN
-		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA
 		&no-litzp
 	DUP LIT ', ! ,&no-litrel JCN
-		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 
+		STH2kr LDA2 -- #0002 -- NIP DUP DEBUG STH2kr LDA2 ;dst ++ STA
 		&no-litrel
 	DUP LIT '; ! ,&no-litabs JCN
 		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
@@ -395,7 +396,7 @@ RTN
 	LDAk LIT '& ! ,&no-sublabel JCN
 		;scope ;&buf ;scpy JSR2 
 		LIT '/ ;&buf ;scap JSR2 STA
-		;&buf ;scat JSR2
+		INC2 ;&buf ;scat JSR2
 		;&buf
 		&no-sublabel
 
@@ -424,7 +425,7 @@ RTN
 
 	;sym
 	&while
-		DUP2 #0002 ++ STH2kr ;scmp-seg JSR2 #00 = ,&continue JCN
+		DUP2 #0002 ++ STH2kr ;scmp JSR2 #00 = ,&continue JCN
 			POP2r RTN
 			&continue
 		( eol )
@@ -467,14 +468,14 @@ RTN
 
 @write-litshort ( short* -- )
 
-	( LIT2k ) #0a ,write-byte JSR 
+	( LIT2k ) #a0 ,write-byte JSR 
 	,write-short JSR
 
 RTN
 
 @write-litbyte ( byte -- )
 
-	( LITk ) #08 ,write-byte JSR
+	( LITk ) #80 ,write-byte JSR
 	,write-byte JSR
 
 RTN
@@ -650,6 +651,22 @@ RTN
 		INC2k LDA #00 ! ,&continue JCN
 			POP2 POP2r #01 JMP2r
 			&continue
+		INC2 INC2r
+		,&loop JMP
+	POP2 POP2r #00
+
+JMP2r
+
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr = ,&not-diff JCN
+			POP2 POP2r #00 JMP2r
+			&not-diff
+		LDAk LDAkr STHr #0000 !! ,&not-end JCN
+			POP2 POP2r #01 JMP2r
+			&not-end
 		INC2 INC2r
 		,&loop JMP
 	POP2 POP2r #00
