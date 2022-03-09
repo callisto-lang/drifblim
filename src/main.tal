@@ -165,10 +165,10 @@ RTN
 		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
 		&no-litrel
 	DUP LIT '; ! ,&no-litabs JCN
-		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
 		&no-litabs
 	DUP LIT ': ! ,&no-rawabs JCN
-		STH2kr #0003 ++ ;find-label JSR2 DEBUG2
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
 		&no-rawabs
 	POP
 
@@ -295,7 +295,7 @@ RTN
 
 @token-rawabs ( -- )
 
-	;token INC2 LIT ': .p/ptr LDZ2 INC2 ;create-reference JSR2
+	;token INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2
 	#ffff ;write-short JSR2
 
 RTN

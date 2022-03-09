@@ -1,5 +1,8 @@
 ( init )
 
+@testa $10
+@testb $10
+
 |0100 @program
 	
 	;hello-word
