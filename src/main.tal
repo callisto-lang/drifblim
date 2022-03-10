@@ -56,6 +56,8 @@ BRK
 	.p/len LDZ2 #0100 -- .File/length DEO2
 	;dst #0100 ++ .File/write DEO2
 
+	#010e DEO
+
 	HALT
 
 BRK
@@ -371,7 +373,7 @@ RTN
 	;sym .s/ptr LDZ2 ++ ;scpy JSR2
 	.s/ptr LDZ2k STH2r ++ ROT STZ2
 	( null term )
-	#00 .s/ptr LDZ2 ++ STA2
+	#00 ;sym .s/ptr LDZ2 ++ STA
 	.s/ptr LDZ2k INC2 ROT STZ2
 
 RTN
