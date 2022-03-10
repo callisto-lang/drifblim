@@ -1,6 +1,10 @@
 # Drifblim
 
-[Drifblim](https://wiki.xxiivv.com/drifblim) is a uxntal assembler, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html). It's meant to be as simple an assembler as I could possibly make it. The goal would be for it to be in the 1kb range. It will not support macros and includes.
+[Drifblim](https://wiki.xxiivv.com/drifblim) is a uxntal assembler, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html). 
+
+It is meant to be as small as it could possibly be made. The goal would be for it to be in the 1kb range. It will not support macros and includes. Instead, a pre-processor rom might be considered.
+
+_Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
 
 ## Build
 
@@ -13,4 +17,3 @@ uxnemu etc/move.rom
 ```
 
 If do not wish to assemble it yourself, you can download [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom).
-
