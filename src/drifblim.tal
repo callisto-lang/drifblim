@@ -4,11 +4,6 @@
 |0010 @Console    &vector $2 &read     $1 &pad    $5 &write  $1 &error  $1
 |00a0 @File       &vector $2 &success  $2 &stat   $2 &delete $1 &append $1 &name    $2 &length  $2 &read   $2 &write $2
 
-%EMIT   { #18 DEO }
-%DEBUG  { ;print/byte JSR2 #0a EMIT }
-%DEBUG2 { ;print/short JSR2 #0a EMIT }
-%PRINT  { ;print-str JSR2 #0a EMIT }
-
 |0000
 
 	@src $40

@@ -20,8 +20,12 @@ then
 	~/Applications/butler push bin/drifblim.rom hundredrabbits/drifblim:uxn
 fi
 
-rm -rf etc/move.sym
-rm -rf etc/move.rom
+rm -rf etc/*.sym
+rm -rf etc/*.rom
 
-echo "Running.."
-uxncli bin/drifblim.rom etc/move.tal && uxnemu etc/move.rom
+echo "Assembling Drifblim.."
+uxncli bin/drifblim.rom src/drifblim.tal 
+echo "Assembling Hello, from Drifblim.."
+uxncli bin/drifblim.rom etc/move.tal
+echo "Running Hello.."
+uxnemu etc/move.rom
