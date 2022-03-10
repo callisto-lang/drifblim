@@ -44,8 +44,9 @@ BRK
 	;src ;slen JSR2 #003f >> ,&end JCN
 		;src ROT ;sput JSR2 BRK
 		&end
-	;src ;first-pass JSR2
 	POP
+
+	;src ;first-pass JSR2
 
 	;symbols JSR2
 	;resolve JSR2
@@ -89,7 +90,6 @@ BRK
 				&no-cap
 		POP2
 		.File/success DEI2 ORA ,&stream JCN
-	HALT
 
 RTN
 	&c $1
