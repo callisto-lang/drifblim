@@ -46,29 +46,9 @@ BRK
 		&end
 	POP
 
-	#010e DEO
+	( assemble )
 
-	;src ;first-pass JSR2
-
-	;symbols JSR2
-	;resolve JSR2
-
-	( make rom )
-	;&rom-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
 	;src .File/name DEO2
-	.p/len LDZ2 #0100 -- .File/length DEO2
-	;dst #0100 ++ .File/write DEO2
-
-	#010e DEO
-
-	HALT
-
-BRK
-	&rom-ext "rom $1
-
-@first-pass ( src* -- )
-
-	.File/name DEO2
 	#0001 .File/length DEO2
 	&stream
 		;&c
@@ -93,8 +73,59 @@ BRK
 		POP2
 		.File/success DEI2 ORA ,&stream JCN
 
-RTN
+
+	;symbols JSR2
+	;resolve JSR2
+
+	( make rom )
+	;&rom-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
+	;src .File/name DEO2
+	.p/len LDZ2 #0100 -- .File/length DEO2
+	;dst/clip .File/write DEO2
+
+	HALT
+
+BRK
 	&c $1
+	&rom-ext "rom $1
+
+@find-token ( -- )
+
+	( skip blank ) ;token ;slen JSR2 ORA #01 JCN RTN
+
+	;token PRINT
+	#010e DEO
+
+	;token LDA STH
+	;syntax/end ;syntax
+	&loop
+		LDAk STHkr ! ,&no-found JCN
+			INC2k LDA2 JSR2
+			POPr POP2 RTN
+			&no-found
+		INC2 INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	POPr
+
+	;token ;is-opcode JSR2 #00 = ,&no-opcode JCN
+		;token-opcode JSR2
+		RTN
+		&no-opcode
+
+	;token ;slen JSR2 #0002 !! ,&no-rawbyte JCN
+		;token-rawbyte JSR2
+		RTN
+		&no-rawbyte
+
+	;token ;slen JSR2 #0004 !! ,&no-rawshort JCN
+		;token-rawshort JSR2
+		RTN
+		&no-rawshort
+
+	;token ;&unknown-token-txt ;print-error JSR2
+
+RTN
+	&unknown-token-txt "unknown-token $1
 
 @symbols ( -- )
 
@@ -173,44 +204,6 @@ RTN
 	POP2r
 
 RTN
-
-@find-token ( -- )
-
-	( skip blank ) ;token ;slen JSR2 ORA #01 JCN RTN
-
-	;token PRINT
-	#010e DEO
-
-	;token LDA STH
-	;syntax/end ;syntax
-	&loop
-		LDAk STHkr ! ,&no-found JCN
-			INC2k LDA2 JSR2
-			POPr POP2 RTN
-			&no-found
-		INC2 INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	POPr
-
-	;token ;is-opcode JSR2 #00 = ,&no-opcode JCN
-		;token-opcode JSR2
-		RTN
-		&no-opcode
-
-	;token ;slen JSR2 #0002 !! ,&no-rawbyte JCN
-		;token-rawbyte JSR2
-		RTN
-		&no-rawbyte
-
-	;token ;slen JSR2 #0004 !! ,&no-rawshort JCN
-		;token-rawshort JSR2
-		RTN
-		&no-rawshort
-
-	;token ;&unknown-token-txt ;print-error JSR2
-
-RTN
-	&unknown-token-txt "unknown-token $1
 
 @token-label ( -- )
 
@@ -629,4 +622,4 @@ RTN
 @sym $4000
 @ref
 
-|8000 @dst
+|8000 @dst $0100 &clip
