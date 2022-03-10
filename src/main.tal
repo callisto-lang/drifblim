@@ -79,6 +79,8 @@ BRK
 
 	( skip blank ) ;token ;slen JSR2 ORA #01 JCN JMP2r
 
+	;token ;print-str JSR2
+
 	;token LDA
 	( pads )
 	DUP LIT '| NEQ ,&no-padabs JCN

@@ -20,8 +20,8 @@ then
 	~/Applications/butler push bin/drifblim.rom hundredrabbits/drifblim:uxn
 fi
 
-rm -rf etc/hello.sym
-rm -rf etc/hello.rom
+rm -rf etc/primes.sym
+rm -rf etc/primes.rom
 
 echo "Running.."
-uxncli bin/drifblim.rom etc/hello.tal && uxncli etc/hello.rom
+uxncli bin/drifblim.rom etc/primes.tal && uxncli etc/primes.rom
