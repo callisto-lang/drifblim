@@ -88,12 +88,10 @@ BRK
 	;token LDA
 	( pads )
 	DUP LIT '| NEQ ,&no-padabs JCN
-		( TODO: use generic shex )
-		;token INC2 ;sshort JSR2 .p/ptr STZ2 POP JMP2r
+		;token INC2 ;shex JSR2 .p/ptr STZ2 POP JMP2r
 		&no-padabs
 	DUP LIT '$ NEQ ,&no-padrel JCN
-		( TODO: use generic shex )
-		.p/ptr LDZ2 #00 ;token INC2 ;sbyte JSR2 ADD2 .p/ptr STZ2 POP JMP2r
+		.p/ptr LDZ2 ;token INC2 ;shex JSR2 ADD2 .p/ptr STZ2 POP JMP2r
 		&no-padrel
 	( labels )
 	DUP LIT '@ NEQ ,&no-label JCN
@@ -372,14 +370,25 @@ JMP2r
 
 JMP2r
 
-@chex ( char -- hex )
+@shex ( str* -- short* )
+
+	LIT2r 0000
+	&while
+		LITr 40 SFT2r
+		LITr 00
+		LDAk ,chex JSR STH ADD2r
+		INC2 LDAk ,&while JCN
+	POP2
+	STH2r
+
+JMP2r
+
+@chex ( char -- value )
 
 	DUP #2f GTH OVR #3a LTH AND ,&number JCN
 	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
-	DUP #40 GTH OVR #47 LTH AND ,&uc JCN
 		POP #00 JMP2r
 	&number #30 SUB JMP2r
-	&uc #37 SUB JMP2r
 	&lc #57 SUB JMP2r
 
 JMP2r
