@@ -83,6 +83,8 @@ BRK
 	.p/len LDZ2 #0100 -- .File/length DEO2
 	;dst/clip .File/write DEO2
 
+	#010e DEO
+
 	HALT
 
 BRK
@@ -93,34 +95,38 @@ BRK
 
 	( skip blank ) ;token ;slen JSR2 ORA #01 JCN RTN
 
-	;token PRINT
-	#010e DEO
-
-	;token LDA STH
-	;syntax/end ;syntax
-	&loop
-		LDAk STHkr ! ,&no-found JCN
-			INC2k LDA2 JSR2
-			POPr POP2 RTN
-			&no-found
-		INC2 INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	POPr
+	;token LDA
+	( pads )
+	DUP LIT '| ! ,&no-padabs JCN ;token-padabs JSR2 POP RTN &no-padabs
+	DUP LIT '$ ! ,&no-padrel JCN ;token-padrel JSR2 POP RTN &no-padrel
+	( labels )
+	DUP LIT '@ ! ,&no-label JCN ;token-label  JSR2 POP RTN &no-label
+	DUP LIT '& ! ,&no-sublabel JCN ;token-sublabel JSR2 POP RTN &no-sublabel
+	( literals )
+	DUP LIT '# ! ,&no-lithex JCN ;token-lithex  JSR2 POP RTN &no-lithex
+	DUP LIT '. ! ,&no-litzp JCN ;token-litzp  JSR2 POP RTN &no-litzp
+	DUP LIT ', ! ,&no-litrel JCN ;token-litrel JSR2 POP RTN &no-litrel
+	DUP LIT '; ! ,&no-litabs JCN ;token-litabs JSR2 POP RTN &no-litabs
+	DUP LIT ': ! ,&no-rawabs JCN ;token-rawabs JSR2 POP RTN &no-rawabs
+	( ascii )
+	DUP LIT '' ! ,&no-rawchr JCN ;token-rawchr JSR2 POP RTN &no-rawchr
+	DUP LIT '" ! ,&no-rawstr JCN ;token-rawstr JSR2 POP RTN &no-rawstr
+	POP
 
 	;token ;is-opcode JSR2 #00 = ,&no-opcode JCN
 		;token-opcode JSR2
 		RTN
 		&no-opcode
 
-	;token ;slen JSR2 #0002 !! ,&no-rawbyte JCN
-		;token-rawbyte JSR2
-		RTN
-		&no-rawbyte
-
 	;token ;slen JSR2 #0004 !! ,&no-rawshort JCN
 		;token-rawshort JSR2
 		RTN
 		&no-rawshort
+
+	;token ;slen JSR2 #0002 !! ,&no-rawbyte JCN
+		;token-rawbyte JSR2
+		RTN
+		&no-rawbyte
 
 	;token ;&unknown-token-txt ;print-error JSR2
 
@@ -171,7 +177,7 @@ RTN
 
 @resolve ( -- )
 
-	;ref LDA2k #0000 !! JMP RTN
+	;ref LDA2 #0000 !! JMP RTN
 	;ref
 	&while
 		DUP2 ;resolve-reference JSR2
@@ -186,19 +192,19 @@ RTN
 	STH2k
 
 	( rune )
-	DUP2 #0002 ++ LDA
+	#0002 ++ LDA
 	DUP LIT '. ! ,&no-litzp JCN
-		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA POP POP2r RTN
 		&no-litzp
 	DUP LIT ', ! ,&no-litrel JCN
 		STH2kr #0003 ++ ;find-label JSR2 LDA2
-		STH2kr LDA2 -- #0002 -- NIP STH2kr LDA2 ;dst ++ STA
+		STH2kr LDA2 -- #0002 -- NIP STH2kr LDA2 ;dst ++ STA POP POP2r RTN
 		&no-litrel
 	DUP LIT '; ! ,&no-litabs JCN
-		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2 POP POP2r RTN
 		&no-litabs
 	DUP LIT ': ! ,&no-rawabs JCN
-		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
+		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2 POP POP2r RTN
 		&no-rawabs
 	POP
 	POP2r
@@ -368,9 +374,12 @@ RTN
 
 @create-reference ( name* rune addr* -- )
 
-	ROT STH
-
-	,&addr STR2
+	( addr )
+	;ref .r/ptr LDZ2 ++ STA2
+	.r/ptr LDZ2k #0002 ++ ROT STZ2
+	( rune )
+	;ref .r/ptr LDZ2 ++ STA
+	.r/ptr LDZ2k INC2 ROT STZ2
 
 	LDAk LIT '& ! ,&no-sublabel JCN
 		;&buf #0040 ;mclr JSR2
@@ -380,20 +389,12 @@ RTN
 		;&buf
 		&no-sublabel
 
-	STHr ,&rune STR
-	
-	( write ref )
-	[ LIT2 &addr $2 ] ;ref .r/ptr LDZ2 ++ STA2
-	.r/ptr LDZ2k #0002 ++ ROT STZ2
-	( write rune )
-	[ LIT &rune $1 ] ;ref .r/ptr LDZ2 ++ STA
-	.r/ptr LDZ2k INC2 ROT STZ2
 	( write string )
 	DUP2 ;slen JSR2 STH2
 	;ref .r/ptr LDZ2 ++ ;scpy JSR2
 	.r/ptr LDZ2k STH2r ++ ROT STZ2
 	( null term )
-	#00 .r/ptr LDZ2 ++ STA2
+	#00 ;ref .r/ptr LDZ2 ++ STA
 	.r/ptr LDZ2k INC2 ROT STZ2
 
 RTN
@@ -424,15 +425,6 @@ RTN
 RTN
 
 @TODO "TODO $1
-
-@syntax
-	'| :token-padabs   '$ :token-padrel
-	'@ :token-label    '& :token-sublabel
-	'# :token-lithex   '. :token-litzp
-	', :token-litrel   '; :token-litabs
-	': :token-rawabs   '' :token-rawchr
-	'" :token-rawstr   '[ :token-ignored
-	'] :token-ignored  &end
 
 @opcodes
 	"LIT $1 "INC $1 "POP $1 "DUP $1 "NIP $1 "SWP $1 "OVR $1 "ROT $1
