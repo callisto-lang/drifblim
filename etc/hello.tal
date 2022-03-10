@@ -1,5 +1,7 @@
 ( uxnasm etc/hello.tal hello.rom )
 
+|80 @test
+
 |0100 @program
 	
 	;hello-word
@@ -14,3 +16,5 @@
 BRK
 
 @hello-word "Hello 20 "World! 00
+
+,test

@@ -159,7 +159,7 @@ JMP2r
 	&while
 		DUP2 ,resolve-reference JSR
 		( eol )
-		#0002 ADD2 ;scap JSR2 INC2 LDA2k ORA ,&while JCN
+		#0002 ADD2 ;scap JSR2 INC2 DUP2 #0002 ADD2 LDA ,&while JCN
 	POP2
 
 JMP2r
@@ -170,11 +170,12 @@ JMP2r
 	( rune )
 	#0002 ADD2 LDA
 	DUP LIT '. NEQ ,&no-litzp JCN
-		STH2kr #0003 ADD2 ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
+		STH2kr #0003 ADD2 ;find-label JSR2 LDA2 NIP
+		STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
 		&no-litzp
 	DUP LIT ', NEQ ,&no-litrel JCN
-		STH2kr #0003 ADD2 ;find-label JSR2 LDA2
-		STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
+		STH2kr #0003 ADD2 ;find-label JSR2 LDA2 STH2kr LDA2 SUB2 #0002 SUB2 NIP 
+		STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
 		&no-litrel
 	DUP LIT '; NEQ ,&no-litabs JCN
 		STH2kr #0003 ADD2 ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ADD2 STA2 POP POP2r JMP2r
