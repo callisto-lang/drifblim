@@ -163,12 +163,12 @@ RTN
 
 @resolve ( -- )
 
-	;ref LDA2 #0000 !! JMP RTN
+	;ref LDA2 ORA JMP RTN
 	;ref
 	&while
-		DUP2 ;resolve-reference JSR2
+		DUP2 ,resolve-reference JSR
 		( eol )
-		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+		#0002 ++ ;scap JSR2 INC2 LDA2k ORA ,&while JCN
 	POP2
 
 RTN
@@ -282,7 +282,7 @@ RTN
 			POP2r RTN
 			&continue
 		( eol )
-		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+		#0002 ++ ;scap JSR2 INC2 LDA2k ORA ,&while JCN
 	POP2
 	STH2r ;&error-invalid-label ;print-error JSR2
 	#0000
@@ -457,7 +457,7 @@ JMP2r
 		LDAk LDAkr STHr = ,&not-diff JCN
 			POP2 POP2r #00 JMP2r
 			&not-diff
-		LDAk LDAkr STHr #0000 !! ,&not-end JCN
+		LDAk LDAkr STHr ORA ,&not-end JCN
 			POP2 POP2r #01 JMP2r
 			&not-end
 		INC2 INC2r
@@ -476,9 +476,7 @@ RTN
 
 @print-error ( token* error* -- )
 
-	SWP2 ;print-str JSR2 #20 EMIT PRINT
-
-RTN
+	SWP2 ;print-str JSR2 #20 EMIT
 
 @print-str ( str* -- )
 
@@ -486,10 +484,9 @@ RTN
 	&while
 		INC2 LDAk DUP EMIT ,&while JCN
 	POP2
+	#0a EMIT
 
 RTN
 
-@sym $4000
-@ref
-
-|8000 @dst $0100 &clip
+( buffers )
+@sym $4000 @ref $4000 @dst $0100 &clip
