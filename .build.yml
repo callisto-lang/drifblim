@@ -9,7 +9,7 @@ tasks:
         curl -fsS https://rabbits.srht.site/uxn/uxn-lin64.tar.gz | tar -zx
     - build: |
         cd drifblim
-        ../uxn/uxnasm src/main.tal ../drifblim.rom
+        ../uxn/uxnasm src/drifblim.tal ../drifblim.rom
     - upload: |
         tar -czf out.tar.gz drifblim.rom
         acurl() {
