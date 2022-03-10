@@ -191,9 +191,22 @@ RTN
 		INC2 INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
 	POPr
-	;token ;is-byte JSR2 ;token-rawbyte JCN2
-	;token ;is-short JSR2 ;token-rawshort JCN2
-	;token ;is-opcode JSR2 ;token-opcode JCN2
+
+	;token ;is-opcode JSR2 #00 = ,&no-opcode JCN
+		;token-opcode JSR2
+		RTN
+		&no-opcode
+
+	;token ;slen JSR2 #0002 !! ,&no-rawbyte JCN
+		;token-rawbyte JSR2
+		RTN
+		&no-rawbyte
+
+	;token ;slen JSR2 #0004 !! ,&no-rawshort JCN
+		;token-rawshort JSR2
+		RTN
+		&no-rawshort
+
 	;token ;&unknown-token-txt ;print-error JSR2
 
 RTN
@@ -219,22 +232,14 @@ RTN
 
 @token-padabs ( -- )
 
-	;token INC2 ;is-short JSR2 #00 = ,&invalid JCN
-		;token INC2 ;sshort JSR2 .p/ptr STZ2
-		RTN
-	&invalid
-	;token ;&error-invalid-hex ;print-error JSR2
+	;token INC2 ;sshort JSR2 .p/ptr STZ2
 
 RTN
 	&error-invalid-hex "invalid-hex $1
 
 @token-padrel ( -- )
 
-	;token INC2 ;is-byte JSR2 #00 = ,&invalid JCN
-		#00 ;token INC2 ;sbyte JSR2 .p/ptr STZ2
-		RTN
-	&invalid
-	;token ;&error-invalid-hex ;print-error JSR2
+	#00 ;token INC2 ;sbyte JSR2 .p/ptr STZ2
 
 RTN
 	&error-invalid-hex "invalid-hex $1
@@ -247,12 +252,10 @@ RTN
 
 @token-lithex ( -- )
 
-	;token INC2 ;validate-hex JSR2 #00 = ,&invalid JCN
-
-	;token INC2 ;is-short JSR2 #00 = ,&no-short JCN
+	;token INC2 ;slen JSR2 #0004 !! ,&no-short JCN
 		;token INC2 ;sshort JSR2 ;write-litshort JSR2 RTN
 		&no-short
-	;token INC2 ;is-byte JSR2 #00 = ,&no-byte JCN
+	;token INC2 ;slen JSR2 #0002 !! ,&no-byte JCN
 		;token INC2 ;sbyte JSR2 ;write-litbyte JSR2 RTN
 		&no-byte
 	&invalid
@@ -291,13 +294,13 @@ RTN
 
 @token-rawchr ( -- )
 
-	;token LDAk ;write-byte JSR2
+	;token INC2 LDA ;write-byte JSR2
 
 RTN
 
 @token-rawstr ( -- )
-	
-	;token
+
+	;token INC2
 	&while
 		LDAk ;write-byte JSR2
 		INC2 LDAk ,&while JCN
@@ -477,40 +480,13 @@ RTN
 
 @is-opcode ( string* -- bool )
 
-	;&brk-txt OVR ;scmp-seg JSR2 #00 = ,&continue JCN
+	DUP2 ;&brk-txt ;scmp JSR2 #00 = ,&continue JCN
 		POP2 #01 RTN
 		&continue
 	;find-opcode JSR2
 
 RTN
 	&brk-txt "BRK $1
-
-@is-byte ( string* -- bool )
-
-	DUP2 ;slen JSR2 #0002 == STH
-		;validate-hex JSR2 STHr AND
-
-RTN
-
-@is-short ( string* -- bool )
-
-	DUP2 ;slen JSR2 #0004 == STH
-		;validate-hex JSR2 STHr AND
-
-RTN
-
-@validate-hex ( value* -- bool )
-
-	&while
-		LDAk DUP #2f > SWP #3a < AND ,&valid JCN
-		LDAk DUP #60 > SWP #67 < AND ,&valid JCN
-			POP2 #00 RTN
-			&valid
-		INC2 LDAk ,&while JCN
-	POP2
-	#01
-
-RTN
 
 @sshort ( str* -- short* )
 
