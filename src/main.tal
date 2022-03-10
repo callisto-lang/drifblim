@@ -188,24 +188,12 @@ RTN
 	;token ;is-byte JSR2 ;token-rawbyte JCN2
 	;token ;is-short JSR2 ;token-rawshort JCN2
 	;token ;is-opcode JSR2 ;token-opcode JCN2
-	;token ;is-macro JSR2 ;token-macro JCN2
 	;token ;unknown-token-txt ;print-error JSR2
 
 RTN
 
 @unknown-token-txt "unknown-token $1
 
-@token-include ( -- )
-
-	;token ;TODO ;print-error JSR2
-
-RTN
-
-@token-macro ( -- )
-
-	;token ;TODO ;print-error JSR2
-
-RTN
 
 @token-label ( -- )
 
@@ -437,7 +425,6 @@ RTN
 @TODO "TODO $1
 
 @syntax
-	'~ :token-include  '% :token-macro
 	'| :token-padabs   '$ :token-padrel
 	'@ :token-label    '& :token-sublabel
 	'# :token-lithex   '. :token-litzp
@@ -492,12 +479,6 @@ RTN
 
 RTN
 	&brk-txt "BRK $1
-
-@is-macro ( string* -- bool )
-
-	POP2 #00
-
-RTN
 
 @is-byte ( string* -- bool )
 
