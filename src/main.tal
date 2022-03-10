@@ -5,7 +5,7 @@
 |a0 @File       &vector $2 &success  $2 &stat   $2 &delete $1 &append $1 &name    $2 &length  $2 &read   $2 &write $2
 
 %EMIT { #18 DEO }
-%HALT { #010f DEO }
+%HALT { #010f DEO BRK }
 %PRINT  { ;print-str JSR2 #0a EMIT }
 %DEBUG  { ;print/byte JSR2 #0a EMIT }
 %DEBUG2 { ;print/short JSR2 #0a EMIT }
@@ -26,13 +26,13 @@
 		&ptr $2
 	@r
 		&ptr $2
-	@p 
+	@p
 		&ptr $2
 		&len $2
 
 |0100
 
-	;on-console .Console/vector DEO2 
+	;on-console .Console/vector DEO2
 
 BRK
 
@@ -45,6 +45,8 @@ BRK
 		;src ROT ;sput JSR2 BRK
 		&end
 	POP
+
+	#010e DEO
 
 	;src ;first-pass JSR2
 
@@ -124,7 +126,7 @@ RTN
 	#0001 .File/length DEO2
 	;&pad .File/write DEO2
 	( name )
-	#0002 ++ 
+	#0002 ++
 	DUP2 ;slen JSR2 .File/length DEO2
 	.File/write DEO2
 	( end )
@@ -158,7 +160,7 @@ RTN
 		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA
 		&no-litzp
 	DUP LIT ', ! ,&no-litrel JCN
-		STH2kr #0003 ++ ;find-label JSR2 LDA2 
+		STH2kr #0003 ++ ;find-label JSR2 LDA2
 		STH2kr LDA2 -- #0002 -- NIP STH2kr LDA2 ;dst ++ STA
 		&no-litrel
 	DUP LIT '; ! ,&no-litabs JCN
@@ -168,19 +170,23 @@ RTN
 		STH2kr #0003 ++ ;find-label JSR2 LDA2 STH2kr LDA2 ;dst ++ STA2
 		&no-rawabs
 	POP
-
 	POP2r
+
 RTN
 
 @find-token ( -- )
 
 	( skip blank ) ;token ;slen JSR2 ORA #01 JCN RTN
 
+	;token PRINT
+	#010e DEO
+
 	;token LDA STH
 	;syntax/end ;syntax
 	&loop
 		LDAk STHkr ! ,&no-found JCN
-			POPr INC2k LDA2 JMP2
+			INC2k LDA2 JSR2
+			POPr POP2 RTN
 			&no-found
 		INC2 INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
@@ -188,12 +194,10 @@ RTN
 	;token ;is-byte JSR2 ;token-rawbyte JCN2
 	;token ;is-short JSR2 ;token-rawshort JCN2
 	;token ;is-opcode JSR2 ;token-opcode JCN2
-	;token ;unknown-token-txt ;print-error JSR2
+	;token ;&unknown-token-txt ;print-error JSR2
 
 RTN
-
-@unknown-token-txt "unknown-token $1
-
+	&unknown-token-txt "unknown-token $1
 
 @token-label ( -- )
 
@@ -204,14 +208,14 @@ RTN
 
 @token-sublabel ( -- )
 
-	;scope ;&sublabel ;scpy JSR2
-	LIT '/ ;&sublabel ;scap JSR2 STA
-	;token INC2 ;&sublabel ;scat JSR2
-
-	;&sublabel .p/ptr LDZ2 ;create-label JSR2
+	;&buf #0040 ;mclr JSR2
+	;scope ;&buf ;scpy JSR2
+	LIT '/ ;&buf ;scap JSR2 STA
+	;token INC2 ;&buf ;scat JSR2
+	;&buf .p/ptr LDZ2 ;create-label JSR2
 
 RTN
-	&sublabel $40 
+	&buf $40
 
 @token-padabs ( -- )
 
@@ -373,7 +377,8 @@ RTN
 	,&addr STR2
 
 	LDAk LIT '& ! ,&no-sublabel JCN
-		;scope ;&buf ;scpy JSR2 
+		;&buf #0040 ;mclr JSR2
+		;scope ;&buf ;scpy JSR2
 		LIT '/ ;&buf ;scap JSR2 STA
 		INC2 ;&buf ;scat JSR2
 		;&buf
@@ -443,7 +448,7 @@ RTN
 
 @write-litshort ( short* -- )
 
-	( LIT2k ) #a0 ,write-byte JSR 
+	( LIT2k ) #a0 ,write-byte JSR
 	,write-short JSR
 
 RTN
@@ -475,7 +480,7 @@ RTN
 	;&brk-txt OVR ;scmp-seg JSR2 #00 = ,&continue JCN
 		POP2 #01 RTN
 		&continue
-	;find-opcode JSR2 
+	;find-opcode JSR2
 
 RTN
 	&brk-txt "BRK $1
@@ -483,14 +488,14 @@ RTN
 @is-byte ( string* -- bool )
 
 	DUP2 ;slen JSR2 #0002 == STH
-	;validate-hex JSR2 STHr AND
+		;validate-hex JSR2 STHr AND
 
 RTN
 
 @is-short ( string* -- bool )
 
 	DUP2 ;slen JSR2 #0004 == STH
-	;validate-hex JSR2 STHr AND 
+		;validate-hex JSR2 STHr AND
 
 RTN
 
