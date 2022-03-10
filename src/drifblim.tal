@@ -75,7 +75,6 @@ BRK
 
 	( debug ) #010e DEO
 	( halt ) #010f DEO
-	BRK
 
 BRK
 	&c $1
@@ -278,7 +277,7 @@ JMP2r
 			POP2r JMP2r
 			&continue
 		( eol )
-		#0002 ADD2 ;scap JSR2 INC2 LDA2k ORA ,&while JCN
+		#0002 ADD2 ;scap JSR2 INC2 DUP2 #0002 ADD2 LDA ,&while JCN
 	POP2
 	STH2r ;&error-invalid-label ;print-error JSR2
 	#0000
