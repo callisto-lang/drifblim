@@ -1,6 +1,6 @@
 @symbols ( -- )
 
-	;&sym-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
+	;&sym-ext ;src ;scap JSR2 #0003 SUB2 ;scpy JSR2
 	;src .File/name DEO2
 	;sym
 	&while
@@ -18,17 +18,17 @@
 		#0001 .File/length DEO2
 		;&pad .File/write DEO2
 		( name )
-		#0002 ++
+		#0002 ADD2
 		DUP2 ;slen JSR2 .File/length DEO2
 		.File/write DEO2
 		( end )
 		#0001 .File/length DEO2
 		;&end .File/write DEO2
 		( eol )
-		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+		#0002 ADD2 ;scap JSR2 INC2 LDA2k #0000 NEQ2 ,&while JCN
 	POP2
 
-RTN
+JMP2r
 	&sym-ext "sym $1
 	&buf $4
 	&pad 20

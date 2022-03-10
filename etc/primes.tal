@@ -7,7 +7,7 @@
 	#0000 #0001
 	&loop
 		DUP2 ,is-prime JSR #00 EQU ,&skip JCN
-			DUP2 ,print-hex/short JSR
+			DUP2 ,print/short JSR
 			#20 ( emit ) #18 DEO
 			&skip
 		INC2 NEQ2k ,&loop JCN

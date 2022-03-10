@@ -4,6 +4,11 @@
 |0010 @Console    &vector $2 &read     $1 &pad    $5 &write  $1 &error  $1
 |00a0 @File       &vector $2 &success  $2 &stat   $2 &delete $1 &append $1 &name    $2 &length  $2 &read   $2 &write $2
 
+%EMIT   { #18 DEO }
+%DEBUG  { ;print/byte JSR2 #0a EMIT }
+%DEBUG2 { ;print/short JSR2 #0a EMIT }
+%PRINT  { ;print-str JSR2 #0a EMIT }
+
 |0000
 
 	@src $40
@@ -70,6 +75,7 @@ BRK
 
 	( debug ) #010e DEO
 	( halt ) #010f DEO
+	BRK
 
 BRK
 	&c $1
@@ -77,9 +83,7 @@ BRK
 
 @find-token ( -- )
 
-	( skip blank ) ;token ;slen JSR2 ORA #01 JCN JMP2r
-
-	;token ;print-str JSR2
+	( skip blank ) ;token ;slen JSR2 #0000 NEQ2 JMP JMP2r
 
 	;token LDA
 	( pads )
@@ -92,16 +96,16 @@ BRK
 		#00 ;token INC2 ;sbyte JSR2 .p/ptr STZ2 POP JMP2r
 		&no-padrel
 	( labels )
-	DUP LIT '@ NEQ ,&no-label JCN 
+	DUP LIT '@ NEQ ,&no-label JCN
 		;scope #0040 ;mclr JSR2
 		;token INC2 ;scope ;scpy JSR2
-		;token INC2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r 
+		;token INC2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
 		&no-label
-	DUP LIT '& NEQ ,&no-sublabel JCN 
-		;token-sublabel JSR2 POP JMP2r 
+	DUP LIT '& NEQ ,&no-sublabel JCN
+		;token-sublabel JSR2 POP JMP2r
 		&no-sublabel
 	( literals )
-	DUP LIT '# NEQ ,&no-lithex JCN 
+	DUP LIT '# NEQ ,&no-lithex JCN
 		;token-lithex JSR2 POP JMP2r
 		&no-lithex
 	DUP LIT '. NEQ ,&no-litzp JCN
@@ -124,15 +128,15 @@ BRK
 	DUP LIT '' NEQ ,&no-rawchr JCN
 		;token INC2 LDA ;write-byte JSR2 POP JMP2r
 		&no-rawchr
-	DUP LIT '" NEQ ,&no-rawstr JCN 
-		;token-rawstr JSR2 POP JMP2r 
+	DUP LIT '" NEQ ,&no-rawstr JCN
+		;token-rawstr JSR2 POP JMP2r
 		&no-rawstr
 	( ignore )
-	DUP LIT '[ NEQ ,&no-ignl JCN 
-		POP JMP2r 
+	DUP LIT '[ NEQ ,&no-ignl JCN
+		POP JMP2r
 		&no-ignl
-	DUP LIT '] NEQ ,&no-ignr JCN 
-		POP JMP2r 
+	DUP LIT '] NEQ ,&no-ignr JCN
+		POP JMP2r
 		&no-ignr
 	POP
 	( special )
@@ -152,7 +156,8 @@ JMP2r
 
 @resolve ( -- )
 
-	;ref LDA2 ORA JMP JMP2r
+	;ref LDA2 #0000 NEQ2 JMP JMP2r
+
 	;ref
 	&while
 		DUP2 ,resolve-reference JSR
@@ -221,6 +226,8 @@ JMP2r
 
 @create-label ( name* addr* -- )
 
+	LIT '@ #18 DEO DUP2 ;print JSR2 #20 #18 DEO OVR2 ;print-str JSR2 #0a #18 DEO
+
 	( write ref )
 	;sym .s/ptr LDZ2 ADD2 STA2
 	.s/ptr LDZ2k #0002 ADD2 ROT STZ2
@@ -235,6 +242,8 @@ JMP2r
 JMP2r
 
 @create-reference ( name* rune addr* -- )
+
+	LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ]
 
 	( addr )
 	;ref .r/ptr LDZ2 ADD2 STA2
@@ -473,7 +482,6 @@ JMP2r
 	&while
 		INC2 LDAk DUP #18 DEO ,&while JCN
 	POP2
-	#0a #18 DEO
 
 JMP2r
 
