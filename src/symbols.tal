@@ -1,0 +1,35 @@
+@symbols ( -- )
+
+	;&sym-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
+	;src .File/name DEO2
+	;sym
+	&while
+		DUP2
+		DUP2
+		LDA2
+		SWP
+		DUP #04 SFT ;hexc JSR2 ;&buf STA
+		#0f AND ;hexc JSR2 ;&buf INC2 STA
+		DUP #04 SFT ;hexc JSR2 ;&buf INC2 INC2 STA
+		#0f AND ;hexc JSR2 ;&buf INC2 INC2 INC2 STA
+		#0004 .File/length DEO2
+		;&buf .File/write DEO2
+		( pad )
+		#0001 .File/length DEO2
+		;&pad .File/write DEO2
+		( name )
+		#0002 ++
+		DUP2 ;slen JSR2 .File/length DEO2
+		.File/write DEO2
+		( end )
+		#0001 .File/length DEO2
+		;&end .File/write DEO2
+		( eol )
+		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
+	POP2
+
+RTN
+	&sym-ext "sym $1
+	&buf $4
+	&pad 20
+	&end 0a

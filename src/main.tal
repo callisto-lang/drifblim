@@ -55,11 +55,10 @@ BRK
 			DUP2 .File/read DEO2
 			( comment )
 			LDAk #28 ! ,&no-sleep JCN
-				#01 .sleep STZ
+				#01 .sleep STZ ,&no-cap JMP
 				&no-sleep
 			LDAk #29 ! ,&no-wake JCN
-				#00 .sleep STZ
-				,&no-cap JMP
+				#00 .sleep STZ ,&no-cap JMP
 				&no-wake
 			.sleep LDZ ,&no-cap JCN
 			( listen )
@@ -73,8 +72,6 @@ BRK
 		POP2
 		.File/success DEI2 ORA ,&stream JCN
 
-
-	;symbols JSR2
 	;resolve JSR2
 
 	( make rom )
@@ -97,83 +94,72 @@ BRK
 
 	;token LDA
 	( pads )
-	DUP LIT '| ! ,&no-padabs JCN ;token-padabs JSR2 POP RTN &no-padabs
-	DUP LIT '$ ! ,&no-padrel JCN ;token-padrel JSR2 POP RTN &no-padrel
+	DUP LIT '| ! ,&no-padabs JCN
+		( TODO: use generic shex )
+		;token INC2 ;sshort JSR2 .p/ptr STZ2 POP RTN
+		&no-padabs
+	DUP LIT '$ ! ,&no-padrel JCN
+		( TODO: use generic shex )
+		#00 ;token INC2 ;sbyte JSR2 .p/ptr STZ2 POP RTN
+		&no-padrel
 	( labels )
-	DUP LIT '@ ! ,&no-label JCN ;token-label  JSR2 POP RTN &no-label
-	DUP LIT '& ! ,&no-sublabel JCN ;token-sublabel JSR2 POP RTN &no-sublabel
+	DUP LIT '@ ! ,&no-label JCN 
+		;scope #0040 ;mclr JSR2
+		;token INC2 ;scope ;scpy JSR2
+		;token INC2 .p/ptr LDZ2 ;create-label JSR2 POP RTN 
+		&no-label
+	DUP LIT '& ! ,&no-sublabel JCN 
+		;token-sublabel JSR2 POP RTN 
+		&no-sublabel
 	( literals )
-	DUP LIT '# ! ,&no-lithex JCN ;token-lithex  JSR2 POP RTN &no-lithex
-	DUP LIT '. ! ,&no-litzp JCN ;token-litzp  JSR2 POP RTN &no-litzp
-	DUP LIT ', ! ,&no-litrel JCN ;token-litrel JSR2 POP RTN &no-litrel
-	DUP LIT '; ! ,&no-litabs JCN ;token-litabs JSR2 POP RTN &no-litabs
-	DUP LIT ': ! ,&no-rawabs JCN ;token-rawabs JSR2 POP RTN &no-rawabs
+	DUP LIT '# ! ,&no-lithex JCN 
+		;token-lithex JSR2 POP RTN
+		&no-lithex
+	DUP LIT '. ! ,&no-litzp JCN
+		;token INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2
+		#ff ;write-litbyte JSR2 POP RTN
+		&no-litzp
+	DUP LIT ', ! ,&no-litrel JCN
+		;token INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2
+		#ff ;write-litbyte JSR2 POP RTN
+		&no-litrel
+	DUP LIT '; ! ,&no-litabs JCN
+		;token INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2
+		#ffff ;write-litshort JSR2 POP RTN
+		&no-litabs
+	DUP LIT ': ! ,&no-rawabs JCN
+		;token INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2
+		#ffff ;write-short JSR2 POP RTN
+		&no-rawabs
 	( ascii )
-	DUP LIT '' ! ,&no-rawchr JCN ;token-rawchr JSR2 POP RTN &no-rawchr
-	DUP LIT '" ! ,&no-rawstr JCN ;token-rawstr JSR2 POP RTN &no-rawstr
+	DUP LIT '' ! ,&no-rawchr JCN
+		;token INC2 LDA ;write-byte JSR2 POP RTN
+		&no-rawchr
+	DUP LIT '" ! ,&no-rawstr JCN 
+		;token-rawstr JSR2 POP RTN 
+		&no-rawstr
+	( ignore )
+	DUP LIT '[ ! ,&no-ignl JCN 
+		POP RTN 
+		&no-ignl
+	DUP LIT '] ! ,&no-ignr JCN 
+		POP RTN 
+		&no-ignr
 	POP
-
+	( special )
 	;token ;is-opcode JSR2 #00 = ,&no-opcode JCN
-		;token-opcode JSR2
-		RTN
+		;token ;find-opcode JSR2 ;write-byte JSR2 RTN
 		&no-opcode
-
 	;token ;slen JSR2 #0004 !! ,&no-rawshort JCN
-		;token-rawshort JSR2
-		RTN
+		;token ;sshort JSR2 ;write-short JSR2 RTN
 		&no-rawshort
-
 	;token ;slen JSR2 #0002 !! ,&no-rawbyte JCN
-		;token-rawbyte JSR2
-		RTN
+		;token ;sbyte JSR2 ;write-byte JSR2 RTN
 		&no-rawbyte
-
 	;token ;&unknown-token-txt ;print-error JSR2
 
 RTN
 	&unknown-token-txt "unknown-token $1
-
-@symbols ( -- )
-
-	;&sym-ext ;src ;scap JSR2 #0003 -- ;scpy JSR2
-	;src .File/name DEO2
-	;sym
-	&while
-		DUP2 ;write-symbol JSR2
-		( eol )
-		#0002 ++ ;scap JSR2 INC2 LDA2k #0000 !! ,&while JCN
-	POP2
-
-RTN
-	&sym-ext "sym $1
-
-@write-symbol ( symbol* -- )
-
-	( addr )
-	DUP2
-	LDA2
-	SWP
-	DUP #04 SFT ;hexc JSR2 ;&buf STA
-	#0f AND ;hexc JSR2 ;&buf INC2 STA
-	DUP #04 SFT ;hexc JSR2 ;&buf INC2 INC2 STA
-	#0f AND ;hexc JSR2 ;&buf INC2 INC2 INC2 STA
-	#0004 .File/length DEO2
-	;&buf .File/write DEO2
-	( pad )
-	#0001 .File/length DEO2
-	;&pad .File/write DEO2
-	( name )
-	#0002 ++
-	DUP2 ;slen JSR2 .File/length DEO2
-	.File/write DEO2
-	( end )
-	#0001 .File/length DEO2
-	;&end .File/write DEO2
-
-RTN
-	&buf $4
-	&pad 20
-	&end 0a
 
 @resolve ( -- )
 
@@ -190,7 +176,6 @@ RTN
 @resolve-reference ( ref* -- )
 
 	STH2k
-
 	( rune )
 	#0002 ++ LDA
 	DUP LIT '. ! ,&no-litzp JCN
@@ -211,13 +196,6 @@ RTN
 
 RTN
 
-@token-label ( -- )
-
-	;token INC2 ;set-scope JSR2
-	;token INC2 .p/ptr LDZ2 ;create-label JSR2
-
-RTN
-
 @token-sublabel ( -- )
 
 	;&buf #0040 ;mclr JSR2
@@ -229,26 +207,6 @@ RTN
 RTN
 	&buf $40
 
-@token-padabs ( -- )
-
-	;token INC2 ;sshort JSR2 .p/ptr STZ2
-
-RTN
-	&error-invalid-hex "invalid-hex $1
-
-@token-padrel ( -- )
-
-	#00 ;token INC2 ;sbyte JSR2 .p/ptr STZ2
-
-RTN
-	&error-invalid-hex "invalid-hex $1
-
-@token-opcode ( -- )
-	
-	;token ;find-opcode JSR2 ;write-byte JSR2
-
-RTN
-
 @token-lithex ( -- )
 
 	;token INC2 ;slen JSR2 #0004 !! ,&no-short JCN
@@ -257,45 +215,10 @@ RTN
 	;token INC2 ;slen JSR2 #0002 !! ,&no-byte JCN
 		;token INC2 ;sbyte JSR2 ;write-litbyte JSR2 RTN
 		&no-byte
-	&invalid
 	;token ;&error-invalid-hex ;print-error JSR2
 
 RTN
 	&error-invalid-hex "invalid-lithex $1
-
-@token-litzp ( -- )
-
-	;token INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2
-	#ff ;write-litbyte JSR2
-
-RTN
-
-@token-litrel ( -- )
-
-	;token INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2
-	#ff ;write-litbyte JSR2
-
-RTN
-
-@token-litabs ( -- )
-
-	;token INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2
-	#ffff ;write-litshort JSR2
-
-RTN
-
-@token-rawabs ( -- )
-
-	;token INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2
-	#ffff ;write-short JSR2
-
-RTN
-
-@token-rawchr ( -- )
-
-	;token INC2 LDA ;write-byte JSR2
-
-RTN
 
 @token-rawstr ( -- )
 
@@ -304,56 +227,6 @@ RTN
 		LDAk ;write-byte JSR2
 		INC2 LDAk ,&while JCN
 	POP2
-
-RTN
-
-@token-rawshort ( -- )
-
-	;token ;sshort JSR2 ;write-short JSR2
-
-RTN
-
-@token-rawbyte ( -- )
-
-	;token ;sbyte JSR2 ;write-byte JSR2
-
-RTN
-
-@token-ignored ( -- )
-
-	( do nothing )
-
-RTN
-
-@find-opcode ( name* -- byte )
-
-	STH2
-	#2000
-	&loop
-		#00 OVR #20 SFT2 ;opcodes ++ STH2kr ;scmp-seg JSR2 #00 = ,&continue JCN
-			NIP STH2r ,find-mode JSR + RTN
-			&continue
-		INC GTHk ,&loop JCN
-	POP2
-	POP2r
-	#00
-
-RTN
-
-@find-mode ( mode* -- byte )
-
-	LITr 00
-	;opcodes OVR2 ;scmp-seg JSR2 #70 SFT STH ADDr
-	#0003 ++
-	LDAk #00 = ,&end JCN
-	&while
-		LDAk LIT '2 = #50 SFT STH ADDr
-		LDAk LIT 'r = #60 SFT STH ADDr
-		LDAk LIT 'k = #70 SFT STH ADDr
-		INC2 LDAk ,&while JCN
-	&end
-	POP2
-	STHr
 
 RTN
 
@@ -417,14 +290,27 @@ RTN
 RTN
 	&error-invalid-label "invalid-label $1
 
-@set-scope ( str* -- )
+@write-litbyte ( byte -- )
 
-	;scope #0040 ;mclr JSR2
-	;scope ;scpy JSR2
+	( LITk ) #80 ,write-byte JSR ,write-byte JSR
 
 RTN
 
-@TODO "TODO $1
+@write-litshort ( short* -- )
+
+	( LIT2k ) #a0 ,write-byte JSR
+
+@write-short ( short -- )
+
+	SWP ,write-byte JSR
+
+@write-byte ( byte -- )
+
+	;dst .p/ptr LDZ2 STH2k ++ STA
+	INC2r STH2kr .p/ptr STZ2
+	STH2r .p/len STZ2
+
+RTN
 
 @opcodes
 	"LIT $1 "INC $1 "POP $1 "DUP $1 "NIP $1 "SWP $1 "OVR $1 "ROT $1
@@ -432,34 +318,34 @@ RTN
 	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
 	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
 
-( ------------------------------------------------------------------------ )
+@find-opcode ( name* -- byte )
 
-@write-litshort ( short* -- )
-
-	( LIT2k ) #a0 ,write-byte JSR
-	,write-short JSR
-
-RTN
-
-@write-litbyte ( byte -- )
-
-	( LITk ) #80 ,write-byte JSR
-	,write-byte JSR
+	STH2
+	#2000
+	&loop
+		#00 OVR #20 SFT2 ;opcodes ++ STH2kr ;scmp-seg JSR2 ,&found JCN
+		INC GTHk ,&loop JCN
+	POP2
+	POP2r
+	#00
 
 RTN
+	&found NIP STH2r ,find-mode JSR + RTN ( TODO: rewrite, STH2r unsafe )
 
-@write-short ( short -- )
+@find-mode ( mode* -- byte )
 
-	SWP ,write-byte JSR
-	,write-byte JSR
-
-RTN
-
-@write-byte ( byte -- )
-
-	;dst .p/ptr LDZ2 ++ STA
-	( incr ptr ) .p/ptr LDZ2k INC2 ROT STZ2
-	( set length ) .p/ptr LDZ2 .p/len STZ2
+	LITr 00
+	;opcodes OVR2 ;scmp-seg JSR2 #70 SFT STH ADDr
+	#0003 ++
+	LDAk #00 = ,&end JCN
+	&while
+		LDAk LIT '2 = #50 SFT STH ADDr
+		LDAk LIT 'r = #60 SFT STH ADDr
+		LDAk LIT 'k = #70 SFT STH ADDr
+		INC2 LDAk ,&while JCN
+	&end
+	POP2
+	STHr
 
 RTN
 
@@ -499,14 +385,6 @@ RTN
 	&lc #57 - RTN
 
 RTN
-
-@hexc ( hex -- char )
-
-	DUP #0a < ,&digit JCN
-	#57 +
-
-RTN
-	&digit #30 + RTN
 
 ( helpers )
 
