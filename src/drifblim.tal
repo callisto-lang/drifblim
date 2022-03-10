@@ -93,7 +93,7 @@ BRK
 		&no-padabs
 	DUP LIT '$ NEQ ,&no-padrel JCN
 		( TODO: use generic shex )
-		#00 ;token INC2 ;sbyte JSR2 .p/ptr STZ2 POP JMP2r
+		.p/ptr LDZ2 #00 ;token INC2 ;sbyte JSR2 ADD2 .p/ptr STZ2 POP JMP2r
 		&no-padrel
 	( labels )
 	DUP LIT '@ NEQ ,&no-label JCN

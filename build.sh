@@ -5,7 +5,7 @@ rm -rf bin
 mkdir bin
 
 echo "Assembling.."
-uxnasm src/main.tal bin/drifblim.rom 
+uxnasm src/drifblim.tal bin/drifblim.rom 
 
 echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/drifblim.rom ]
@@ -20,8 +20,8 @@ then
 	~/Applications/butler push bin/drifblim.rom hundredrabbits/drifblim:uxn
 fi
 
-rm -rf etc/primes.sym
-rm -rf etc/primes.rom
+rm -rf etc/fizzbuzz.sym
+rm -rf etc/fizzbuzz.rom
 
 echo "Running.."
-uxncli bin/drifblim.rom etc/primes.tal && uxncli etc/primes.rom
+uxncli bin/drifblim.rom etc/fizzbuzz.tal && uxncli etc/fizzbuzz.rom
