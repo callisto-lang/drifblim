@@ -66,7 +66,7 @@ BRK
 	&while
 		DUP2 ;resolve-reference JSR2
 		( eol )
-		INC2 INC2 ;scap JSR2 INC2 DUP2 INC2 INC2 LDA ,&while JCN
+		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 
 	( make rom )
@@ -157,7 +157,7 @@ JMP2r
 
 @resolve-reference ( ref* -- )
 
-	STH2k INC2 INC2 DUP2 INC2 ;find-label JSR2 LDA2 STH2
+	STH2k INC2 INC2 INC2k ;find-label JSR2 LDA2 STH2
 	( rune )
 	LDA
 	DUP LIT '. NEQ ,&no-litzp JCN
@@ -242,11 +242,11 @@ JMP2r
 	STH2
 	;sym
 	&while
-		DUP2 INC2 INC2 STH2kr ;scmp JSR2 #00 EQU ,&continue JCN
+		INC2k INC2 STH2kr ;scmp JSR2 #00 EQU ,&continue JCN
 			POP2r JMP2r
 			&continue
 		( eol )
-		INC2 INC2 ;scap JSR2 INC2 DUP2 INC2 INC2 LDA ,&while JCN
+		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 	STH2r ;&error-invalid-label ;print-error JSR2
 	#0000

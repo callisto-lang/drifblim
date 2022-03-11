@@ -25,7 +25,10 @@ rm -rf etc/*.rom
 
 echo "Assembling Drifblim.."
 uxncli bin/drifblim.rom src/drifblim.tal 
-echo "Assembling Hello, from Drifblim.."
+echo "Assembling Examples, from Drifblim.."
+uxncli bin/drifblim.rom etc/hello.tal
+uxncli bin/drifblim.rom etc/primes.tal
+uxncli bin/drifblim.rom etc/fizzbuzz.tal
 uxncli bin/drifblim.rom etc/move.tal
 echo "Running Hello.."
 uxnemu etc/move.rom
