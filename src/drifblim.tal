@@ -104,11 +104,7 @@ BRK
 		;token INC2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
 		&no-label
 	DUP LIT '& NEQ ,&no-sublabel JCN
-		;buf #0030 ;mclr JSR2
-		;scope ;buf ;scpy JSR2
-		LIT '/ ;buf ;scap JSR2 STA
-		;token INC2 ;buf ;scat JSR2
-		;buf .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
+		;token INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
 		&no-sublabel
 	( literals )
 	DUP LIT '# NEQ ,&no-lithex JCN
@@ -223,15 +219,21 @@ JMP2r
 	INC2r
 	( sublabel )
 	LDAk LIT '& NEQ ,&no-sublabel JCN
-		;buf #0030 ;mclr JSR2
-		;scope ;buf ;scpy JSR2
-		LIT '/ ;buf ;scap JSR2 STA
-		INC2 ;buf ;scat JSR2
-		;buf
+		INC2 ,make-sublabel JSR
 		&no-sublabel
 	( write string )
 	DUP2 ;ref STH2kr ADD2 ;scpy JSR2
 	;slen JSR2 STH2 ADD2r INC2r STH2r .r/ptr STZ2
+
+JMP2r
+
+@make-sublabel ( name* scope* -- sublabel* )
+
+	;buf STH2k #0030 ;mclr JSR2
+	;scope STH2kr ;scpy JSR2
+	LIT '/ STH2kr ;scap JSR2 STA
+	STH2kr ;scat JSR2
+	STH2r
 
 JMP2r
 
