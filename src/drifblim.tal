@@ -299,6 +299,14 @@ JMP2r
 	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
 	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
 
+@brk-txt "BRK $1
+
+@is-opcode ( string* -- bool )
+
+	DUP2 ;brk-txt ;scmp JSR2 #00 EQU ,&continue JCN
+		POP2 #01 JMP2r
+		&continue
+
 @find-opcode ( name* -- byte )
 
 	STH2
@@ -329,16 +337,6 @@ JMP2r
 	STHr
 
 JMP2r
-
-@is-opcode ( string* -- bool )
-
-	DUP2 ;&brk-txt ;scmp JSR2 #00 EQU ,&continue JCN
-		POP2 #01 JMP2r
-		&continue
-	;find-opcode JSR2
-
-JMP2r
-	&brk-txt "BRK $1
 
 @sshort ( str* -- short* )
 
@@ -468,7 +466,7 @@ JMP2r
 
 @print-error ( token* error* -- )
 
-	SWP2 ;print-str JSR2 #20 #18 DEO
+	SWP2 ,print-str JSR #20 #18 DEO
 
 @print-str ( str* -- )
 
