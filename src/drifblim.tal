@@ -150,10 +150,9 @@ BRK
 	;token ;slen JSR2 #0002 NEQ2 ,&no-rawbyte JCN
 		;token ;sbyte JSR2 ;write-byte JMP2
 		&no-rawbyte
-	;token ;&unknown-token-txt ;print-error JSR2
+	;token ;err-token ;print-error JSR2
 
 JMP2r
-	&unknown-token-txt "unknown-token $1
 
 @resolve-reference ( ref* -- )
 
@@ -182,17 +181,16 @@ JMP2r
 
 @token-lithex ( -- )
 
-	;token INC2
-	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		;sshort JSR2 ;write-litshort JMP2
+	;token
+	INC2k ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		INC2 ;sshort JSR2 ;write-litshort JMP2
 		&no-short
-	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
-		;sbyte JSR2 ;write-litbyte JMP2
+	INC2k ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
+		INC2 ;sbyte JSR2 ;write-litbyte JMP2
 		&no-byte
-	#0001 SUB2 ;&error-invalid-hex ;print-error JSR2
+	;err-lithx ;print-error JSR2
 
 JMP2r
-	&error-invalid-hex "invalid-lithex $1
 
 @create-label ( name* addr* -- )
 
@@ -248,11 +246,10 @@ JMP2r
 		( eol )
 		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	STH2r ;&error-invalid-label ;print-error JSR2
+	STH2r ;err-label ;print-error JSR2
 	#0000
 
 JMP2r
-	&error-invalid-label "invalid-label $1
 
 @write-litbyte ( byte -- )
 
@@ -283,6 +280,9 @@ JMP2r
 	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
 
 @brk-txt "BRK $1
+@err-lithx "ER-LITHX $1
+@err-label "ER-LABEL $1
+@err-token "ER-TOKEN $1
 
 @is-opcode ( string* -- bool )
 
@@ -354,11 +354,11 @@ JMP2r
 
 	DUP #2f GTH OVR #3a LTH AND ,&number JCN
 	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
-		POP #00 JMP2r
-	&number #30 SUB JMP2r
-	&lc #57 SUB JMP2r
+		POP #00 
 
 JMP2r
+	&number #30 SUB JMP2r
+	&lc #57 SUB JMP2r
 
 ( helpers )
 
