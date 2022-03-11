@@ -64,7 +64,6 @@ BRK
 
 	( resolve references )
 
-	;ref LDA2 #0000 NEQ2 JMP JMP2r
 	;ref
 	&while
 		DUP2 ;resolve-reference JSR2
@@ -136,7 +135,8 @@ BRK
 		;token INC2 LDA ;write-byte JSR2 POP JMP2r
 		&no-rawchr
 	DUP LIT '" NEQ ,&no-rawstr JCN
-		;token-rawstr JSR2 POP JMP2r
+		;token INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2
+		POP JMP2r
 		&no-rawstr
 	( ignore )
 	DUP LIT '[ NEQ ,&no-ignl JCN
@@ -198,44 +198,30 @@ JMP2r
 JMP2r
 	&error-invalid-hex "invalid-lithex $1
 
-@token-rawstr ( -- )
-
-	;token INC2
-	&while
-		LDAk ;write-byte JSR2
-		INC2 LDAk ,&while JCN
-	POP2
-
-JMP2r
-
 @create-label ( name* addr* -- )
 
-	LIT '@ #18 DEO DUP2 ;print JSR2 #20 #18 DEO OVR2 ;print-str JSR2 #0a #18 DEO
+	( LIT '@ #18 DEO DUP2 ;print JSR2 #20 #18 DEO OVR2 ;print-str JSR2 #0a #18 DEO )
 
 	( write ref )
-	;sym .s/ptr LDZ2 ADD2 STA2
-	.s/ptr LDZ2k #0002 ADD2 ROT STZ2
+	;sym .s/ptr LDZ2 STH2k ADD2 STA2
+	INC2r INC2r
 	( write string )
-	DUP2 ;slen JSR2 STH2
-	;sym .s/ptr LDZ2 ADD2 ;scpy JSR2
-	.s/ptr LDZ2k STH2r ADD2 ROT STZ2
-	( null term )
-	#00 ;sym .s/ptr LDZ2 ADD2 STA
-	.s/ptr LDZ2k INC2 ROT STZ2
+	DUP2 ;sym STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .s/ptr STZ2
 
 JMP2r
 
 @create-reference ( name* rune addr* -- )
 
-	LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ]
+	( LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ] )
 
 	( addr )
-	;ref .r/ptr LDZ2 ADD2 STA2
-	.r/ptr LDZ2k #0002 ADD2 ROT STZ2
+	;ref .r/ptr LDZ2 STH2k ADD2 STA2
 	( rune )
-	;ref .r/ptr LDZ2 ADD2 STA
-	.r/ptr LDZ2k INC2 ROT STZ2
-
+	INC2r INC2r
+	;ref STH2kr ADD2 STA
+	INC2r
+	( sublabel )
 	LDAk LIT '& NEQ ,&no-sublabel JCN
 		;buf #0030 ;mclr JSR2
 		;scope ;buf ;scpy JSR2
@@ -243,14 +229,9 @@ JMP2r
 		INC2 ;buf ;scat JSR2
 		;buf
 		&no-sublabel
-
 	( write string )
-	DUP2 ;slen JSR2 STH2
-	;ref .r/ptr LDZ2 ADD2 ;scpy JSR2
-	.r/ptr LDZ2k STH2r ADD2 ROT STZ2
-	( null term )
-	#00 ;ref .r/ptr LDZ2 ADD2 STA
-	.r/ptr LDZ2k INC2 ROT STZ2
+	DUP2 ;ref STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .r/ptr STZ2
 
 JMP2r
 
@@ -312,14 +293,15 @@ JMP2r
 	STH2
 	#2000
 	&loop
-		#00 OVR #20 SFT2 ;opcodes ADD2 STH2kr ;scmp-seg JSR2 ,&found JCN
+		#00 OVR #20 SFT2 ;opcodes ADD2 STH2kr ;scmp-seg JSR2 #00 EQU ,&no-found JCN
+			NIP STH2r ,find-mode JSR ADD JMP2r
+			&no-found
 		INC GTHk ,&loop JCN
 	POP2
 	POP2r
 	#00
 
 JMP2r
-	&found NIP STH2r ,find-mode JSR ADD JMP2r ( TODO: rewrite, STH2r unsafe )
 
 @find-mode ( mode* -- byte )
 
