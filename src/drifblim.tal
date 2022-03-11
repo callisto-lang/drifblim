@@ -7,8 +7,9 @@
 |0000
 
 	@src $40
-	@token $40
-	@scope $40
+	@token $30
+	@scope $30
+	@buf $30
 	@sleep $1
 	@s
 		&ptr $2
@@ -17,6 +18,7 @@
 	@p
 		&ptr $2
 		&len $2
+	@end
 
 |0100
 
@@ -34,7 +36,7 @@ BRK
 		&end
 	POP
 
-	( assemble )
+	( assemble tokens )
 
 	;src .File/name DEO2
 	#0001 .File/length DEO2
@@ -55,14 +57,23 @@ BRK
 				&no-put
 			LDAk #20 GTH ,&no-cap JCN
 				;find-token JSR2
-				;token #0040 ;mclr JSR2
+				;token #0030 ;mclr JSR2
 				&no-cap
 		POP2
 		.File/success DEI2 ORA ,&stream JCN
 
-	;resolve JSR2
+	( resolve references )
+
+	;ref LDA2 #0000 NEQ2 JMP JMP2r
+	;ref
+	&while
+		DUP2 ;resolve-reference JSR2
+		( eol )
+		#0002 ADD2 ;scap JSR2 INC2 DUP2 #0002 ADD2 LDA ,&while JCN
+	POP2
 
 	( make rom )
+
 	;&rom-ext ;src ;scap JSR2 #0003 SUB2 ;scpy JSR2
 	;src .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
@@ -89,12 +100,16 @@ BRK
 		&no-padrel
 	( labels )
 	DUP LIT '@ NEQ ,&no-label JCN
-		;scope #0040 ;mclr JSR2
+		;scope #0030 ;mclr JSR2
 		;token INC2 ;scope ;scpy JSR2
 		;token INC2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
 		&no-label
 	DUP LIT '& NEQ ,&no-sublabel JCN
-		;token-sublabel JSR2 POP JMP2r
+		;buf #0030 ;mclr JSR2
+		;scope ;buf ;scpy JSR2
+		LIT '/ ;buf ;scap JSR2 STA
+		;token INC2 ;buf ;scat JSR2
+		;buf .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
 		&no-sublabel
 	( literals )
 	DUP LIT '# NEQ ,&no-lithex JCN
@@ -146,19 +161,6 @@ BRK
 JMP2r
 	&unknown-token-txt "unknown-token $1
 
-@resolve ( -- )
-
-	;ref LDA2 #0000 NEQ2 JMP JMP2r
-
-	;ref
-	&while
-		DUP2 ,resolve-reference JSR
-		( eol )
-		#0002 ADD2 ;scap JSR2 INC2 DUP2 #0002 ADD2 LDA ,&while JCN
-	POP2
-
-JMP2r
-
 @resolve-reference ( ref* -- )
 
 	STH2k
@@ -182,17 +184,6 @@ JMP2r
 	POP2r
 
 JMP2r
-
-@token-sublabel ( -- )
-
-	;&buf #0040 ;mclr JSR2
-	;scope ;&buf ;scpy JSR2
-	LIT '/ ;&buf ;scap JSR2 STA
-	;token INC2 ;&buf ;scat JSR2
-	;&buf .p/ptr LDZ2 ;create-label JSR2
-
-JMP2r
-	&buf $40
 
 @token-lithex ( -- )
 
@@ -246,11 +237,11 @@ JMP2r
 	.r/ptr LDZ2k INC2 ROT STZ2
 
 	LDAk LIT '& NEQ ,&no-sublabel JCN
-		;&buf #0040 ;mclr JSR2
-		;scope ;&buf ;scpy JSR2
-		LIT '/ ;&buf ;scap JSR2 STA
-		INC2 ;&buf ;scat JSR2
-		;&buf
+		;buf #0030 ;mclr JSR2
+		;scope ;buf ;scpy JSR2
+		LIT '/ ;buf ;scap JSR2 STA
+		INC2 ;buf ;scat JSR2
+		;buf
 		&no-sublabel
 
 	( write string )
@@ -262,7 +253,6 @@ JMP2r
 	.r/ptr LDZ2k INC2 ROT STZ2
 
 JMP2r
-	&buf $40
 
 @find-label ( name* -- addr* )
 
