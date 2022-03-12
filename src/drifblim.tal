@@ -87,59 +87,16 @@ BRK
 
 	( skip blank ) ;token ;slen JSR2 #0000 NEQ2 JMP JMP2r
 
-	;token LDA
-	( pads )
-	DUP LIT '| NEQ ,&no-padabs JCN
-		;token INC2 ;shex JSR2 .p/ptr STZ2 POP JMP2r
-		&no-padabs
-	DUP LIT '$ NEQ ,&no-padrel JCN
-		.p/ptr LDZ2 ;token INC2 ;shex JSR2 ADD2 .p/ptr STZ2 POP JMP2r
-		&no-padrel
-	( labels )
-	DUP LIT '@ NEQ ,&no-label JCN
-		;scope #0030 ;mclr JSR2
-		;token INC2 ;scope ;scpy JSR2
-		;token INC2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
-		&no-label
-	DUP LIT '& NEQ ,&no-sublabel JCN
-		;token INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ;create-label JSR2 POP JMP2r
-		&no-sublabel
-	( literals )
-	DUP LIT '# NEQ ,&no-lithex JCN
-		;token-lithex JSR2 POP JMP2r
-		&no-lithex
-	DUP LIT '. NEQ ,&no-litzp JCN
-		;token INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2
-		#ff ;write-litbyte JSR2 POP JMP2r
-		&no-litzp
-	DUP LIT ', NEQ ,&no-litrel JCN
-		;token INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2
-		#ff ;write-litbyte JSR2 POP JMP2r
-		&no-litrel
-	DUP LIT '; NEQ ,&no-litabs JCN
-		;token INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2
-		#ffff ;write-litshort JSR2 POP JMP2r
-		&no-litabs
-	DUP LIT ': NEQ ,&no-rawabs JCN
-		;token INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2
-		#ffff ;write-short JSR2 POP JMP2r
-		&no-rawabs
-	( ascii )
-	DUP LIT '' NEQ ,&no-rawchr JCN
-		;token INC2 LDA ;write-byte JSR2 POP JMP2r
-		&no-rawchr
-	DUP LIT '" NEQ ,&no-rawstr JCN
-		;token INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2
-		POP JMP2r
-		&no-rawstr
-	( ignore )
-	DUP LIT '[ NEQ ,&no-ignl JCN
-		POP JMP2r
-		&no-ignl
-	DUP LIT '] NEQ ,&no-ignr JCN
-		POP JMP2r
-		&no-ignr
-	POP
+	( runic )
+	;runes/end ;runes
+	&loop
+		LDAk ;token LDA NEQ ,&continue JCN
+			INC2k LDA2 ;token SWP2 JSR2
+			POP2 POP2 JMP2r
+			&continue
+		INC2 INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
 	( special )
 	;token ;is-opcode JSR2 #00 EQU ,&no-opcode JCN
 		;token ;find-opcode JSR2 ;write-byte JMP2
@@ -151,6 +108,90 @@ BRK
 		;token ;sbyte JSR2 ;write-byte JMP2
 		&no-rawbyte
 	;token ;err-token ;print-error JSR2
+
+JMP2r
+
+@do-padabs ( token* -- )
+
+	 INC2 ;shex JSR2 .p/ptr STZ2
+
+JMP2r
+
+@do-padrel ( token* -- )
+
+	.p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2
+
+JMP2r
+
+@do-label ( token* -- )
+
+	;scope #0030 ;mclr JSR2
+	INC2k ;scope ;scpy JSR2
+	INC2 .p/ptr LDZ2 ;create-label JSR2
+
+JMP2r
+
+@do-sublabel ( token* -- )
+
+	INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ;create-label JSR2
+
+JMP2r
+
+@do-lithex ( token* -- )
+
+	INC2k ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		INC2 ;sshort JSR2 ;write-litshort JMP2
+		&no-short
+	INC2k ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
+		INC2 ;sbyte JSR2 ;write-litbyte JMP2
+		&no-byte
+	;err-lithx ;print-error JSR2
+
+JMP2r
+
+@do-litzp ( token* -- )
+
+	INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2
+	#ff ;write-litbyte JSR2
+
+JMP2r
+
+@do-litrel ( token* -- )
+
+	INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2
+	#ff ;write-litbyte JSR2
+
+JMP2r
+
+@do-litabs ( token* -- )
+
+	INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2
+	#ffff ;write-litshort JSR2
+
+JMP2r
+
+@do-rawabs ( token* -- )
+
+	INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2
+	#ffff ;write-short JSR2
+
+JMP2r
+
+@do-rawchr ( token* -- )
+
+	INC2 LDA ;write-byte JSR2
+
+JMP2r
+
+@do-rawstr ( token* -- )
+
+	INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2
+
+JMP2r
+
+@do-ignore ( token* -- )
+
+	POP2
 
 JMP2r
 
@@ -176,19 +217,6 @@ JMP2r
 	POP
 	POP2r
 	POP2r
-
-JMP2r
-
-@token-lithex ( -- )
-
-	;token
-	INC2k ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		INC2 ;sshort JSR2 ;write-litshort JMP2
-		&no-short
-	INC2k ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
-		INC2 ;sbyte JSR2 ;write-litbyte JMP2
-		&no-byte
-	;err-lithx ;print-error JSR2
 
 JMP2r
 
@@ -272,17 +300,6 @@ JMP2r
 	STH2r .p/len STZ2
 
 JMP2r
-
-@opcodes
-	"LIT $1 "INC $1 "POP $1 "DUP $1 "NIP $1 "SWP $1 "OVR $1 "ROT $1
-	"EQU $1 "NEQ $1 "GTH $1 "LTH $1 "JMP $1 "JCN $1 "JSR $1 "STH $1
-	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
-	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
-
-@brk-txt "BRK $1
-@err-lithx "ER-LITHX $1
-@err-label "ER-LABEL $1
-@err-token "ER-TOKEN $1
 
 @is-opcode ( string* -- bool )
 
@@ -450,6 +467,36 @@ JMP2r
 	POP2
 
 JMP2r
+
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+( tables )
+
+@opcodes
+	"LIT $1 "INC $1 "POP $1 "DUP $1 "NIP $1 "SWP $1 "OVR $1 "ROT $1
+	"EQU $1 "NEQ $1 "GTH $1 "LTH $1 "JMP $1 "JCN $1 "JSR $1 "STH $1
+	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
+	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
+
+@runes
+	'| :do-padabs	'$ :do-padrel
+	'@ :do-label	'& :do-sublabel
+	'# :do-lithex	'. :do-litzp
+	', :do-litrel	'; :do-litabs
+	': :do-rawabs	'' :do-rawchr
+	'" :do-rawstr	'[ :do-ignore
+	'] :do-ignore	&end
+
+@brk-txt "BRK $1
+@err-lithx "ER-LITHX $1
+@err-label "ER-LABEL $1
+@err-token "ER-TOKEN $1
 
 ( buffers )
 
