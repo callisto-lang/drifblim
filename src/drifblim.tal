@@ -71,7 +71,7 @@ BRK
 
 	( make rom )
 
-	;&rom-ext ;src ;scap JSR2 #0003 SUB2 ;scpy JSR2
+	( change ext ) ;&rom-ext ;src ;scap JSR2 #0003 SUB2 ;scpy JSR2
 	;src .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
 	;dst/clip .File/write DEO2
