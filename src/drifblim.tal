@@ -139,16 +139,17 @@ JMP2r
 	POP2 POP2
 
 	( special )
-	;token ;is-opcode JSR2 #00 EQU ,&no-opcode JCN
-		;token ;find-opcode JSR2 ;write-byte JMP2
+	;token 
+	DUP2 ;is-opcode JSR2 #00 EQU ,&no-opcode JCN
+		;find-opcode JSR2 ;write-byte JMP2
 		&no-opcode
-	;token ;slen JSR2 #0004 NEQ2 ,&no-rawshort JCN
-		;token ;sshort JSR2 ;write-short JMP2
+	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-rawshort JCN
+		;sshort JSR2 ;write-short JMP2
 		&no-rawshort
-	;token ;slen JSR2 #0002 NEQ2 ,&no-rawbyte JCN
-		;token ;sbyte JSR2 ;write-byte JMP2
+	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-rawbyte JCN
+		;sbyte JSR2 ;write-byte JMP2
 		&no-rawbyte
-	;token ;err/token ;print-error JSR2
+	;err/token ;print-error JSR2
 
 JMP2r
 
@@ -166,12 +167,8 @@ JMP2r
 
 @do-lithex ( t* -- )
 
-	INC2k ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		INC2 ;sshort JSR2 ;write-litshort JMP2
-		&no-short
-	INC2k ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
-		INC2 ;sbyte JSR2 ;write-litbyte JMP2
-		&no-byte
+	INC2k ;slen JSR2 #0004 NEQ2 ,&no-short JCN INC2 ;sshort JSR2 ;write-litshort JMP2 &no-short
+	INC2k ;slen JSR2 #0002 NEQ2 ,&no-byte JCN INC2 ;sbyte JSR2 ;write-litbyte JMP2 &no-byte
 	;err/lithx ;print-error JSR2
 
 JMP2r
