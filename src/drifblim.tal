@@ -64,7 +64,7 @@ BRK
 
 	;ref
 	&while
-		DUP2 ;resolve-reference JSR2
+		DUP2 ,resolve-reference JSR
 		( eol )
 		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
@@ -82,6 +82,47 @@ BRK
 BRK
 	&c $1
 	&rom-ext "rom $1
+
+@resolve-reference ( ref* -- )
+
+	STH2k INC2 INC2 INC2k ,find-label JSR LDA2 STH2
+	( rune )
+	LDA
+	DUP LIT '. NEQ ,&no-litzp JCN
+		STH2r NIP
+		STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
+		&no-litzp
+	DUP LIT ', NEQ ,&no-litrel JCN
+		STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP
+		STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
+		&no-litrel
+	DUP LIT '; NEQ ,&no-litabs JCN
+		STH2r STH2kr LDA2 ;dst ADD2 STA2 POP POP2r JMP2r
+		&no-litabs
+	DUP LIT ': NEQ ,&no-rawabs JCN
+		STH2r STH2kr LDA2 ;dst ADD2 STA2 POP POP2r JMP2r
+		&no-rawabs
+	POP
+	POP2r
+	POP2r
+
+JMP2r
+
+@find-label ( name* -- addr* )
+
+	STH2
+	;sym
+	&while
+		INC2k INC2 STH2kr ;scmp JSR2 #00 EQU ,&continue JCN
+			POP2r JMP2r
+			&continue
+		( eol )
+		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
+	POP2
+	STH2r ;err-label ;print-error JSR2
+	#0000
+
+JMP2r
 
 @find-token ( -- )
 
@@ -111,33 +152,19 @@ BRK
 
 JMP2r
 
-@do-padabs ( token* -- )
+@do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr STZ2 JMP2r
+@do-padrel ( t* -- ) .p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2 JMP2r
+@do-label ( t* -- ) ;scope STH2k #0030 ;mclr JSR2 INC2k STH2r ;scpy JSR2 INC2 .p/ptr LDZ2 ;create-label JMP2
+@do-sublabel ( t* -- ) INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ;create-label JMP2
+@do-litzp ( t* -- ) INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2 #ff ;write-litbyte JMP2
+@do-litrel ( t* -- ) INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2 #ff ;write-litbyte JMP2
+@do-litabs ( t* -- ) INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2 #ffff ;write-litshort JMP2
+@do-rawabs ( t* -- ) INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2 #ffff ;write-short JMP2
+@do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
+@do-rawstr ( t* -- ) INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
+@do-ignore ( t* -- ) POP2 JMP2r
 
-	 INC2 ;shex JSR2 .p/ptr STZ2
-
-JMP2r
-
-@do-padrel ( token* -- )
-
-	.p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2
-
-JMP2r
-
-@do-label ( token* -- )
-
-	;scope #0030 ;mclr JSR2
-	INC2k ;scope ;scpy JSR2
-	INC2 .p/ptr LDZ2 ;create-label JSR2
-
-JMP2r
-
-@do-sublabel ( token* -- )
-
-	INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ;create-label JSR2
-
-JMP2r
-
-@do-lithex ( token* -- )
+@do-lithex ( t* -- )
 
 	INC2k ;slen JSR2 #0004 NEQ2 ,&no-short JCN
 		INC2 ;sshort JSR2 ;write-litshort JMP2
@@ -146,77 +173,6 @@ JMP2r
 		INC2 ;sbyte JSR2 ;write-litbyte JMP2
 		&no-byte
 	;err-lithx ;print-error JSR2
-
-JMP2r
-
-@do-litzp ( token* -- )
-
-	INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2
-	#ff ;write-litbyte JSR2
-
-JMP2r
-
-@do-litrel ( token* -- )
-
-	INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2
-	#ff ;write-litbyte JSR2
-
-JMP2r
-
-@do-litabs ( token* -- )
-
-	INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2
-	#ffff ;write-litshort JSR2
-
-JMP2r
-
-@do-rawabs ( token* -- )
-
-	INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2
-	#ffff ;write-short JSR2
-
-JMP2r
-
-@do-rawchr ( token* -- )
-
-	INC2 LDA ;write-byte JSR2
-
-JMP2r
-
-@do-rawstr ( token* -- )
-
-	INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2
-
-JMP2r
-
-@do-ignore ( token* -- )
-
-	POP2
-
-JMP2r
-
-@resolve-reference ( ref* -- )
-
-	STH2k INC2 INC2 INC2k ;find-label JSR2 LDA2 STH2
-	( rune )
-	LDA
-	DUP LIT '. NEQ ,&no-litzp JCN
-		STH2r NIP
-		STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
-		&no-litzp
-	DUP LIT ', NEQ ,&no-litrel JCN
-		STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP
-		STH2kr LDA2 ;dst ADD2 STA POP POP2r JMP2r
-		&no-litrel
-	DUP LIT '; NEQ ,&no-litabs JCN
-		STH2r STH2kr LDA2 ;dst ADD2 STA2 POP POP2r JMP2r
-		&no-litabs
-	DUP LIT ': NEQ ,&no-rawabs JCN
-		STH2r STH2kr LDA2 ;dst ADD2 STA2 POP POP2r JMP2r
-		&no-rawabs
-	POP
-	POP2r
-	POP2r
 
 JMP2r
 
@@ -260,22 +216,6 @@ JMP2r
 	LIT '/ STH2kr ;scap JSR2 STA
 	STH2kr ;scat JSR2
 	STH2r
-
-JMP2r
-
-@find-label ( name* -- addr* )
-
-	STH2
-	;sym
-	&while
-		INC2k INC2 STH2kr ;scmp JSR2 #00 EQU ,&continue JCN
-			POP2r JMP2r
-			&continue
-		( eol )
-		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
-	POP2
-	STH2r ;err-label ;print-error JSR2
-	#0000
 
 JMP2r
 
@@ -469,6 +409,10 @@ JMP2r
 	&brk
 	"BRK $1
 
+@err-lithx "ER-LITHX $1
+@err-label "ER-LABEL $1
+@err-token "ER-TOKEN $1
+
 @runes
 	'| :do-padabs	'$ :do-padrel
 	'@ :do-label	'& :do-sublabel
@@ -477,10 +421,6 @@ JMP2r
 	': :do-rawabs	'' :do-rawchr
 	'" :do-rawstr	'[ :do-ignore
 	'] :do-ignore	&end
-
-@err-lithx "ER-LITHX $1
-@err-label "ER-LABEL $1
-@err-token "ER-TOKEN $1
 
 ( buffers )
 
