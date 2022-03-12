@@ -415,11 +415,11 @@ JMP2r
 @runes
 	'| :do-padabs	'$ :do-padrel
 	'@ :do-label	'& :do-sublabel
-	'# :do-lithex	'. :do-litzp
-	', :do-litrel	'; :do-litabs
-	': :do-rawabs	'' :do-rawchr
-	'" :do-rawstr	'[ :do-ignore
-	'] :do-ignore	&end
+	'. :do-litzp	', :do-litrel	
+	'; :do-litabs	': :do-rawabs	
+	'' :do-rawchr	'" :do-rawstr	
+	'[ :do-ignore	'] :do-ignore	
+	'# :do-lithex 	&end
 
 ( buffers )
 
