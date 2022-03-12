@@ -156,10 +156,10 @@ JMP2r
 @do-padrel ( t* -- ) .p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2 JMP2r
 @do-label ( t* -- ) ;scope STH2k #0030 ;mclr JSR2 INC2k STH2r ;scpy JSR2 INC2 .p/ptr LDZ2 ;create-label JMP2
 @do-sublabel ( t* -- ) INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ;create-label JMP2
-@do-litzp ( t* -- ) INC2 LIT '. .p/ptr LDZ2 INC2 ;create-reference JSR2 #ff ;write-litbyte JMP2
-@do-litrel ( t* -- ) INC2 LIT ', .p/ptr LDZ2 INC2 ;create-reference JSR2 #ff ;write-litbyte JMP2
-@do-litabs ( t* -- ) INC2 LIT '; .p/ptr LDZ2 INC2 ;create-reference JSR2 #ffff ;write-litshort JMP2
-@do-rawabs ( t* -- ) INC2 LIT ': .p/ptr LDZ2 ;create-reference JSR2 #ffff ;write-short JMP2
+@do-litzp ( t* -- ) .p/ptr LDZ2 INC2 ;create-reference JSR2 #ff ;write-litbyte JMP2
+@do-litrel ( t* -- ) .p/ptr LDZ2 INC2 ;create-reference JSR2 #ff ;write-litbyte JMP2
+@do-litabs ( t* -- ) .p/ptr LDZ2 INC2 ;create-reference JSR2 #ffff ;write-litshort JMP2
+@do-rawabs ( t* -- ) .p/ptr LDZ2 ;create-reference JSR2 #ffff ;write-short JMP2
 @do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
 @do-rawstr ( t* -- ) INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
@@ -189,7 +189,7 @@ JMP2r
 
 JMP2r
 
-@create-reference ( name* rune addr* -- )
+@create-reference ( name* addr* -- )
 
 	( LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ] )
 
@@ -197,8 +197,8 @@ JMP2r
 	;ref .r/ptr LDZ2 STH2k ADD2 STA2
 	( rune )
 	INC2r INC2r
-	;ref STH2kr ADD2 STA
-	INC2r
+	LDAk ;ref STH2kr ADD2 STA
+	INC2r INC2
 	( sublabel )
 	LDAk LIT '& NEQ ,&no-sublabel JCN
 		INC2 ,make-sublabel JSR
@@ -209,7 +209,7 @@ JMP2r
 
 JMP2r
 
-@make-sublabel ( name* scope* -- sublabel* )
+@make-sublabel ( name* -- sublabel* )
 
 	;buf STH2k #0030 ;mclr JSR2
 	;scope STH2kr ;scpy JSR2
