@@ -303,7 +303,7 @@ JMP2r
 
 @is-opcode ( string* -- bool )
 
-	DUP2 ;brk-txt ;scmp JSR2 #00 EQU ,&continue JCN
+	DUP2 ;opcodes/brk ;scmp JSR2 #00 EQU ,&continue JCN
 		POP2 #01 JMP2r
 		&continue
 
@@ -312,7 +312,7 @@ JMP2r
 	STH2
 	#2000
 	&loop
-		#00 OVR #20 SFT2 ;opcodes ADD2 STH2kr ;scmp-seg JSR2 #00 EQU ,&no-found JCN
+		#00 OVR #20 SFT2 ;opcodes ADD2 STH2kr ,scmp3 JSR #00 EQU ,&no-found JCN
 			NIP STH2r ,find-mode JSR ADD JMP2r
 			&no-found
 		INC GTHk ,&loop JCN
@@ -325,7 +325,7 @@ JMP2r
 @find-mode ( mode* -- byte )
 
 	LITr 00
-	;opcodes OVR2 ;scmp-seg JSR2 #70 SFT STH ADDr
+	;opcodes OVR2 ,scmp3 JSR #70 SFT STH ADDr
 	INC2 INC2 INC2
 	LDAk #00 EQU ,&end JCN
 	&while
@@ -336,6 +336,15 @@ JMP2r
 	&end
 	POP2
 	STHr
+
+JMP2r
+
+@scmp3 ( a[3]* b* -- bool )
+
+	DUP2 #0003 ADD2 LDAk STH
+	DUP2 #00 ROT ROT STA
+	STH2 ;scmp JSR2
+	ROTr STHr STH2r STA
 
 JMP2r
 
@@ -423,22 +432,6 @@ JMP2r
 
 JMP2r
 
-@scmp-seg ( a* b* -- flag )
-
-	STH2
-	&loop
-		LDAk LDAkr STHr EQU ,&not-diff JCN
-			POP2 POP2r #00 JMP2r
-			&not-diff
-		INC2k LDA #00 NEQ ,&continue JCN
-			POP2 POP2r #01 JMP2r
-			&continue
-		INC2 INC2r
-		,&loop JMP
-	POP2 POP2r #00
-
-JMP2r
-
 @scmp ( a* b* -- flag )
 
 	STH2
@@ -468,14 +461,6 @@ JMP2r
 
 JMP2r
 
-@print ( short* -- )
-
-	&short ( short* -- ) SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
-
 ( tables )
 
 @opcodes
@@ -483,6 +468,8 @@ JMP2r
 	"EQU $1 "NEQ $1 "GTH $1 "LTH $1 "JMP $1 "JCN $1 "JSR $1 "STH $1
 	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
 	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
+	&brk
+	"BRK $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel
@@ -493,7 +480,6 @@ JMP2r
 	'" :do-rawstr	'[ :do-ignore
 	'] :do-ignore	&end
 
-@brk-txt "BRK $1
 @err-lithx "ER-LITHX $1
 @err-label "ER-LABEL $1
 @err-token "ER-TOKEN $1
