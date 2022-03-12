@@ -119,7 +119,7 @@ JMP2r
 		( eol )
 		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	STH2r ;err-label ;print-error JSR2
+	STH2r ;err/label ;print-error JSR2
 	#0000
 
 JMP2r
@@ -148,7 +148,7 @@ JMP2r
 	;token ;slen JSR2 #0002 NEQ2 ,&no-rawbyte JCN
 		;token ;sbyte JSR2 ;write-byte JMP2
 		&no-rawbyte
-	;token ;err-token ;print-error JSR2
+	;token ;err/token ;print-error JSR2
 
 JMP2r
 
@@ -172,7 +172,7 @@ JMP2r
 	INC2k ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
 		INC2 ;sbyte JSR2 ;write-litbyte JMP2
 		&no-byte
-	;err-lithx ;print-error JSR2
+	;err/lithx ;print-error JSR2
 
 JMP2r
 
@@ -388,13 +388,14 @@ JMP2r
 
 @print-error ( token* error* -- )
 
-	SWP2 ,print-str JSR #20 #18 DEO
+	LIT '! #18 DEO
+	SWP2 ,print-str JSR #2018 DEO
 
 @print-str ( str* -- )
 
-	#0001 SUB2
 	&while
-		INC2 LDAk DUP #18 DEO ,&while JCN
+		LDAk #18 DEO
+		INC2 LDAk ,&while JCN
 	POP2
 
 JMP2r
@@ -409,9 +410,10 @@ JMP2r
 	&brk
 	"BRK $1
 
-@err-lithx "ER-LITHX $1
-@err-label "ER-LABEL $1
-@err-token "ER-TOKEN $1
+@err
+	&lithx "LITHX $1
+	&label "LABEL $1
+	&token "TOKEN $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel
