@@ -85,7 +85,7 @@ BRK
 
 @find-token ( -- )
 
-	( skip blank ) ;token ;slen JSR2 #0000 NEQ2 JMP JMP2r
+	( skip blank ) ;token ;slen JSR2 ORA #01 JCN JMP2r
 
 	( runic )
 	;runes/end ;runes
@@ -436,14 +436,12 @@ JMP2r
 
 	STH2
 	&loop
-		LDAk LDAkr STHr EQU ,&not-diff JCN
-			POP2 POP2r #00 JMP2r
-			&not-diff
+		LDAk LDAkr STHr NEQ ,&end JCN
 		LDAk LDAkr STHr ORA ,&not-end JCN
 			POP2 POP2r #01 JMP2r
 			&not-end
-		INC2 INC2r
-		,&loop JMP
+		INC2 INC2r ,&loop JMP
+	&end
 	POP2 POP2r #00
 
 JMP2r
