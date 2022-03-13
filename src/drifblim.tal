@@ -104,7 +104,7 @@ JMP2r
 	;runes/end ;runes
 	&loop
 		LDAk ;token LDA NEQ ,&continue JCN
-			INC2k LDA2 ;token SWP2 JSR2
+			INC2k LDA2 ;token INC2 SWP2 JSR2
 			POP2 POP2 JMP2r
 			&continue
 		INC2 INC2 INC2 GTH2k ,&loop JCN
@@ -121,17 +121,17 @@ JMP2r
 	&on-short ;sshort JSR2 ;write-short JMP2
 	&on-byte ;sbyte JSR2 ;write-byte JMP2
 
-( runic TODO INC2 globally )
+( runic )
 
 @do-lithex ( t* -- )
 
-	INC2k ;slen JSR2 #0004 EQU2 ,&on-short JCN
-	INC2k ;slen JSR2 #0002 EQU2 ,&on-byte JCN
+	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
+	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 	;err/lithx ;print-error JSR2
 
 JMP2r
-	&on-short INC2 ;sshort JSR2 ;write-litshort JMP2
-	&on-byte INC2 ;sbyte JSR2 ;write-litbyte JMP2
+	&on-short ;sshort JSR2 ;write-litshort JMP2
+	&on-byte ;sbyte JSR2 ;write-litbyte JMP2
 
 @set-scope ( token* -- name* )
 
@@ -139,23 +139,23 @@ JMP2r
 
 JMP2r
 
-@do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr STZ2 JMP2r
-@do-padrel ( t* -- ) INC2 ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
-@do-plabel ( t* -- ) INC2 ,set-scope JSR .p/ptr LDZ2 ,create-label JMP
-@do-slabel ( t* -- ) INC2 ,make-sublabel JSR .p/ptr LDZ2 ,create-label JMP
+@do-padabs ( t* -- ) ;shex JSR2 .p/ptr STZ2 JMP2r
+@do-padrel ( t* -- ) ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
+@do-plabel ( t* -- ) ,set-scope JSR ,create-label JMP
+@do-slabel ( t* -- ) ,make-sublabel JSR ,create-label JMP
 @do-litbyt ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
 @do-litabs ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ffff ;write-litshort JMP2
 @do-rawabs ( t* -- ) .p/ptr LDZ2 ,create-reference JSR #ffff ;write-short JMP2
-@do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
-@do-rawstr ( t* -- ) INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
+@do-rawchr ( t* -- ) LDA ;write-byte JMP2
+@do-rawstr ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
 
-@create-label ( name* addr* -- )
+@create-label ( name* -- )
 
 	( LIT '@ #18 DEO DUP2 ;print JSR2 #20 #18 DEO OVR2 ;print-str JSR2 #0a #18 DEO )
 
 	( write ref )
-	;syms .sym/ptr LDZ2 STH2k ADD2 STA2
+	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
 	INC2r INC2r
 	( write string )
 	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
@@ -180,7 +180,7 @@ JMP2r
 	;refs .ref/ptr LDZ2 STH2k ADD2 STA2
 	( rune )
 	INC2r INC2r
-	LDAk ;refs STH2kr ADD2 STA
+	#0001 SUB2 LDAk ;refs STH2kr ADD2 STA
 	INC2r INC2
 	( sublabel )
 	LDAk LIT '& NEQ ,&no-sublabel JCN
