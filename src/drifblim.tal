@@ -133,10 +133,16 @@ JMP2r
 	&on-short INC2 ;sshort JSR2 ;write-litshort JMP2
 	&on-byte INC2 ;sbyte JSR2 ;write-litbyte JMP2
 
+@set-scope ( token* -- name* )
+
+	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy JSR2 
+
+JMP2r
+
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr STZ2 JMP2r
-@do-padrel ( t* -- ) .p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2 JMP2r
-@do-plabel ( t* -- ) ;scope STH2k #0030 ;mclr JSR2 INC2k STH2r ;scpy JSR2 INC2 .p/ptr LDZ2 ,create-label JMP
-@do-slabel ( t* -- ) INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ,create-label JMP
+@do-padrel ( t* -- ) INC2 ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
+@do-plabel ( t* -- ) INC2 ,set-scope JSR .p/ptr LDZ2 ,create-label JMP
+@do-slabel ( t* -- ) INC2 ,make-sublabel JSR .p/ptr LDZ2 ,create-label JMP
 @do-litbyt ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
 @do-litabs ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ffff ;write-litshort JMP2
 @do-rawabs ( t* -- ) .p/ptr LDZ2 ,create-reference JSR #ffff ;write-short JMP2
@@ -157,6 +163,15 @@ JMP2r
 
 JMP2r
 
+@make-sublabel ( name* -- sublabel* )
+
+	;buf STH2k #0030 ;mclr JSR2
+	;scope STH2kr ;scpy JSR2
+	LIT '/ STH2kr ;scap JSR2 STA
+	STH2kr ;scat JSR2 STH2r
+
+JMP2r
+
 @create-reference ( name* addr* -- )
 
 	( LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ] )
@@ -174,15 +189,6 @@ JMP2r
 	( write string )
 	DUP2 ;refs STH2kr ADD2 ;scpy JSR2
 	;slen JSR2 STH2 ADD2r INC2r STH2r .ref/ptr STZ2
-
-JMP2r
-
-@make-sublabel ( name* -- sublabel* )
-
-	;buf STH2k #0030 ;mclr JSR2
-	;scope STH2kr ;scpy JSR2
-	LIT '/ STH2kr ;scap JSR2 STA
-	STH2kr ;scat JSR2 STH2r
 
 JMP2r
 
