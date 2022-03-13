@@ -4,7 +4,12 @@
 
 It is meant to be as small as it could possibly be made. The goal would be for it to be in the 1kb range. It will not support macros and includes. Instead, a pre-processor rom might be considered.
 
-_Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
+The Drifblim project also includes:
+
+- `drifblim-tga.rom`: Creates a grayscale tga image of a binary file.
+- `drifblim-hex.rom`: Creates a hex dump text file of a binary file.
+
+**Warning**: This assembler does not currently checks for out-of-bounds relative literals.
 
 ## Build
 
@@ -17,3 +22,5 @@ uxnemu etc/move.rom
 ```
 
 If do not wish to assemble it yourself, you can download [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom).
+
+_Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._

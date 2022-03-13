@@ -77,10 +77,12 @@ BRK
 	POP2r
 
 JMP2r
-	&on-litzp STH2r NIP STH2r LDA2 ;dst ADD2 STA POP2 JMP2r
-	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r LDA2 ;dst ADD2 STA POP2 JMP2r
-	&on-litabs STH2r STH2r LDA2 ;dst ADD2 STA2 POP2 JMP2r
-	&on-rawabs STH2r STH2r LDA2 ;dst ADD2 STA2 POP2 JMP2r
+	&on-litzp STH2r NIP STH2r ,&set-byte JMP
+	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r 
+		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
+	&on-litabs STH2r STH2r ,&set-short JMP
+	&on-rawabs STH2r STH2r 
+		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
 
 @find-label ( name* -- addr* )
 
