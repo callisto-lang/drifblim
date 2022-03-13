@@ -10,13 +10,9 @@
 	@scope $30
 	@buf $30
 	@sleep $1
-	@s
-		&ptr $2
-	@r
-		&ptr $2
-	@p
-		&ptr $2
-		&len $2
+	@s &ptr $2
+	@r &ptr $2
+	@p &ptr $2 &len $2
 
 |0100
 
@@ -55,8 +51,9 @@ BRK
 				LDAk ;token ;scap JSR2 STA
 				&no-put
 			LDAk #20 GTH ,&no-cap JCN
-				;find-token JSR2
-				;token #0030 ;mclr JSR2
+				;token
+					DUP2 ;find-token JSR2
+					#0030 ;mclr JSR2
 				&no-cap
 		POP2
 		.File/success DEI2 ORA ,&stream JCN
@@ -86,7 +83,7 @@ BRK
 
 @resolve-reference ( ref* -- )
 
-	STH2k 
+	STH2k
 	INC2 INC2 INC2k ,find-label JSR LDA2 STH2
 	( rune )
 	LDAk LIT '. EQU ,&on-litzp JCN
@@ -117,9 +114,10 @@ JMP2r
 JMP2r
 	&on-found POP2r JMP2r
 
-@find-token ( -- )
+@find-token ( token* -- )
 
-	( skip blank ) ;token ;slen JSR2 ORA #01 JCN JMP2r
+	( skip blank ) 
+	;slen JSR2 ORA #01 JCN JMP2r
 
 	( runic )
 	;runes/end ;runes
@@ -132,7 +130,7 @@ JMP2r
 	POP2 POP2
 
 	( special )
-	;token 
+	;token
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
@@ -272,8 +270,8 @@ JMP2r
 @scmp3 ( a* b* -- bool )
 
 	LDAk STH INC2 SWP2 LDAk STH INC2 EQUr
-	LDAk STH INC2 SWP2 LDAk STH INC2 EQUr 
-	LDA STH LDA STH EQUr 
+	LDAk STH INC2 SWP2 LDAk STH INC2 EQUr
+	LDA STH LDA STH EQUr
 	ADDr ADDr STHr #03 EQU
 
 JMP2r
@@ -310,7 +308,7 @@ JMP2r
 
 	DUP #2f GTH OVR #3a LTH AND ,&number JCN
 	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
-		POP #00 
+		POP #00
 
 JMP2r
 	&number #30 SUB JMP2r
@@ -391,8 +389,7 @@ JMP2r
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	&brk
-	"BRK
+	&brk "BRK
 
 @err
 	&lithx "LITHX $1 &label "LABEL $1
@@ -409,6 +406,6 @@ JMP2r
 
 ( buffers )
 
-@sym $4000 
-@ref $4000 
+@sym $4000
+@ref $4000
 @dst $0100 &clip
