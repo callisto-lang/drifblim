@@ -35,5 +35,5 @@ uxncli bin/drifblim.rom etc/move.tal
 echo "Drawing output.tga"
 uxncli etc/greyscale.rom src/drifblim.rom 
 echo "Running Hello.."
-uxnemu etc/move.rom
-# uxncli etc/hello.rom
+# uxnemu etc/move.rom
+uxncli etc/hello.rom
