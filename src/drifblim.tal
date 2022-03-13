@@ -159,10 +159,9 @@ JMP2r
 
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr STZ2 JMP2r
 @do-padrel ( t* -- ) .p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2 JMP2r
-@do-label ( t* -- ) ;scope STH2k #0030 ;mclr JSR2 INC2k STH2r ;scpy JSR2 INC2 .p/ptr LDZ2 ,create-label JMP
-@do-sublabel ( t* -- ) INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ,create-label JMP
-@do-litzp ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
-@do-litrel ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
+@do-plabel ( t* -- ) ;scope STH2k #0030 ;mclr JSR2 INC2k STH2r ;scpy JSR2 INC2 .p/ptr LDZ2 ,create-label JMP
+@do-slabel ( t* -- ) INC2 ;make-sublabel JSR2 .p/ptr LDZ2 ,create-label JMP
+@do-litbyt ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
 @do-litabs ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ffff ;write-litshort JMP2
 @do-rawabs ( t* -- ) .p/ptr LDZ2 ,create-reference JSR #ffff ;write-short JMP2
 @do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
@@ -387,8 +386,6 @@ JMP2r
 
 ( tables )
 
-( TODO remove blank bytes )
-
 @opcodes
 	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
@@ -398,15 +395,13 @@ JMP2r
 	"BRK
 
 @err
-	&lithx "LITHX $1
-	&label "LABEL $1
-	&token "TOKEN $1
-	&reslv "RESLV $1
+	&lithx "LITHX $1 &label "LABEL $1
+	&token "TOKEN $1 &reslv "RESLV $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel
-	'@ :do-label	'& :do-sublabel
-	'. :do-litzp	', :do-litrel	
+	'@ :do-plabel	'& :do-slabel
+	'. :do-litbyt	', :do-litbyt	
 	'; :do-litabs	': :do-rawabs	
 	'' :do-rawchr	'" :do-rawstr	
 	'[ :do-ignore	'] :do-ignore	
