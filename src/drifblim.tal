@@ -145,6 +145,8 @@ JMP2r
 
 ( runic )
 
+( TODO INC2 globally )
+
 @do-lithex ( t* -- )
 
 	INC2k ;slen JSR2 #0004 EQU2 ,&on-short JCN
@@ -154,8 +156,6 @@ JMP2r
 JMP2r
 	&on-short INC2 ;sshort JSR2 ;write-litshort JMP2
 	&on-byte INC2 ;sbyte JSR2 ;write-litbyte JMP2
-
-( TODO token should already have lost the rune at this point )
 
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr STZ2 JMP2r
 @do-padrel ( t* -- ) .p/ptr LDZ2 SWP2 INC2 ;shex JSR2 ADD2 .p/ptr STZ2 JMP2r
@@ -236,14 +236,14 @@ JMP2r
 
 @is-opcode ( string* -- bool )
 
-	DUP2 ;opcodes/brk ;scmp JSR2 ,find-opcode/on-brk JCN
+	DUP2 ;opcodes/brk ,scmp3 JSR ,find-opcode/on-brk JCN
 
 @find-opcode ( name* -- byte )
 
 	STH2
 	#2000
 	&loop
-		#00 OVR #20 SFT2 ;opcodes ADD2 STH2kr ,scmp3 JSR ,&on-found JCN
+		#00 OVR #0003 MUL2 ;opcodes ADD2 STH2kr ,scmp3 JSR ,&on-found JCN
 		INC GTHk ,&loop JCN
 	POP2
 	POP2r
@@ -270,12 +270,12 @@ JMP2r
 
 JMP2r
 
-@scmp3 ( a[3]* b* -- bool )
+@scmp3 ( a* b* -- bool )
 
-	DUP2 #0003 ADD2 LDAk STH
-	DUP2 #00 ROT ROT STA
-	STH2 ;scmp JSR2
-	ROTr STHr STH2r STA
+	LDAk STH INC2 SWP2 LDAk STH INC2 EQUr
+	LDAk STH INC2 SWP2 LDAk STH INC2 EQUr 
+	LDA STH LDA STH EQUr 
+	ADDr ADDr STHr #03 EQU
 
 JMP2r
 
@@ -387,13 +387,15 @@ JMP2r
 
 ( tables )
 
+( TODO remove blank bytes )
+
 @opcodes
-	"LIT $1 "INC $1 "POP $1 "DUP $1 "NIP $1 "SWP $1 "OVR $1 "ROT $1
-	"EQU $1 "NEQ $1 "GTH $1 "LTH $1 "JMP $1 "JCN $1 "JSR $1 "STH $1
-	"LDZ $1 "STZ $1 "LDR $1 "STR $1 "LDA $1 "STA $1 "DEI $1 "DEO $1
-	"ADD $1 "SUB $1 "MUL $1 "DIV $1 "AND $1 "ORA $1 "EOR $1 "SFT $1
+	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	&brk
-	"BRK $1
+	"BRK
 
 @err
 	&lithx "LITHX $1
