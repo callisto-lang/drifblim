@@ -1,4 +1,4 @@
-( Drifblim )
+( Drifblim - Usage: emulator drifblim.rom src/source.tal )
 
 |0010 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 |00a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -10,8 +10,8 @@
 	@scope $30
 	@buf $30
 	@sleep $1
-	@s &ptr $2
-	@r &ptr $2
+	@sym &ptr $2
+	@ref &ptr $2
 	@p &ptr $2 &len $2
 
 |0100
@@ -23,57 +23,39 @@ BRK
 @on-console ( -> )
 
 	;src STH2
-
+	( read input )
 	.Console/read DEI
 	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
 	STH2kr ;slen JSR2 #003f GTH2 ,&end JCN
 		STH2kr ;scap JSR2 STA POP2r BRK
 		&end
 	POP
-
 	( assemble tokens )
-
 	STH2kr .File/name DEO2
 	#0001 .File/length DEO2
 	&stream
 		;&c
 			DUP2 .File/read DEO2
 			( comment )
-			LDAk #28 NEQ ,&no-sleep JCN
-				#01 .sleep STZ ,&no-cap JMP
-				&no-sleep
-			LDAk #29 NEQ ,&no-wake JCN
-				#00 .sleep STZ ,&no-cap JMP
-				&no-wake
+			LDAk #28 NEQ ,&no-on JCN #01 .sleep STZ ,&no-cap JMP &no-on
+			LDAk #29 NEQ ,&no-off JCN #00 .sleep STZ ,&no-cap JMP &no-off
 			.sleep LDZ ,&no-cap JCN
 			( listen )
-			LDAk #21 LTH ,&no-put JCN
-				LDAk ;token ;scap JSR2 STA
-				&no-put
-			LDAk #20 GTH ,&no-cap JCN
-				;token
-					DUP2 ;find-token JSR2
-					#0030 ;mclr JSR2
-				&no-cap
+			LDAk #21 LTH ,&no-put JCN LDAk ;token ;scap JSR2 STA &no-put
+			LDAk #20 GTH ,&no-cap JCN ;token DUP2 ;find-token JSR2 #0030 ;mclr JSR2 &no-cap
 		POP2
 		.File/success DEI2 ORA ,&stream JCN
-
 	( resolve references )
-
-	;ref
+	;refs
 	&while
 		DUP2 ,resolve-reference JSR
-		( eol )
-		INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
+		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-
-	( make rom )
-
-	( change ext ) ;&rom-ext STH2kr ;scap JSR2 #0003 SUB2 ;scpy JSR2
+	( write rom )
+	;&rom-ext STH2kr ;scap JSR2 #0003 SUB2 ;scpy JSR2
 	STH2r .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
 	;dst/clip .File/write DEO2
-
 	( debug ) #010e DEO
 	( halt ) #010f DEO
 
@@ -103,7 +85,7 @@ JMP2r
 @find-label ( name* -- addr* )
 
 	STH2
-	;sym
+	;syms
 	&while
 		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
@@ -118,7 +100,6 @@ JMP2r
 
 	( skip blank ) 
 	;slen JSR2 ORA #01 JCN JMP2r
-
 	( runic )
 	;runes/end ;runes
 	&loop
@@ -128,7 +109,6 @@ JMP2r
 			&continue
 		INC2 INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
-
 	( special )
 	;token
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
@@ -141,9 +121,7 @@ JMP2r
 	&on-short ;sshort JSR2 ;write-short JMP2
 	&on-byte ;sbyte JSR2 ;write-byte JMP2
 
-( runic )
-
-( TODO INC2 globally )
+( runic TODO INC2 globally )
 
 @do-lithex ( t* -- )
 
@@ -171,11 +149,11 @@ JMP2r
 	( LIT '@ #18 DEO DUP2 ;print JSR2 #20 #18 DEO OVR2 ;print-str JSR2 #0a #18 DEO )
 
 	( write ref )
-	;sym .s/ptr LDZ2 STH2k ADD2 STA2
+	;syms .sym/ptr LDZ2 STH2k ADD2 STA2
 	INC2r INC2r
 	( write string )
-	DUP2 ;sym STH2kr ADD2 ;scpy JSR2
-	;slen JSR2 STH2 ADD2r INC2r STH2r .s/ptr STZ2
+	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
 
 JMP2r
 
@@ -184,18 +162,18 @@ JMP2r
 	( LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ] )
 
 	( addr )
-	;ref .r/ptr LDZ2 STH2k ADD2 STA2
+	;refs .ref/ptr LDZ2 STH2k ADD2 STA2
 	( rune )
 	INC2r INC2r
-	LDAk ;ref STH2kr ADD2 STA
+	LDAk ;refs STH2kr ADD2 STA
 	INC2r INC2
 	( sublabel )
 	LDAk LIT '& NEQ ,&no-sublabel JCN
 		INC2 ,make-sublabel JSR
 		&no-sublabel
 	( write string )
-	DUP2 ;ref STH2kr ADD2 ;scpy JSR2
-	;slen JSR2 STH2 ADD2r INC2r STH2r .r/ptr STZ2
+	DUP2 ;refs STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .ref/ptr STZ2
 
 JMP2r
 
@@ -204,8 +182,7 @@ JMP2r
 	;buf STH2k #0030 ;mclr JSR2
 	;scope STH2kr ;scpy JSR2
 	LIT '/ STH2kr ;scap JSR2 STA
-	STH2kr ;scat JSR2
-	STH2r
+	STH2kr ;scat JSR2 STH2r
 
 JMP2r
 
@@ -240,11 +217,9 @@ JMP2r
 	STH2
 	#2000
 	&loop
-		#00 OVR #0003 MUL2 ;opcodes ADD2 STH2kr ,scmp3 JSR ,&on-found JCN
+		#00 OVR #03 MUL ;opcodes ADD2 STH2kr ,scmp3 JSR ,&on-found JCN
 		INC GTHk ,&loop JCN
-	POP2
-	POP2r
-	#00
+	POP2 POP2r #00
 
 JMP2r
 	&on-found NIP STH2r ,find-mode JSR ADD JMP2r
@@ -262,8 +237,7 @@ JMP2r
 		LDAk LIT 'k EQU #70 SFT STH ADDr
 		INC2 LDAk ,&while JCN
 	&end
-	POP2
-	STHr
+	POP2 STHr
 
 JMP2r
 
@@ -299,8 +273,7 @@ JMP2r
 		LITr 00
 		LDAk ,chex JSR STH ADD2r
 		INC2 LDAk ,&while JCN
-	POP2
-	STH2r
+	POP2 STH2r
 
 JMP2r
 
@@ -313,8 +286,6 @@ JMP2r
 JMP2r
 	&number #30 SUB JMP2r
 	&lc #57 SUB JMP2r
-
-( helpers )
 
 @mclr ( addr* len* -- )
 
@@ -370,13 +341,13 @@ JMP2r
 
 @print-error ( token* error* -- )
 
-	LIT '! #18 DEO
+	LIT '! .Console/write DEO
 	SWP2 ,print-str JSR #2018 DEO
 
 @print-str ( str* -- )
 
 	&while
-		LDAk #18 DEO
+		LDAk .Console/write DEO
 		INC2 LDAk ,&while JCN
 	POP2
 
@@ -406,6 +377,7 @@ JMP2r
 
 ( buffers )
 
-@sym $4000
-@ref $4000
-@dst $0100 &clip
+@syms $4000 ( addr* name* )
+@refs $4000 ( addr* name* )
+@dst $0100 ( zero-page )
+&clip ( program )
