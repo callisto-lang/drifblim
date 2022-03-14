@@ -29,11 +29,11 @@ echo "Assembling Examples, from Drifblim.."
 uxncli bin/drifblim.rom etc/hello.tal
 uxncli bin/drifblim.rom etc/primes.tal
 uxncli bin/drifblim.rom etc/fizzbuzz.tal
-uxncli bin/drifblim.rom etc/greyscale.tal 
+uxncli bin/drifblim.rom etc/drifblim-tga.tal 
 uxncli bin/drifblim.rom etc/move.tal
 
 echo "Drawing output.tga"
-uxncli etc/greyscale.rom src/drifblim.rom 
+uxncli etc/drifblim-tga.rom src/drifblim.rom 
 echo "Running Hello.."
 uxnemu etc/move.rom
 # uxncli etc/hello.rom

@@ -78,10 +78,10 @@ BRK
 
 JMP2r
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
-	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r 
+	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r
 		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
 	&on-litabs STH2r STH2r ,&set-short JMP
-	&on-rawabs STH2r STH2r 
+	&on-rawabs STH2r STH2r
 		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
 
 @find-label ( name* -- addr* )
@@ -100,7 +100,7 @@ JMP2r
 
 @find-token ( token* -- )
 
-	( skip blank ) 
+	( skip blank )
 	;slen JSR2 ORA #01 JCN JMP2r
 	( runic )
 	;runes/end ;runes
@@ -137,7 +137,7 @@ JMP2r
 
 @set-scope ( token* -- name* )
 
-	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy JSR2 
+	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy JSR2
 
 JMP2r
 
@@ -251,7 +251,7 @@ JMP2r
 
 @scmp3 ( a* b* -- bool )
 
-	LDA2k STH2 INC2 INC2 SWP2 
+	LDA2k STH2 INC2 INC2 SWP2
 	LDA2k STH2 INC2 INC2 EQU2r
 	LDA STH LDA STH EQUr
 	ANDr STHr
