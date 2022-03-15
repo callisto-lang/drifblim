@@ -27,13 +27,7 @@ echo "Assembling Drifblim.."
 uxncli bin/drifblim.rom src/drifblim.tal 
 echo "Assembling Examples, from Drifblim.."
 uxncli bin/drifblim.rom etc/hello.tal
-uxncli bin/drifblim.rom etc/primes.tal
-uxncli bin/drifblim.rom etc/fizzbuzz.tal
-uxncli bin/drifblim.rom etc/drifblim-tga.tal 
-uxncli bin/drifblim.rom etc/move.tal
+uxncli bin/drifblim.rom etc/drifblim-hex.tal
 
-echo "Drawing output.tga"
-uxncli etc/drifblim-tga.rom src/drifblim.rom 
-echo "Running Hello.."
-uxnemu etc/move.rom
-# uxncli etc/hello.rom
+echo "Dumping hex.."
+uxncli etc/drifblim-hex.rom src/drifblim.rom
