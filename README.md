@@ -2,11 +2,10 @@
 
 [Drifblim](https://wiki.xxiivv.com/drifblim) is a uxntal assembler, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html). 
 
-It is meant to be as small as it could possibly be made. The goal would be for it to be in the 1kb range. It will not support macros and includes. Instead, a pre-processor rom might be considered.
+The assembler is written in Uxntal itself, it's designed to be distributed as a rom to help bootstrap the uxn ecosystem. The goal is for Driflim to be as small it could possibly be made, and to release it as a print-friendly document, along with its source code and the mathematical definition of the Uxn virtual machine.
 
 The Drifblim project also includes:
 
-- `drifblim-tga.rom`: Creates a grayscale tga image of a binary file.
 - `drifblim-hex.rom`: Creates a hex dump text file of a binary file.
 
 **Warning**: This assembler does not currently checks for out-of-bounds relative literals.

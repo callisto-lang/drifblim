@@ -27,7 +27,6 @@ fi
 
 echo "Assembling Examples, from Drifblim.."
 uxncli bin/drifblim.rom etc/hello.tal
-uxncli bin/drifblim.rom etc/drifblim-tga.tal
 uxncli bin/drifblim.rom etc/drifblim-hex.tal
 
 echo "Dumping hex.."
