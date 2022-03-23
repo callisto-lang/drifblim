@@ -1,6 +1,6 @@
-( Drifblim - Usage: emulator drifblim.rom src/source.tal )
+( Drifblim - Usage: uxncli drifblim.rom src/source.tal )
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
@@ -9,10 +9,9 @@
 	@token $30
 	@scope $30
 	@buf $30
-	@sleep $1
 	@sym &ptr $2
 	@ref &ptr $2
-	@p &ptr $2 &len $2
+	@p &ptr $2 &len $2 &sleep $1
 
 |0100
 
@@ -37,9 +36,9 @@ BRK
 		;&c
 			DUP2 .File/read DEO2
 			( comment )
-			LDAk #28 NEQ ,&no-on JCN #01 .sleep STZ ,&no-cap JMP &no-on
-			LDAk #29 NEQ ,&no-off JCN #00 .sleep STZ ,&no-cap JMP &no-off
-			.sleep LDZ ,&no-cap JCN
+			LDAk #28 NEQ ,&no-on JCN #01 .p/sleep STZ ,&no-cap JMP &no-on
+			LDAk #29 NEQ ,&no-off JCN #00 .p/sleep STZ ,&no-cap JMP &no-off
+			.p/sleep LDZ ,&no-cap JCN
 			( listen )
 			LDAk #21 LTH ,&no-put JCN LDAk ;token ;scap JSR2 STA &no-put
 			LDAk #20 GTH ,&no-cap JCN ;token DUP2 ;find-token JSR2 #0030 ;mclr JSR2 &no-cap
@@ -56,8 +55,7 @@ BRK
 	STH2r .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
 	;dst/clip .File/write DEO2
-	( debug ) #010e DEO
-	( halt ) #010f DEO
+	( debug & halt ) #0101 #0e DEO2
 
 BRK
 	&c $1
@@ -72,11 +70,10 @@ BRK
 	LDAk LIT ', EQU ,&on-litrel JCN
 	LDAk LIT '; EQU ,&on-litabs JCN
 	LDAk LIT ': EQU ,&on-rawabs JCN
-	;err/reslv ;print-error JSR2
-	POP2r
-	POP2r
+	POP2r POP2r
 
-JMP2r
+;err/reslv ;print-err JMP2
+
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
 	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r
 		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
@@ -92,7 +89,7 @@ JMP2r
 		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	STH2r ;err/label ;print-error JSR2
+	STH2r ;err/label ;print-err JSR2
 	#0000
 
 JMP2r
@@ -116,9 +113,9 @@ JMP2r
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
-	;err/token ;print-error JSR2
 
-JMP2r
+;err/token ;print-err JMP2
+
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;sshort JSR2 ;write-short JMP2
 	&on-byte ;sbyte JSR2 ;write-byte JMP2
@@ -129,17 +126,17 @@ JMP2r
 
 	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
-	;err/lithx ;print-error JSR2
 
-JMP2r
+;err/lithx ;print-err JMP2
+
 	&on-short ;sshort JSR2 ;write-litshort JMP2
 	&on-byte ;sbyte JSR2 ;write-litbyte JMP2
 
 @set-scope ( token* -- name* )
 
-	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy JSR2
+	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r
 
-JMP2r
+;scpy JMP2
 
 @do-padabs ( t* -- ) ;shex JSR2 .p/ptr STZ2 JMP2r
 @do-padrel ( t* -- ) ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
@@ -153,8 +150,6 @@ JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
 
 @create-label ( name* -- )
-
-	( LIT '@ #18 DEO DUP2 ;print JSR2 #20 #18 DEO OVR2 ;print-str JSR2 #0a #18 DEO )
 
 	( write ref )
 	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
@@ -176,8 +171,6 @@ JMP2r
 
 @create-reference ( name* addr* -- )
 
-	( LIT '- #18 DEO DUP2 ;print JSR2 #2018 DEO [ STH ] OVR2 ;print-str JSR2 #0a18 DEO [ STHr ] )
-
 	( addr )
 	;refs .ref/ptr LDZ2 STH2k ADD2 STA2
 	( rune )
@@ -196,9 +189,7 @@ JMP2r
 
 @write-litbyte ( byte -- )
 
-	( LITk ) #80 SWP ,write-short JSR
-
-JMP2r
+	( LITk ) #80 SWP ,write-short JMP
 
 @write-litshort ( short* -- )
 
@@ -216,7 +207,7 @@ JMP2r
 
 JMP2r
 
-@is-opcode ( string* -- bool )
+@is-opcode ( string* -- flag )
 
 	DUP2 ;opcodes/brk ,scmp3 JSR ,find-opcode/on-brk JCN
 
@@ -249,7 +240,7 @@ JMP2r
 
 JMP2r
 
-@scmp3 ( a* b* -- bool )
+@scmp3 ( a[3]* b[3]* -- flag )
 
 	LDA2k STH2 INC2 INC2 SWP2
 	LDA2k STH2 INC2 INC2 EQU2r
@@ -323,7 +314,7 @@ JMP2r
 	DUP2 ,slen JSR ADD2
 
 @scpy ( src* dst* -- )
-	
+
 	STH2
 	&while
 		LDAk STH2kr STA INC2r
@@ -347,7 +338,7 @@ JMP2r
 
 JMP2r
 
-@print-error ( token* error* -- )
+@print-err ( token* err* -- )
 
 	LIT '! .Console/write DEO
 	SWP2 ,print-str JSR #2018 DEO
@@ -361,8 +352,6 @@ JMP2r
 
 JMP2r
 
-( tables )
-
 @opcodes
 	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
@@ -371,16 +360,12 @@ JMP2r
 	&brk "BRK
 
 @err
-	&lithx "LITHX $1 &label "LABEL $1
-	&token "TOKEN $1 &reslv "RESLV $1
+	&lithx "LITHX $1 &label "LABEL $1 &token "TOKEN $1 &reslv "RESLV $1
 
 @runes
-	'| :do-padabs	'$ :do-padrel
-	'@ :do-plabel	'& :do-slabel
-	'. :do-litbyt	', :do-litbyt	
-	'; :do-litabs	': :do-rawabs	
-	'' :do-rawchr	'" :do-rawstr	
-	'[ :do-ignore	'] :do-ignore	
+	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel
+	'. :do-litbyt	', :do-litbyt	'; :do-litabs	': :do-rawabs
+	'' :do-rawchr	'" :do-rawstr	'[ :do-ignore	'] :do-ignore
 	'# :do-lithex 	&end
 
 ( buffers )

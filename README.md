@@ -2,7 +2,7 @@
 
 [Drifblim](https://wiki.xxiivv.com/drifblim) is a uxntal assembler, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html). 
 
-The assembler is written in Uxntal itself, it's designed to be distributed as a rom to help bootstrap the uxn ecosystem. The goal is for Driflim to be as small it could possibly be made, and to release it as a print-friendly document, along with its source code and the mathematical definition of the Uxn virtual machine.
+The assembler is written in less than 400 lines of Uxntal, it's designed to help bootstrap the Uxn ecosystem and to demonstrate the concept of a personal one-page computer concept. The goal is for Driflim's source code to be released as a print-friendly document, along with its assembled hexadecimal data and the napkin definition of the Uxn virtual machine.
 
 The Drifblim project also includes:
 
