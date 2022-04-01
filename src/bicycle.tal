@@ -25,11 +25,13 @@
 	#15 .Screen/auto DEO
 	( vectors )
 	;on-button .Controller/vector DEO2
+
 	( draw )
 	#01 ;draw-src JSR2
 	#010e DEO
 
 BRK
+	&hello-txt "etc/hello.tal $1
 
 @on-button ( -> )
 
@@ -65,7 +67,7 @@ BRK
 	( time to evaluate program )
 	( borrow wst ) #ff .System/wst DEO
 	( clear stack ) #00 #ffff STA
-	;dst JMP2
+	;dst/clip JMP2
 	&end
 	( released wst ) #00 .System/wst DEO
 	#01 ;draw-stack JSR2
@@ -105,7 +107,7 @@ JMP2r
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
 	;program-txt #02 ;draw-str JSR2
-	.p/len LDZ2 NIP ;dst #01 STHr MUL ,draw-memory JSR
+	.p/len LDZ2 NIP ;dst/clip #01 STHr MUL ,draw-memory JSR
 
 JMP2r
 
@@ -291,6 +293,10 @@ JMP2r
 	;refs .ref/ptr LDZ2 ;mclr JSR2
 	;dst .p/len LDZ2 #0100 SUB2 ;mclr JSR2
 	( begin )
+
+	( start at page1 )
+	#0100 .p/ptr STZ2
+
 	;src
 	&pass1
 		( comment )
