@@ -1,0 +1,655 @@
+( Bicycle )
+
+|00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
+|10 @Console &vector $2 &read $1 &pad $5 &write $1
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller &vector $2 &button  $1 &key $1
+|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@token $30
+	@scope $30
+	@buf $30
+	@sym &ptr $2
+	@ref &ptr $2
+	@p &ptr $2 &len $2 &sleep $1
+
+|0100 ( -> )
+
+	( theme )
+	#0f5f .System/r DEO2
+	#0fcd .System/g DEO2
+	#0fa3 .System/b DEO2
+	#15 .Screen/auto DEO
+	( vectors )
+	;on-button .Controller/vector DEO2
+	( draw )
+	#01 ;draw-src JSR2
+	#010e DEO
+
+BRK
+
+@on-button ( -> )
+
+	.Controller/button DEI #08 NEQ ,&no-asm JCN
+		#0a ;src ;sput JSR2
+		;src ;assemble JSR2
+		;dst ;eval JSR2
+		;src ;spop JSR2
+		&no-asm
+
+	.Controller/key DEI
+	[ #0d ] EQUk NIP ,&linebreak JCN
+	[ #08 ] EQUk NIP ,&erase JCN
+	[ #20 ] LTHk NIP ,&end JCN
+	[ #7e ] GTHk NIP ,&end JCN
+	;src ;slen JSR2 #1000 LTH2 ,&append JCN
+	&end
+	POP
+
+BRK
+	&linebreak ( char -> ) POP #0a
+	&append ( char -> ) #00 ;draw-src JSR2 ;src ;sput JSR2 #01 ;draw-src JSR2 BRK
+	&erase ( char -> ) #00 ;draw-src JSR2 ;src ;spop JSR2 #01 ;draw-src JSR2 BRK
+
+( drawing )
+
+@eval ( program* -- )
+
+	#00 ;draw-stack JSR2
+
+	( set return )
+	;&end ;write-litshort JSR2 #2c ;write-byte JSR2
+	( time to evaluate program )
+	( borrow wst ) #ff .System/wst DEO
+	( clear stack ) #00 #ffff STA
+	;dst JMP2
+	&end
+	( released wst ) #00 .System/wst DEO
+	#01 ;draw-stack JSR2
+
+JMP2r
+
+@draw-src ( color -- )
+
+	STH
+	( flower )
+	#0010 .Screen/x DEO2
+	#0020 .Screen/y DEO2
+	;flowers-icn #00 ;src ;slen JSR2 ADD #06 DIVk MUL SUB #50 SFT2 ADD2 .Screen/addr DEO2
+	#81 .Screen/sprite DEO
+	#00 .Screen/sprite DEO
+	;prompt-txt #02 ;draw-str JSR2
+	;src #01 STHkr MUL ;draw-str JSR2
+	LIT '_ #03 STHr MUL ;draw-char JSR2
+
+JMP2r
+
+@draw-stack ( color -- )
+
+	( highlight last item )
+	STH
+	( position )
+	#0020 .Screen/x DEO2
+	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
+	;stack-txt #02 ;draw-str JSR2
+	#ffff LDA #ff00 #01 STHr MUL ,draw-memory JSR
+
+JMP2r
+
+@draw-dst ( color -- )
+
+	STH
+	#0020 .Screen/x DEO2
+	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
+	;program-txt #02 ;draw-str JSR2
+	.p/len LDZ2 NIP ;dst #01 STHr MUL ,draw-memory JSR
+
+JMP2r
+
+@draw-memory ( length addr* color -- )
+	
+	STH
+	,&addr STR2
+	#00
+	&loop
+		#00 OVR [ LIT2 &addr $2 ] ADD2 LDA #01 STHkr MUL ,draw-byte JSR
+		.Screen/x DEI2k #0004 ADD2 ROT DEO2
+		INC GTHk ,&loop JCN
+	POP2
+	POPr
+
+JMP2r
+
+@draw-short ( short* color -- )
+
+	STH SWP STHkr ,draw-byte JSR STHr
+
+@draw-byte ( byte color -- )
+
+	STH DUP #04 SFT STHkr ,draw-hex JSR #0f AND STHr
+
+@draw-hex ( char color -- )
+
+	SWP #0f AND [ DUP #09 GTH #07 MUL ADD #30 ADD ] SWP
+
+@draw-char ( char color -- )
+
+	SWP #20 SUB #00 SWP #40 SFT2 ;font ADD2 .Screen/addr DEO2
+	.Screen/sprite DEO
+
+JMP2r
+
+@draw-str ( text* color -- )
+
+	STH
+	.Screen/x DEI2 ,&anchor STR2
+	&while
+		LDAk STHkr ,draw-char JSR
+		LDAk #0a NEQ ,&no-lb JCN
+			[ LIT2 &anchor $2 ] .Screen/x DEO2
+			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			&no-lb
+		INC2 LDAk ,&while JCN
+	POP2
+	POPr
+
+JMP2r
+
+( assets )
+
+@prompt-txt "Do 20 $1
+@stack-txt "Stack 20 $1
+@program-txt "Program 20 $1
+@symbols-txt "Symbols 20 $1
+@source-txt "Source 20 $1
+
+@flowers-icn ( by elioat )
+	0000 0020 1408 0810 40a0 4205 0200 40a0
+	0810 103c 7e7e 3c18 4205 0234 7e7e 3c18
+	0000 0020 100c 0818 0040 a042 0522 5024
+	0008 083c 7e7e 3c18 0a04 002c 7e7e 3c18
+	0000 0000 0000 000c 0000 0000 0000 0000
+	1c10 083c 7e7e 3c18 0000 002c 7e7e 3c18
+	0000 0000 0000 0004 0000 0000 0002 0502
+	0810 103c 7e7e 3c18 0000 0034 7e7e 3c18
+	0000 0000 0000 0010 0000 0000 0020 5225
+	080c 083c 7e7e 3c18 0200 002c 7e7e 3c18
+	0000 0000 0800 1800 0000 040a 2450 240a
+	1010 103c 7e7e 3c18 0400 0034 7e7e 3c18
+
+@font ( msx816 )
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0020 2020 2020 2020 0000 2020 0000
+	0000 006c 6c24 4800 0000 0000 0000 0000
+	0000 0044 44fe 4444 4444 44fe 4444 0000
+	0000 1010 7c92 9290 7c12 9292 7c10 1000
+	0000 0040 a0a2 4408 1020 448a 0a04 0000
+	0000 0070 8888 8850 2050 8a84 8c72 0000
+	0000 0030 3010 2000 0000 0000 0000 0000
+	0000 0004 0808 1010 1010 1008 0804 0000
+	0000 0040 2020 1010 1010 1020 2040 0000
+	0000 0000 0000 1054 3854 1000 0000 0000
+	0000 0000 0010 1010 fe10 1010 0000 0000
+	0000 0000 0000 0000 0000 0030 3010 2000
+	0000 0000 0000 0000 fe00 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 3030 0000
+	0000 0004 0404 0808 0810 1010 2020 0000
+	( numbers )
+	0000 0038 4482 8292 9292 8282 4438 0000
+	0000 0010 3050 1010 1010 1010 1038 0000
+	0000 0038 4482 8202 0c30 4080 80fe 0000
+	0000 0038 4482 0204 3804 0282 4438 0000
+	0000 0004 0c14 1424 2444 44fe 0404 0000
+	0000 00fc 8080 80b8 c402 0282 4438 0000
+	0000 0038 4482 80b8 c482 8282 4438 0000
+	0000 00fe 8284 0808 1010 1010 1010 0000
+	0000 0038 4482 8244 3844 8282 4438 0000
+	0000 0038 4482 8282 463a 0282 4438 0000
+	0000 0000 0000 3030 0000 0030 3000 0000
+	0000 0000 0000 3030 0000 0030 3010 2000
+	0000 0000 0408 1020 4020 1008 0400 0000
+	0000 0000 0000 00fe 0000 fe00 0000 0000
+	0000 0000 4020 1008 0408 1020 4000 0000
+	0000 0038 4482 8202 0c10 1000 1010 0000
+	0000 0038 4482 0262 9292 9292 926c 0000
+	0000 0010 2844 8282 8282 fe82 8282 0000
+	0000 00f8 8482 8284 f884 8282 84f8 0000
+	0000 0038 4482 8080 8080 8082 4438 0000
+	0000 00f8 4442 4242 4242 4242 44f8 0000
+	0000 00fe 8080 8080 fc80 8080 80fe 0000
+	0000 00fe 8080 8080 fc80 8080 8080 0000
+	0000 0038 4482 8080 8e82 8282 463a 0000
+	0000 0082 8282 8282 fe82 8282 8282 0000
+	0000 0038 1010 1010 1010 1010 1038 0000
+	0000 000e 0404 0404 0404 0484 8870 0000
+	0000 0082 8488 90a0 c0a0 9088 8482 0000
+	0000 0040 4040 4040 4040 4040 407e 0000
+	0000 0082 c6aa 9292 8282 8282 8282 0000
+	0000 0082 c2a2 a292 928a 8a86 8282 0000
+	0000 0038 4482 8282 8282 8282 4438 0000
+	0000 00f8 8482 8282 84f8 8080 8080 0000
+	0000 0038 4482 8282 8282 bac6 443a 0000
+	0000 00f8 8482 8284 f890 8884 8482 0000
+	0000 0038 4482 8040 3804 0282 4438 0000
+	0000 00fe 1010 1010 1010 1010 1010 0000
+	0000 0082 8282 8282 8282 8282 827c 0000
+	0000 0082 8282 8282 8282 8244 2810 0000
+	0000 0082 8282 8282 9292 aaaa 4444 0000
+	0000 0082 8282 4428 1028 4482 8282 0000
+	0000 0082 8282 4428 1010 1010 1010 0000
+	0000 00fe 0202 0408 1020 4080 80fe 0000
+	0000 001c 1010 1010 1010 1010 101c 0000
+	0000 0082 4428 10fe 1010 fe10 1010 0000
+	0000 0070 1010 1010 1010 1010 1070 0000
+	0000 0010 2844 8200 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 00fe 0000
+	0000 0060 6020 1000 0000 0000 0000 0000
+	0000 0000 0000 7884 047c 8484 8c74 0000
+	0000 0040 4040 5864 4242 4242 6458 0000
+	0000 0000 0000 3844 8280 8082 4438 0000
+	0000 0004 0404 344c 8484 8484 4c34 0000
+	0000 0000 0000 3844 82fe 8082 4438 0000
+	0000 0018 2420 7820 2020 2020 2020 0000
+	0000 0000 0000 3a46 8282 8246 3a82 4438
+	0000 0040 4040 5864 4242 4242 4242 0000
+	0000 0010 1000 0010 1010 1010 1010 0000
+	0000 0008 0800 0008 0808 0808 0808 4830
+	0000 0040 4040 4244 4850 7048 4442 0000
+	0000 0030 1010 1010 1010 1010 1010 0000
+	0000 0000 0000 ec92 9292 9292 9292 0000
+	0000 0000 0000 5c62 4242 4242 4242 0000
+	0000 0000 0000 3844 8282 8282 4438 0000
+	0000 0000 0000 5864 4242 4242 6458 4040
+	0000 0000 0000 344c 8484 8484 4c34 0404
+	0000 0000 0000 5864 4040 4040 4040 0000
+	0000 0000 0000 7c82 807c 0202 827c 0000
+	0000 0020 2020 f820 2020 2020 2418 0000
+	0000 0000 0000 8484 8484 8484 8c74 0000
+	0000 0000 0000 8282 4444 2828 1010 0000
+	0000 0000 0000 8282 8292 92aa 4444 0000
+	0000 0000 0000 8244 2810 1028 4482 0000
+	0000 0000 0000 4242 4242 4222 1408 1060
+	0000 0000 0000 fe04 0810 2040 80fe 0000
+	0000 000c 1010 1010 2010 1010 100c 0000
+	0000 1010 1010 0000 0000 1010 1010 0000
+	0000 0060 1010 1010 0810 1010 1060 0000
+	0000 0060 920c 0000 0000 0000 0000 0000
+
+
+( ---------------------------------------------------- )
+
+@assemble ( -- )
+	
+	#00 ;draw-dst JSR2
+
+	( wipe )
+	#0000 #0100 ;mclr JSR2
+	;syms .sym/ptr LDZ2 ;mclr JSR2
+	;refs .ref/ptr LDZ2 ;mclr JSR2
+	;dst .p/len LDZ2 #0100 SUB2 ;mclr JSR2
+	( begin )
+	;src
+	&pass1
+		( comment )
+		LDAk #28 NEQ ,&no-on JCN #01 .p/sleep STZ ,&no-cap JMP &no-on
+		LDAk #29 NEQ ,&no-off JCN #00 .p/sleep STZ ,&no-cap JMP &no-off
+		.p/sleep LDZ ,&no-cap JCN
+		( listen )
+		LDAk #21 LTH ,&no-put JCN LDAk ;token ;scap JSR2 STA &no-put
+		LDAk #20 GTH ,&no-cap JCN ;token DUP2 ;find-token JSR2 #0030 ;mclr JSR2 &no-cap
+		INC2 LDAk ,&pass1 JCN
+	POP2
+	( resolve references )
+	;ref/ptr LDZ2 #0000 EQU2 ,&skip-refs JCN
+	;refs
+	&pass2
+		DUP2 ,resolve-reference JSR
+		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&pass2 JCN
+	POP2
+	&skip-refs
+
+	#01 ;draw-dst JSR2
+
+JMP2r
+
+@resolve-reference ( ref* -- )
+
+	STH2k
+	INC2 INC2 INC2k ,find-label JSR LDA2 STH2
+	( rune )
+	LDAk LIT '. EQU ,&on-litzp JCN
+	LDAk LIT ', EQU ,&on-litrel JCN
+	LDAk LIT '; EQU ,&on-litabs JCN
+	LDAk LIT ': EQU ,&on-rawabs JCN
+	POP2r POP2r
+
+;err/reslv ;print-err JMP2
+
+	&on-litzp STH2r NIP STH2r ,&set-byte JMP
+	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r
+		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
+	&on-litabs STH2r STH2r ,&set-short JMP
+	&on-rawabs STH2r STH2r
+		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
+
+@find-label ( name* -- addr* )
+
+	STH2
+	;syms
+	&while
+		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
+		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
+	POP2
+	STH2r ;err/label ;print-err JSR2
+	#0000
+
+JMP2r
+	&on-found POP2r JMP2r
+
+@find-token ( token* -- )
+
+	( skip blank )
+	;slen JSR2 ORA #01 JCN JMP2r
+	( runic )
+	;runes/end ;runes
+	&loop
+		LDAk ;token LDA NEQ ,&continue JCN
+			INC2k LDA2 ;token INC2 SWP2 JSR2
+			POP2 POP2 JMP2r
+			&continue
+		INC2 INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	( special )
+	;token
+		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
+		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
+		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
+
+;err/token ;print-err JMP2
+
+	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
+	&on-short ;sshort JSR2 ;write-short JMP2
+	&on-byte ;sbyte JSR2 ;write-byte JMP2
+
+( runic )
+
+@do-lithex ( t* -- )
+
+	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
+	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
+
+;err/lithx ;print-err JMP2
+
+	&on-short ;sshort JSR2 ;write-litshort JMP2
+	&on-byte ;sbyte JSR2 ;write-litbyte JMP2
+
+@set-scope ( token* -- name* )
+
+	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r
+
+;scpy JMP2
+
+@do-padabs ( t* -- ) ;shex JSR2 .p/ptr STZ2 JMP2r
+@do-padrel ( t* -- ) ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
+@do-plabel ( t* -- ) ,set-scope JSR ,create-label JMP
+@do-slabel ( t* -- ) ,make-sublabel JSR ,create-label JMP
+@do-litbyt ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
+@do-litabs ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ffff ;write-litshort JMP2
+@do-rawabs ( t* -- ) .p/ptr LDZ2 ,create-reference JSR #ffff ;write-short JMP2
+@do-rawchr ( t* -- ) LDA ;write-byte JMP2
+@do-rawstr ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
+@do-ignore ( t* -- ) POP2 JMP2r
+
+@create-label ( name* -- )
+
+	( write ref )
+	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
+	INC2r INC2r
+	( write string )
+	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
+
+JMP2r
+
+@make-sublabel ( name* -- sublabel* )
+
+	;buf STH2k #0030 ;mclr JSR2
+	;scope STH2kr ;scpy JSR2
+	LIT '/ STH2kr ;scap JSR2 STA
+	STH2kr ;scat JSR2 STH2r
+
+JMP2r
+
+@create-reference ( name* addr* -- )
+
+	( addr )
+	;refs .ref/ptr LDZ2 STH2k ADD2 STA2
+	( rune )
+	INC2r INC2r
+	#0001 SUB2 LDAk ;refs STH2kr ADD2 STA
+	INC2r INC2
+	( sublabel )
+	LDAk LIT '& NEQ ,&no-sublabel JCN
+		INC2 ,make-sublabel JSR
+		&no-sublabel
+	( write string )
+	DUP2 ;refs STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .ref/ptr STZ2
+
+JMP2r
+
+@write-litbyte ( byte -- )
+
+	( LITk ) #80 SWP ,write-short JMP
+
+@write-litshort ( short* -- )
+
+	( LIT2k ) #a0 ,write-byte JSR
+
+@write-short ( short -- )
+
+	SWP ,write-byte JSR
+
+@write-byte ( byte -- )
+
+	;dst .p/ptr LDZ2 STH2k ADD2 STA
+	INC2r STH2kr .p/ptr STZ2
+	STH2r .p/len STZ2
+
+JMP2r
+
+@is-opcode ( string* -- flag )
+
+	DUP2 ;opcodes/brk ,scmp3 JSR ,find-opcode/on-brk JCN
+
+@find-opcode ( name* -- byte )
+
+	STH2
+	#2000
+	&loop
+		#00 OVR #03 MUL ;opcodes ADD2 STH2kr ,scmp3 JSR ,&on-found JCN
+		INC GTHk ,&loop JCN
+	POP2 POP2r #00
+
+JMP2r
+	&on-found NIP STH2r ,find-mode JSR ADD JMP2r
+	&on-brk POP2 #01 JMP2r
+
+@find-mode ( mode* -- byte )
+
+	LITr 00
+	;opcodes OVR2 ,scmp3 JSR #70 SFT STH ADDr
+	INC2 INC2 INC2
+	LDAk #00 EQU ,&end JCN
+	&while
+		LDAk LIT '2 EQU #50 SFT STH ADDr
+		LDAk LIT 'r EQU #60 SFT STH ADDr
+		LDAk LIT 'k EQU #70 SFT STH ADDr
+		INC2 LDAk ,&while JCN
+	&end
+	POP2 STHr
+
+JMP2r
+
+@scmp3 ( a[3]* b[3]* -- flag )
+
+	LDA2k STH2 INC2 INC2 SWP2
+	LDA2k STH2 INC2 INC2 EQU2r
+	LDA STH LDA STH EQUr
+	ANDr STHr
+
+JMP2r
+
+@sshort ( str* -- short* )
+
+	INC2k INC2 ,sbyte JSR STH
+	,sbyte JSR STHr
+
+JMP2r
+
+@sbyte ( str* -- byte )
+
+	LDAk ,chex JSR STH
+	INC2 LDA ,chex JSR
+	STHr #40 SFT ADD
+
+JMP2r
+
+@shex ( str* -- short* )
+
+	LIT2r 0000
+	&while
+		LITr 40 SFT2r
+		LITr 00
+		LDAk ,chex JSR STH ADD2r
+		INC2 LDAk ,&while JCN
+	POP2 STH2r
+
+JMP2r
+
+@chex ( char -- value )
+
+	DUP #2f GTH OVR #3a LTH AND ,&number JCN
+	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
+		POP #00
+
+JMP2r
+	&number #30 SUB JMP2r
+	&lc #57 SUB JMP2r
+
+@mclr ( addr* len* -- )
+
+	OVR2 ADD2 SWP2
+	&loop
+		STH2k #00 STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+JMP2r
+
+@slen ( str* -- len* )
+
+	DUP2 ,scap JSR SWP2 SUB2
+
+JMP2r
+
+@scap ( str* -- str-end* )
+
+	LDAk #00 NEQ JMP JMP2r
+	&while INC2 LDAk ,&while JCN
+
+JMP2r
+
+@sput ( char str* -- )
+
+	,scap JSR STA
+
+JMP2r
+
+@spop ( str* -- )
+
+	LDAk ,&no-null JCN
+		POP2 JMP2r &no-null
+	#00 ROT ROT ,scap JSR #0001 SUB2 STA
+
+JMP2r
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ADD2
+
+@scpy ( src* dst* -- )
+	
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
+
+JMP2r
+
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		LDAk LDAkr STHr ORA ,&not-end JCN
+			POP2 POP2r #01 JMP2r
+			&not-end
+		INC2 INC2r ,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
+
+@print-err ( token* err* -- )
+
+	LIT '! .Console/write DEO
+	SWP2 ,print-str JSR #2018 DEO
+
+@print-str ( str* -- )
+
+	&while
+		LDAk .Console/write DEO
+		INC2 LDAk ,&while JCN
+	POP2
+
+JMP2r
+
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+
+@opcodes
+	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	&brk "BRK
+
+@err
+	&lithx "LITHX $1 &label "LABEL $1 &token "TOKEN $1 &reslv "RESLV $1
+
+@runes
+	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel
+	'. :do-litbyt	', :do-litbyt	'; :do-litabs	': :do-rawabs
+	'' :do-rawchr	'" :do-rawstr	'[ :do-ignore	'] :do-ignore
+	'# :do-lithex 	&end
+
+( buffers )
+
+@syms $4000 ( addr* name* )
+@refs $4000 ( addr* name* )
+
+@src $1000
+@dst $0100 ( zero-page )
+&clip ( program )
