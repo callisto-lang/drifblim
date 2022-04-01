@@ -26,6 +26,10 @@
 	( vectors )
 	;on-button .Controller/vector DEO2
 
+	( load src )
+	;&hello-txt .File/name DEO2
+	#1000 .File/length DEO2
+	;src .File/read DEO2
 	( draw )
 	#01 ;draw-src JSR2
 	#010e DEO
@@ -335,10 +339,10 @@ JMP2r
 ;err/reslv ;print-err JMP2
 
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
-	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r
+	&on-litrel STH2r ;dst ADD2 STH2kr LDA2 ;dst ADD2 SUB2 #0002 SUB2 NIP STH2r
 		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
-	&on-litabs STH2r STH2r ,&set-short JMP
-	&on-rawabs STH2r STH2r
+	&on-litabs STH2r ;dst ADD2 STH2r ,&set-short JMP
+	&on-rawabs STH2r ;dst ADD2 STH2r
 		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
 
 @find-label ( name* -- addr* )
@@ -633,7 +637,6 @@ JMP2r
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 
 JMP2r
-
 
 @opcodes
 	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
