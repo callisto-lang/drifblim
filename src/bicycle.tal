@@ -15,6 +15,7 @@
 	@sym &ptr $2
 	@ref &ptr $2
 	@p &ptr $2 &len $2 &sleep $1
+	@selection $2
 
 |0100 ( -> )
 
@@ -23,17 +24,10 @@
 	#0fcd .System/g DEO2
 	#0fa3 .System/b DEO2
 	#15 .Screen/auto DEO
-	( size )
-	#0300 .Screen/width DEO2
-	#0200 .Screen/height DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
-
-	( load src )
-	;&hello-txt .File/name DEO2
-	#1000 .File/length DEO2
-	;src .File/read DEO2
 	( draw )
+	#20 ;src STA
 	;redraw JSR2
 	#010e DEO
 
@@ -52,6 +46,13 @@ BRK
 		BRK
 		&no-asm
 
+	.Controller/button DEI
+	[ #10 ] NEQk NIP ,&no-u JCN &no-u
+	[ #20 ] NEQk NIP ,&no-d JCN &no-d
+	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #ffff ADD2 ;select JSR2 &no-l
+	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 &no-r
+	POP
+
 	.Controller/key DEI
 	[ #0d ] EQUk NIP ,&linebreak JCN
 	[ #08 ] EQUk NIP ,&erase JCN
@@ -63,10 +64,41 @@ BRK
 
 BRK
 	&linebreak ( char -> ) POP #0a
-	&append ( char -> ) #00 ;draw-src JSR2 ;src ;sput JSR2 #01 ;draw-src JSR2 BRK
-	&erase ( char -> ) #00 ;draw-src JSR2 ;src ;spop JSR2 #01 ;draw-src JSR2 BRK
+	&append ( char -> ) ;insert JSR2 BRK
+	&erase ( char -> ) ;erase JSR2 BRK
 
-( drawing )
+( controls )
+
+@select ( addr* -- )
+
+	DUP2 ;src ;slen JSR2 GTH2 ,&skip JCN
+	DUP2 .selection STZ2
+	;draw-textarea JSR2
+	&skip
+	POP2
+
+JMP2r
+
+@insert ( char -- )
+
+	;clear-textarea JSR2 
+	.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
+	.selection LDZ2 ;src ADD2 STA
+	.selection LDZ2 INC2 .selection STZ2
+	;draw-textarea JSR2
+	;draw-flower JSR2
+
+JMP2r
+
+@erase ( -- )
+
+	;clear-textarea JSR2 
+	.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
+	.selection LDZ2 #0001 SUB2 .selection STZ2
+	;draw-textarea JSR2
+	;draw-flower JSR2
+
+JMP2r
 
 @eval ( program* -- )
 
@@ -84,7 +116,7 @@ JMP2r
 @clear ( -- )
 
 	#15 .Screen/auto DEO
-	#00 ;draw-src JSR2
+	;clear-textarea JSR2
 	#00 ;draw-stack JSR2
 	#00 ;draw-dst JSR2
 
@@ -93,25 +125,31 @@ JMP2r
 @redraw ( -- )
 
 	#15 .Screen/auto DEO
-	#01 ;draw-src JSR2
+	;draw-textarea JSR2
 	#01 ;draw-stack JSR2
 	#01 ;draw-dst JSR2
+	;draw-flower JSR2
 
 JMP2r
 
-@draw-src ( color -- )
+@draw-flower ( -- )
 
-	STH
 	( flower )
 	#0010 .Screen/x DEO2
 	#0020 .Screen/y DEO2
 	#15 .Screen/auto DEO
 	;flowers-icn #00 ;src ;slen JSR2 ADD #06 DIVk MUL SUB #50 SFT2 ADD2 .Screen/addr DEO2
 	#81 .Screen/sprite DEO
+
+JMP2r
+
+@draw-src ( color -- )
+
+	STH
+	
 	#00 .Screen/sprite DEO
 	;prompt-txt #02 ;draw-str JSR2
-	;src #01 STHkr MUL ;draw-str JSR2
-	LIT '_ #03 STHr MUL ;draw-char JSR2
+	;draw-textarea JSR2
 
 JMP2r
 
@@ -188,6 +226,49 @@ JMP2r
 		INC2 LDAk ,&while JCN
 	POP2
 	POPr
+
+JMP2r
+
+@draw-textarea ( -- )
+
+	#0020 .Screen/x DEO2
+	#0020 .Screen/y DEO2
+	.Screen/x DEI2 ,&anchor STR2
+	;src STH2k
+	&while
+		DUP2 STH2kr SUB2 .selection LDZ2 EQU2 #0b MUL ,&sel STR
+		LDAk #01 [ LIT &sel $1 ] ADD ,draw-char JSR
+		LDAk #0a NEQ ,&no-lb JCN
+			[ LIT2 &anchor $2 ] .Screen/x DEO2
+			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			&no-lb
+		LDAk #09 NEQ ,&no-tab JCN
+			.Screen/x DEI2k #0018 ADD2 ROT DEO2
+			&no-tab
+		INC2 LDAk ,&while JCN
+	POP2
+	POP2r
+
+JMP2r
+
+@clear-textarea ( -- )
+
+	#0020 .Screen/x DEO2
+	#0020 .Screen/y DEO2
+	.Screen/x DEI2 ,&anchor STR2
+	;src STH2k
+	&while
+		#00 .Screen/sprite DEO
+		LDAk #0a NEQ ,&no-lb JCN
+			[ LIT2 &anchor $2 ] .Screen/x DEO2
+			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			&no-lb
+		LDAk #09 NEQ ,&no-tab JCN
+			.Screen/x DEI2k #0018 ADD2 ROT DEO2
+			&no-tab
+		INC2 LDAk ,&while JCN
+	POP2
+	POP2r
 
 JMP2r
 
@@ -579,6 +660,25 @@ JMP2r
 	&loop
 		STH2k #00 STH2r STA
 		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+JMP2r
+
+@msfl ( origin* length* -- )
+
+	SWP2
+	&loop
+		STH2k INC2k LDA STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+JMP2r
+
+@msfr ( origin* length* -- )
+
+	&loop
+		INC2k STH2 LDAk STH2r STA
+		#0001 SUB2 LTH2k ,&loop JCN
 	POP2 POP2
 
 JMP2r
