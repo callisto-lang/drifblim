@@ -32,7 +32,6 @@
 	;src .File/read DEO2
 	( draw )
 	;redraw JSR2
-	#010e DEO
 
 BRK
 	&hello-txt "etc/paint.tal $1
@@ -44,15 +43,11 @@ BRK
 	[ #20 ] NEQk NIP ,&no-d JCN ;next-line JSR2 &no-d
 	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #ffff ADD2 ;select JSR2 &no-l
 	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 &no-r
-	[ #08 ] NEQk NIP ,&no-start JCN 
+	[ #08 ] NEQk NIP ,&no-start JCN
+		POP
 		;clear JSR2
-		;src ;assemble JSR2
-		;dst ;eval JSR2
-		;redraw JSR2 POP 
-
-		#010e DEO
-
-		BRK &no-start
+		;assemble JSR2
+		;do-eval JMP2 &no-start
 	POP
 
 	.Controller/key DEI
@@ -92,7 +87,7 @@ JMP2r
 		#0001 SUB2 LTH2k ,&loop JCN
 	&end
 	NIP2
-	;select JSR2 
+	;select JSR2
 
 JMP2r
 
@@ -110,7 +105,7 @@ JMP2r
 
 @insert ( char -- )
 
-	;clear-textarea JSR2 
+	;clear-textarea JSR2
 	.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
 	.selection LDZ2 ;src ADD2 STA
 	.selection LDZ2 INC2 .selection STZ2
@@ -122,7 +117,7 @@ JMP2r
 @erase ( -- )
 
 	.selection LDZ2 #0000 EQU2 ,&skip JCN
-	;clear-textarea JSR2 
+	;clear-textarea JSR2
 	.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
 	.selection LDZ2 #0001 SUB2 .selection STZ2
 	;draw-textarea JSR2
@@ -131,7 +126,9 @@ JMP2r
 
 JMP2r
 
-@eval ( program* -- )
+@do-eval ( -- )
+
+	#010e DEO
 
 	( time to evaluate program )
 	;on-complete .Screen/vector DEO2
@@ -139,7 +136,7 @@ JMP2r
 	( clear stack ) #00 #ffff STA
 	;dst/clip JMP2
 	
-JMP2r
+BRK
 
 @on-complete ( -> )
 
@@ -176,16 +173,6 @@ JMP2r
 	#15 .Screen/auto DEO
 	;flowers-icn #00 ;src ;slen JSR2 ADD #06 DIVk MUL SUB #50 SFT2 ADD2 .Screen/addr DEO2
 	#81 .Screen/sprite DEO
-
-JMP2r
-
-@draw-src ( color -- )
-
-	STH
-	
-	#00 .Screen/sprite DEO
-	;prompt-txt #02 ;draw-str JSR2
-	;draw-textarea JSR2
 
 JMP2r
 
@@ -327,7 +314,7 @@ JMP2r
 @assemble ( -- )
 
 	( wipe )
-	.selection LDZ2 
+	.selection LDZ2
 	#0000 #0100 ;mclr JSR2
 	.selection STZ2
 	;syms .sym/ptr LDZ2 ;mclr JSR2
@@ -347,7 +334,7 @@ JMP2r
 		INC2 LDAk ,&pass1 JCN
 	POP2
 	( resolve references )
-	;ref/ptr LDZ2 #0000 EQU2 ,&skip-refs JCN
+	.ref/ptr LDZ2 #0000 EQU2 ,&skip-refs JCN
 	;refs
 	&pass2
 		DUP2 ,resolve-reference JSR
@@ -624,20 +611,6 @@ JMP2r
 
 JMP2r
 
-@sput ( char str* -- )
-
-	,scap JSR STA
-
-JMP2r
-
-@spop ( str* -- )
-
-	LDAk ,&no-null JCN
-		POP2 JMP2r &no-null
-	#00 ROT ROT ,scap JSR #0001 SUB2 STA
-
-JMP2r
-
 @scat ( src* dst* -- )
 
 	DUP2 ,slen JSR ADD2
@@ -711,7 +684,7 @@ JMP2r
 @stack-txt "Stack 20 $1
 @program-txt "Program 20 $1
 
-@tab-icn 
+@tab-icn
 	0000 0000 0010 187c 1810 0000 0000 0000
 @flowers-icn ( by elioat )
 	0000 0020 1408 0810 40a0 4205 0200 40a0
