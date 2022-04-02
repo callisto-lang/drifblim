@@ -1,0 +1,25 @@
+|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|0100 @program
+	#01 .Screen/auto DEO
+	#0000 .Screen/x DEO2k INC INC DEO2
+	;sprite .Screen/addr DEO2
+	#01 .Screen/sprite DEO
+	.Screen/height DEI2 #03 SFT2 NIP #00
+	&ver
+		STHk
+		.Screen/width DEI2 #03 SFT2 NIP #00
+		&hor
+			[ LIT &c 00 ] STHkr ADD #3f AND .Screen/sprite DEO
+			,&c LDR INC ,&c STR
+			INC GTHk ,&hor JCN
+		POP2
+		POPr
+		#0000 .Screen/x DEO2
+		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		INC GTHk ,&ver JCN
+	POP2
+;end JMP2
+
+@sprite 0103 070f 1f3f 7fff
+
+@end

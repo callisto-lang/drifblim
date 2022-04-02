@@ -23,6 +23,9 @@
 	#0fcd .System/g DEO2
 	#0fa3 .System/b DEO2
 	#15 .Screen/auto DEO
+	( size )
+	#0300 .Screen/width DEO2
+	#0200 .Screen/height DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
 
@@ -31,19 +34,22 @@
 	#1000 .File/length DEO2
 	;src .File/read DEO2
 	( draw )
-	#01 ;draw-src JSR2
+	;redraw JSR2
 	#010e DEO
 
 BRK
-	&hello-txt "etc/hello.tal $1
+	&hello-txt "etc/paint.tal $1
 
 @on-button ( -> )
 
 	.Controller/button DEI #08 NEQ ,&no-asm JCN
 		#0a ;src ;sput JSR2
+		;clear JSR2
 		;src ;assemble JSR2
 		;dst ;eval JSR2
 		;src ;spop JSR2
+		;redraw JSR2
+		BRK
 		&no-asm
 
 	.Controller/key DEI
@@ -64,8 +70,6 @@ BRK
 
 @eval ( program* -- )
 
-	#00 ;draw-stack JSR2
-
 	( set return )
 	;&end ;write-litshort JSR2 #2c ;write-byte JSR2
 	( time to evaluate program )
@@ -74,7 +78,24 @@ BRK
 	;dst/clip JMP2
 	&end
 	( released wst ) #00 .System/wst DEO
+
+JMP2r
+
+@clear ( -- )
+
+	#15 .Screen/auto DEO
+	#00 ;draw-src JSR2
+	#00 ;draw-stack JSR2
+	#00 ;draw-dst JSR2
+
+JMP2r
+
+@redraw ( -- )
+
+	#15 .Screen/auto DEO
+	#01 ;draw-src JSR2
 	#01 ;draw-stack JSR2
+	#01 ;draw-dst JSR2
 
 JMP2r
 
@@ -84,6 +105,7 @@ JMP2r
 	( flower )
 	#0010 .Screen/x DEO2
 	#0020 .Screen/y DEO2
+	#15 .Screen/auto DEO
 	;flowers-icn #00 ;src ;slen JSR2 ADD #06 DIVk MUL SUB #50 SFT2 ADD2 .Screen/addr DEO2
 	#81 .Screen/sprite DEO
 	#00 .Screen/sprite DEO
@@ -100,6 +122,7 @@ JMP2r
 	( position )
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
+	#15 .Screen/auto DEO
 	;stack-txt #02 ;draw-str JSR2
 	#ffff LDA #ff00 #01 STHr MUL ,draw-memory JSR
 
@@ -110,6 +133,7 @@ JMP2r
 	STH
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0020 SUB2 .Screen/y DEO2
+	#15 .Screen/auto DEO
 	;program-txt #02 ;draw-str JSR2
 	.p/len LDZ2 NIP ;dst/clip #01 STHr MUL ,draw-memory JSR
 
@@ -158,6 +182,9 @@ JMP2r
 			[ LIT2 &anchor $2 ] .Screen/x DEO2
 			.Screen/y DEI2k #0010 ADD2 ROT DEO2
 			&no-lb
+		LDAk #09 NEQ ,&no-tab JCN
+			.Screen/x DEI2k #0018 ADD2 ROT DEO2
+			&no-tab
 		INC2 LDAk ,&while JCN
 	POP2
 	POPr
@@ -288,8 +315,6 @@ JMP2r
 ( ---------------------------------------------------- )
 
 @assemble ( -- )
-	
-	#00 ;draw-dst JSR2
 
 	( wipe )
 	#0000 #0100 ;mclr JSR2
@@ -320,8 +345,6 @@ JMP2r
 		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&pass2 JCN
 	POP2
 	&skip-refs
-
-	#01 ;draw-dst JSR2
 
 JMP2r
 
