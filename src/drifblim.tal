@@ -29,41 +29,39 @@ BRK
 		STH2kr ;scap JSR2 STA POP2r BRK
 		&end
 	POP
-	STH2r ,assemble JSR
-	#0101 #0e DEO2
 
-BRK
+	STH2kr ;assemble JSR2
+	;resolve JSR2
 
-@assemble ( filename* -- )
-
-	STH2k .File/name DEO2
-	#0001 .File/length DEO2
-	&stream
-		;&c .File/read DEO2 [ LIT &c $1 ] ;stream JSR2
-		.File/success DEI2 ORA ,&stream JCN
-	( resolve references )
-	;refs
-	&while
-		DUP2 ;resolve-reference JSR2
-		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
-	POP2
 	( write rom )
 	;&rom-ext STH2kr ;scap JSR2 #0003 SUB2 ;scpy JSR2
 	STH2r .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
 	;dst/clip .File/write DEO2
 
-JMP2r
+	#0101 #0e DEO2
+
+BRK
 	&rom-ext "rom $1
 
-@stream ( char -- )
+@assemble ( filename* -- )
+
+	.File/name DEO2
+	#0001 .File/length DEO2
+	&stream
+		;&c .File/read DEO2 [ LIT &c $1 ] ,walk JSR
+		.File/success DEI2 ORA ,&stream JCN
+	
+JMP2r
+
+@walk ( char -- )
 
 	[ #28 ] EQUk NIP ,&sleep JCN
 	[ #29 ] EQUk NIP ,&unsleep JCN
 	.p/sleep LDZ ,&skip JCN
 	[ #20 ] GTHk NIP ,&append JCN
 	;token
-		DUP2 ;find-token JSR2
+		DUP2 ,walk-token JSR
 		#0030 ;mclr JSR2
 	&skip
 	POP
@@ -72,6 +70,44 @@ JMP2r
 	&sleep #01 .p/sleep STZ POP JMP2r
 	&unsleep #00 .p/sleep STZ POP JMP2r
 	&append ;token ;scap JSR2 STA JMP2r
+
+@walk-token ( token* -- )
+
+	( skip blank )
+	;slen JSR2 ORA #01 JCN JMP2r
+	( runic )
+	;runes/end ;runes
+	&loop
+		LDAk ;token LDA NEQ ,&continue JCN
+			INC2k LDA2 ;token INC2 SWP2 JSR2
+			POP2 POP2 JMP2r
+			&continue
+		INC2 INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2
+	( special )
+	;token
+		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
+		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
+		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
+
+;err/token ;print-err JMP2
+
+	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
+	&on-short ;sshort JSR2 ;write-short JMP2
+	&on-byte ;sbyte JSR2 ;write-byte JMP2
+
+@resolve ( -- )
+
+	.ref/ptr LDZ2 #0000 EQU2 ,&skip JCN
+	
+	;refs 
+	&while
+		DUP2 ,resolve-reference JSR
+		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
+	POP2
+	&skip
+
+JMP2r
 
 @resolve-reference ( ref* -- )
 
@@ -106,31 +142,6 @@ JMP2r
 
 JMP2r
 	&on-found POP2r JMP2r
-
-@find-token ( token* -- )
-
-	( skip blank )
-	;slen JSR2 ORA #01 JCN JMP2r
-	( runic )
-	;runes/end ;runes
-	&loop
-		LDAk ;token LDA NEQ ,&continue JCN
-			INC2k LDA2 ;token INC2 SWP2 JSR2
-			POP2 POP2 JMP2r
-			&continue
-		INC2 INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	( special )
-	;token
-		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
-		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
-		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
-
-;err/token ;print-err JMP2
-
-	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
-	&on-short ;sshort JSR2 ;write-short JMP2
-	&on-byte ;sbyte JSR2 ;write-byte JMP2
 
 ( runic )
 
