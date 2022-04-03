@@ -93,8 +93,8 @@ JMP2r
 ;err/token ;print-err JMP2
 
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
-	&on-short ;sshort JSR2 ;write-short JMP2
-	&on-byte ;sbyte JSR2 ;write-byte JMP2
+	&on-short ;shex JSR2 ;write-short JMP2
+	&on-byte ;shex JSR2 NIP ;write-byte JMP2
 
 @resolve ( -- )
 
@@ -120,7 +120,7 @@ JMP2r
 	LDAk LIT ': EQU ,&on-rawabs JCN
 	POP2r POP2r
 
-;err/reslv ;print-err JMP2
+;err/ref ;print-err JMP2
 
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
 	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r
@@ -129,7 +129,7 @@ JMP2r
 	&on-rawabs STH2r STH2r
 		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
 
-@find-label ( name* -- addr* )
+@find-label ( name* -- addr/ffff* )
 
 	STH2
 	;syms
@@ -137,8 +137,8 @@ JMP2r
 		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	STH2r ;err/label ;print-err JSR2
-	#0000
+	POP2r
+	#ffff
 
 JMP2r
 	&on-found POP2r JMP2r
@@ -150,10 +150,23 @@ JMP2r
 	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/lithx ;print-err JMP2
+;err/lit ;print-err JMP2
 
-	&on-short ;sshort JSR2 ;write-litshort JMP2
-	&on-byte ;sbyte JSR2 ;write-litbyte JMP2
+	&on-short ;shex JSR2 ;write-litshort JMP2
+	&on-byte ;shex JSR2 NIP ;write-litbyte JMP2
+
+@create-label ( name* -- )
+
+	( TODO: Catch duplicates )
+
+	( write ref )
+	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
+	INC2r INC2r
+	( write string )
+	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
+
+JMP2r
 
 @set-scope ( token* -- name* )
 
@@ -171,17 +184,6 @@ JMP2r
 @do-rawchr ( t* -- ) LDA ;write-byte JMP2
 @do-rawstr ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
-
-@create-label ( name* -- )
-
-	( write ref )
-	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
-	INC2r INC2r
-	( write string )
-	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
-	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
-
-JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
@@ -272,23 +274,11 @@ JMP2r
 
 JMP2r
 
-@sshort ( str* -- short* )
-
-	INC2k INC2 ,sbyte JSR STH
-	,sbyte JSR STHr
-
-JMP2r
-
-@sbyte ( str* -- byte )
-
-	LDAk ,chex JSR STH
-	INC2 LDA ,chex JSR
-	STHr #40 SFT ADD
-
-JMP2r
-
 @shex ( str* -- short* )
 
+	DUP2 ,sihx JSR ,&continue JCN
+		DUP2 ;err/hex ;print-err JSR2
+		&continue
 	LIT2r 0000
 	&while
 		LITr 40 SFT2r
@@ -299,11 +289,22 @@ JMP2r
 
 JMP2r
 
-@chex ( char -- value )
+@sihx ( str* -- flag )
+
+	&while
+		LDAk ,chex JSR #ff NEQ ,&valid JCN 
+			POP2 #00 JMP2r &valid
+		INC2 LDAk ,&while JCN
+	POP2
+	#01
+
+JMP2r
+
+@chex ( char -- value/ff )
 
 	DUP #2f GTH OVR #3a LTH AND ,&number JCN
 	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
-		POP #00
+		POP #ff
 
 JMP2r
 	&number #30 SUB JMP2r
@@ -363,8 +364,11 @@ JMP2r
 
 @print-err ( token* err* -- )
 
-	LIT '! .Console/write DEO
-	SWP2 ,print-str JSR #2018 DEO
+	;err ,print-str JSR
+	,print-str JSR #2018 DEO
+	,print-str JSR #0a18 DEO
+
+JMP2r
 
 @print-str ( str* -- )
 
@@ -383,7 +387,13 @@ JMP2r
 	&brk "BRK
 
 @err
-	&lithx "LITHX $1 &label "LABEL $1 &token "TOKEN $1 &reslv "RESLV $1
+	"--error: $1 
+	&hex "hex $1
+	&lit "lit $1 
+	&dup "dup $1 
+	&label "label $1 
+	&token "token $1 
+	&ref "ref $1 
 
 @runes
 	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel

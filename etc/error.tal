@@ -1,0 +1,29 @@
+|0100 
+
+	( invalid paddings )
+	|abspad
+	$relpad
+	( invalid hex )
+	#vo
+	#void
+	vo
+	void
+	( invalid literals )
+	#a 
+	#aaa 
+	#aaaaa
+	( invalid raws )
+	b
+	bbb
+	bbbbb
+	( invalid labels )
+	.zeropage
+	,relative
+	;absolute
+	( duplicate labels )
+	@unique-parent
+	@unique-parent
+		&unique-children
+		&unique-children
+
+BRK
