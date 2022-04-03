@@ -16,14 +16,18 @@
 	b
 	bbb
 	bbbbb
-	( invalid labels )
-	.zeropage
-	,relative
-	;absolute
 	( duplicate labels )
 	@unique-parent
 	@unique-parent
 		&unique-children
 		&unique-children
+	( invalid labels )
+	.zeropage
+	,relative
+	;absolute
+	( invalid distance )
+	,too-far
 
 BRK
+
+$1000 @too-far

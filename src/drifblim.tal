@@ -99,7 +99,6 @@ JMP2r
 @resolve ( -- )
 
 	.ref/ptr LDZ2 #0000 EQU2 ,&skip JCN
-	
 	;refs 
 	&while
 		DUP2 ,resolve-reference JSR
@@ -157,8 +156,9 @@ JMP2r
 
 @create-label ( name* -- )
 
-	( TODO: Catch duplicates )
-
+	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN 
+		DUP2 ;err/dup ;print-err JSR2
+		&unique 
 	( write ref )
 	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
 	INC2r INC2r
@@ -276,9 +276,9 @@ JMP2r
 
 @shex ( str* -- short* )
 
-	DUP2 ,sihx JSR ,&continue JCN
+	DUP2 ,sihx JSR ,&valid JCN
 		DUP2 ;err/hex ;print-err JSR2
-		&continue
+		&valid
 	LIT2r 0000
 	&while
 		LITr 40 SFT2r
