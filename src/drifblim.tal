@@ -29,25 +29,22 @@ BRK
 		STH2kr ;scap JSR2 STA POP2r BRK
 		&end
 	POP
-	( assemble tokens )
-	STH2kr .File/name DEO2
+	STH2r ,assemble JSR
+	#0101 #0e DEO2
+
+BRK
+
+@assemble ( filename* -- )
+
+	STH2k .File/name DEO2
 	#0001 .File/length DEO2
 	&stream
-		;&c
-			DUP2 .File/read DEO2
-			( comment )
-			LDAk #28 NEQ ,&no-on JCN #01 .p/sleep STZ ,&no-cap JMP &no-on
-			LDAk #29 NEQ ,&no-off JCN #00 .p/sleep STZ ,&no-cap JMP &no-off
-			.p/sleep LDZ ,&no-cap JCN
-			( listen )
-			LDAk #21 LTH ,&no-put JCN LDAk ;token ;scap JSR2 STA &no-put
-			LDAk #20 GTH ,&no-cap JCN ;token DUP2 ;find-token JSR2 #0030 ;mclr JSR2 &no-cap
-		POP2
+		;&c .File/read DEO2 [ LIT &c $1 ] ;stream JSR2
 		.File/success DEI2 ORA ,&stream JCN
 	( resolve references )
 	;refs
 	&while
-		DUP2 ,resolve-reference JSR
+		DUP2 ;resolve-reference JSR2
 		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 	( write rom )
@@ -55,11 +52,26 @@ BRK
 	STH2r .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
 	;dst/clip .File/write DEO2
-	( debug & halt ) #0101 #0e DEO2
 
-BRK
-	&c $1
+JMP2r
 	&rom-ext "rom $1
+
+@stream ( char -- )
+
+	[ #28 ] EQUk NIP ,&sleep JCN
+	[ #29 ] EQUk NIP ,&unsleep JCN
+	.p/sleep LDZ ,&skip JCN
+	[ #20 ] GTHk NIP ,&append JCN
+	;token
+		DUP2 ;find-token JSR2
+		#0030 ;mclr JSR2
+	&skip
+	POP
+
+JMP2r
+	&sleep #01 .p/sleep STZ POP JMP2r
+	&unsleep #00 .p/sleep STZ POP JMP2r
+	&append ;token ;scap JSR2 STA JMP2r
 
 @resolve-reference ( ref* -- )
 
