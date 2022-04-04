@@ -8,8 +8,6 @@ The Drifblim project also includes:
 
 - `drifblim-hex.rom`: Creates a hex dump text file of a binary file.
 
-**Warning**: This assembler does not currently checks for out-of-bounds relative literals.
-
 ## Build
 
 This assembler is written in the language it is assembling, creating a chicken-and-egg problem. You have two choices, download a pre-assembled [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom)(1.2kb), or use [uxnasm.c](https://git.sr.ht/~rabbits/uxn/tree/main/item/src/uxnasm.c). 

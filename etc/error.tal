@@ -6,8 +6,8 @@
 	( invalid hex )
 	#vo
 	#void
-	vo
-	void
+	( invalid token )
+	bad-token
 	( invalid literals )
 	#a 
 	#aaa 
@@ -23,7 +23,7 @@
 		&unique-children
 	( invalid labels )
 	.zeropage
-	,relative
+	,missing
 	;absolute
 	( invalid distance )
 	,too-far

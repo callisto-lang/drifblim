@@ -90,7 +90,7 @@ JMP2r
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/token ;print-err JMP2
+;err/key ;print-err JMP2
 
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;shex JSR2 ;write-short JMP2
@@ -99,7 +99,7 @@ JMP2r
 @resolve ( -- )
 
 	.ref/ptr LDZ2 #0000 EQU2 ,&skip JCN
-	;refs 
+	;refs
 	&while
 		DUP2 ,resolve-reference JSR
 		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
@@ -122,7 +122,11 @@ JMP2r
 ;err/ref ;print-err JMP2
 
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
-	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2 NIP STH2r
+	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2
+		DUP2 #0080 ADD2 POP #00 EQU ,&in-range JCN
+			OVR2 INC2 ;err/far ;print-err JSR2
+			&in-range
+			NIP STH2r
 		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
 	&on-litabs STH2r STH2r ,&set-short JMP
 	&on-rawabs STH2r STH2r
@@ -156,9 +160,9 @@ JMP2r
 
 @create-label ( name* -- )
 
-	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN 
+	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
 		DUP2 ;err/dup ;print-err JSR2
-		&unique 
+		&unique
 	( write ref )
 	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
 	INC2r INC2r
@@ -292,7 +296,7 @@ JMP2r
 @sihx ( str* -- flag )
 
 	&while
-		LDAk ,chex JSR #ff NEQ ,&valid JCN 
+		LDAk ,chex JSR #ff NEQ ,&valid JCN
 			POP2 #00 JMP2r &valid
 		INC2 LDAk ,&while JCN
 	POP2
@@ -387,13 +391,9 @@ JMP2r
 	&brk "BRK
 
 @err
-	"--error: $1 
-	&hex "hex $1
-	&lit "lit $1 
-	&dup "dup $1 
-	&label "label $1 
-	&token "token $1 
-	&ref "ref $1 
+	"--error: $1
+	&hex "hex $1 &lit "lit $1  &dup "dup $1
+	&far "far $1 &ref "ref $1 &key "key $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel
