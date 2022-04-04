@@ -23,6 +23,9 @@
 	#0f5f .System/r DEO2
 	#0fcd .System/g DEO2
 	#0fa3 .System/b DEO2
+	( resize )
+	#0300 .Screen/width DEO2
+	#0200 .Screen/height DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
 	#20 ;src STA
@@ -34,7 +37,7 @@
 	;redraw JSR2
 
 BRK
-	&hello-txt "etc/paint.tal $1
+	&hello-txt "etc/hello.tal $1
 
 @on-button ( -> )
 
