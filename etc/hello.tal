@@ -1,8 +1,8 @@
-@program
+|0100 @program
 
 	;hello-word
 	&while
-		( send ) LDAk #18 DEO
+		( send ) LDAk .Console/write DEO
 		( loop ) INC2 LDAk ,&while JCN
 	POP2
 

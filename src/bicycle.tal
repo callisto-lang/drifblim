@@ -20,9 +20,9 @@
 |0100 ( -> )
 
 	( theme )
-	#0f5f .System/r DEO2
-	#0fcd .System/g DEO2
-	#0fa3 .System/b DEO2
+	#4f5f .System/r DEO2
+	#6fcc .System/g DEO2
+	#6fad .System/b DEO2
 	( resize )
 	#0300 .Screen/width DEO2
 	#0200 .Screen/height DEO2
@@ -37,7 +37,7 @@
 	;redraw JSR2
 
 BRK
-	&hello-txt "etc/hello.tal $1
+	&hello-txt "etc/paint.tal $1
 
 @on-button ( -> )
 
@@ -67,7 +67,7 @@ BRK
 	&tab ( char -> ) POP #09 ,&append JMP
 	&linebreak ( char -> ) POP #0a
 	&append ( char -> ) ;insert JSR2 BRK
-	&erase ( char -> ) ;erase JSR2 BRK
+	&erase ( char -> ) POP ;erase JSR2 BRK
 
 ( controls )
 
@@ -132,6 +132,7 @@ JMP2r
 @do-eval ( -- )
 
 	#010e DEO
+	#00 .Screen/auto DEO
 
 	( time to evaluate program )
 	;on-complete .Screen/vector DEO2
@@ -323,6 +324,8 @@ JMP2r
 	;syms .sym/ptr LDZ2 ;mclr JSR2
 	;refs .ref/ptr LDZ2 ;mclr JSR2
 	;dst .p/len LDZ2 #0100 SUB2 ;mclr JSR2
+	( load prefabs )
+	;syms/prefabs ;syms SUB2 .sym/ptr STZ2
 	( begin )
 	#0100 .p/ptr STZ2
 	;src
@@ -803,7 +806,21 @@ JMP2r
 
 ( buffers )
 
-@syms $4000 ( addr* name* )
+@syms 
+
+	0008 "System/r $1
+	000a "System/g $1
+	000c "System/b $1
+	0018 "Console/write $1
+	0026 "Screen/auto $1
+	0028 "Screen/x $1
+	002a "Screen/y $1
+	002c "Screen/addr $1
+	002e "Screen/pixel $1
+	002f "Screen/sprite $1
+	&prefabs 
+
+$4000 ( addr* name* )
 @refs $4000 ( addr* name* )
 
 @src $1000

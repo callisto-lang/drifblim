@@ -1,12 +1,22 @@
-|20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1
-|0100 ;on-mouse .Mouse/vector DEO2 BRK
+#4f5f .System/r DEO2
+#6fcc .System/g DEO2
+#6fad .System/b DEO2
 
-@on-mouse ( -> )
-	#00 .Screen/auto DEO
-	.Mouse/x DEI2 .Screen/x DEO2
-	.Mouse/y DEI2 .Screen/y DEO2
-	;sprite .Screen/addr DEO2
-	#0a4f .Mouse/state DEI #00 NEQ JMP SWP POP .Screen/sprite DEO
-BRK
+;sprite .Screen/addr DEO2
+#0182 #0105
+&ver
+	DUP2 .Screen/y DEO2
+	#0227 #0184
+	&hor
+		DUP2 .Screen/x DEO2
+		#41 .Screen/sprite DEO
+		#0008 ADD2 GTH2k ,&hor JCN
+	POP2 POP2
+	#0008 ADD2 GTH2k ,&ver JCN
+POP2 POP2
+
+,end JMP
+
 @sprite 0000 183c 3c18 0000
+
+@end
