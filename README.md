@@ -19,11 +19,4 @@ uxncli bin/drifblim.rom src/drifblim.tal
 
 If do not wish to assemble it yourself, you can download [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom).
 
-## TODOs
-
-- Warn at program limit.
-- Display program size/limit.
-- Display reference memory limit.
-- Display success message.
-
 _Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
