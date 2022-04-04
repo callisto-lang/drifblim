@@ -22,11 +22,12 @@ fi
 echo "Assembling Examples, from Drifblim.."
 uxncli bin/drifblim.rom etc/hello.tal
 uxncli bin/drifblim.rom etc/error.tal
-# uxncli bin/drifblim.rom etc/drifblim-hex.tal
 
 # echo "Dumping hex.."
+# uxncli bin/drifblim.rom etc/drifblim-hex.tal
 # uxncli etc/drifblim-hex.rom bin/drifblim.rom
+
 # echo "Running rom.."
 uxncli etc/hello.rom
 
-# uxnasm src/bicycle.tal bin/bicycle.rom && uxn11 bin/bicycle.rom
+# uxncli bin/drifblim.rom src/bicycle.tal && mv src/bicycle.rom bin/ && uxn11 bin/bicycle.rom
