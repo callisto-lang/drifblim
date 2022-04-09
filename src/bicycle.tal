@@ -1,8 +1,8 @@
 ( Bicycle )
 
-( 
-	TODO: 
-	Display prefabs 
+(
+	TODO:
+	Display prefabs
 	Display size available
 	Catch console deo
 	Display bytes available for labels in boot
@@ -60,7 +60,7 @@ BRK
 	[ #0d ] EQUk NIP ,&run JCN
 	[ #20 ] LTHk NIP ,&end JCN
 	[ #7e ] GTHk NIP ,&end JCN
-	;src ;slen JSR2 #1000 LTH2 ,&append JCN
+	DUP ,&append JCN
 	&end
 	POP
 
@@ -68,13 +68,13 @@ BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
 	&tab ( char -> ) POP #09 ,&append JMP
 	&append ( char -> ) ;insert JSR2 BRK
-	&run ( char -> ) POP 
+	&run ( char -> ) POP
 		#0a ;src ;scap JSR2 STA
 		;src ;log ;scat JSR2
 		;draw-textarea JSR2
 		;clear JSR2
 		#0000 .selection STZ2
-		;assemble JSR2 
+		;assemble JSR2
 		( cleanup )
 		;src #1000 ;mclr JSR2
 		#20 ;src STA
@@ -143,7 +143,6 @@ JMP2r
 
 JMP2r
 
-
 @do-eval ( -- )
 
 	#010e DEO
@@ -152,7 +151,7 @@ JMP2r
 	;on-complete .Screen/vector DEO2
 	( borrow wst ) #ff .System/wst DEO
 	;dst/clip JMP2
-	
+
 BRK
 
 @on-complete ( -> )
@@ -212,13 +211,13 @@ JMP2r
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
 	#15 .Screen/auto DEO
 	;program-txt #02 ;draw-str JSR2
-	.p/len LDZ2 #0100 SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP 
+	.p/len LDZ2 #0100 SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP
 		;dst/clip [ #01 STHr MUL ] ,draw-memory JSR
 
 JMP2r
 
 @draw-memory ( length addr* color -- )
-	
+
 	STH
 	,&addr STR2
 	.Screen/x DEI2 ,&anchor STR2
@@ -313,16 +312,6 @@ JMP2r
 @draw-lb ( color -- )
 
 	.Screen/y DEI2k #0010 ADD2 ROT DEO2
-
-JMP2r
-
-@make-file ( -- )
-
-	;clear-textarea JSR2
-	;src DUP2 ;slen JSR2 ;mclr JSR2
-	#20 ;src STA
-	#0000 .selection STZ2
-	;draw-textarea JSR2
 
 JMP2r
 
@@ -595,12 +584,6 @@ JMP2r
 
 JMP2r
 
-@sclr ( str* -- )
-
-	DUP2 ;slen JSR2 ;mclr JSR2
-
-JMP2r
-
 @sshort ( str* -- short* )
 
 	INC2k INC2 ,sbyte JSR STH
@@ -685,7 +668,7 @@ JMP2r
 	DUP2 ,slen JSR ADD2
 
 @scpy ( src* dst* -- )
-	
+
 	STH2
 	&while
 		LDAk STH2kr STA INC2r
@@ -868,7 +851,7 @@ JMP2r
 
 ( buffers )
 
-@syms 
+@syms
 
 	0008 "System/r $1
 	000a "System/g $1
@@ -880,12 +863,12 @@ JMP2r
 	002c "Screen/addr $1
 	002e "Screen/pixel $1
 	002f "Screen/sprite $1
-	&prefabs 
+	&prefabs
 
 $4000 ( addr* name* )
 @refs $4000 ( addr* name* )
 
 @log $1000
-@src $80
+@src $1000
 @dst $0100 ( zero-page )
 &clip ( program )
