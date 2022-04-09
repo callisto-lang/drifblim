@@ -35,11 +35,13 @@
 	( vectors )
 	;on-button .Controller/vector DEO2
 	( boot )
-	;&boot-txt ;terminal-append JSR2
+	;&boot-txt ;log ;scat JSR2
+	#01 ;draw-log JSR2
+	( blank )
 	#20 ;insert JSR2
 	#0000 .selection STZ2
 	#20 ;src STA
-	#01 ;draw-textarea JSR2
+	#01 ;draw-src JSR2
 
 BRK
 	&boot-txt
@@ -50,13 +52,12 @@ BRK
 
 	.Controller/key DEI
 	.Controller/button DEI
-	[ #10 ] NEQk NIP ,&no-u JCN ;prev-line JSR2 POP2 BRK &no-u
-	[ #20 ] NEQk NIP ,&no-d JCN ;next-line JSR2 POP2 BRK &no-d
+	[ #10 ] NEQk NIP ,&no-u JCN ;select-start JSR2 POP2 BRK &no-u
+	[ #20 ] NEQk NIP ,&no-d JCN ;select-end JSR2 POP2 BRK &no-d
 	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #0001 SUB2 ;select JSR2 POP2 BRK &no-l
 	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 POP2 BRK &no-r
 	POP
 	[ #08 ] EQUk NIP ,&erase JCN
-	[ #09 ] EQUk NIP ,&tab JCN
 	[ #0d ] EQUk NIP ,&run JCN
 	[ #20 ] LTHk NIP ,&end JCN
 	[ #7e ] GTHk NIP ,&end JCN
@@ -66,32 +67,19 @@ BRK
 
 BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
-	&tab ( char -> ) POP #09 ,&append JMP
 	&append ( char -> ) ;insert JSR2 BRK
-	&run ( char -> ) POP
-		#0a ;src ;scap JSR2 STA
-		;src ;log ;scat JSR2
-		#01 ;draw-textarea JSR2
-		;clear JSR2
-		#0000 .selection STZ2
-		;assemble JSR2
-		( cleanup )
-		;src #1000 ;mclr JSR2
-		#20 ;src STA
-		#01 ;terminal-draw JSR2
-		;do-eval JMP2
-		BRK
-
-( controls )
+	&run ( char -> ) POP ;do-eval JMP2
+		
+( terminal )
 
 @insert ( char -- )
 
 	;src ;slen JSR2 #007f GTH2 ,&skip JCN
-		#00 ;draw-textarea JSR2
+		#00 ;draw-src JSR2
 		.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
 		.selection LDZ2 ;src ADD2 STA
 		.selection LDZ2 INC2 .selection STZ2
-		#01 ;draw-textarea JSR2
+		#01 ;draw-src JSR2
 		;draw-flower JSR2
 		&skip
 
@@ -100,10 +88,10 @@ JMP2r
 @erase ( -- )
 
 	.selection LDZ2 #0000 EQU2 ,&skip JCN
-		#00 ;draw-textarea JSR2
+		#00 ;draw-src JSR2
 		.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
 		.selection LDZ2 #0001 SUB2 .selection STZ2
-		#01 ;draw-textarea JSR2
+		#01 ;draw-src JSR2
 		;draw-flower JSR2
 		&skip
 
@@ -113,13 +101,13 @@ JMP2r
 
 	DUP2 ;src ;slen JSR2 #0001 SUB2 GTH2 ,&skip JCN
 		DUP2 .selection STZ2
-		#01 ;draw-textarea JSR2
+		#01 ;draw-src JSR2
 		&skip
 	POP2
 
 JMP2r
 
-@prev-line ( -- )
+@select-start ( -- )
 
 	#0000 .selection LDZ2 #0001 SUB2
 	&loop
@@ -131,7 +119,7 @@ JMP2r
 
 JMP2r
 
-@next-line ( -- )
+@select-end ( -- )
 
 	;src ;slen JSR2 .selection LDZ2
 	&loop
@@ -144,6 +132,22 @@ JMP2r
 JMP2r
 
 @do-eval ( -- )
+
+	#0a ;src ;scap JSR2 STA
+	;src ;log ;scat JSR2
+	#01 ;draw-src JSR2
+	( clear )
+	#15 .Screen/auto DEO
+	#00 ;draw-src JSR2
+	#00 ;draw-stack JSR2
+	#00 ;draw-assembly JSR2
+
+	#0000 .selection STZ2
+	;assemble JSR2
+	( cleanup )
+	;src #1000 ;mclr JSR2
+	#20 ;src STA
+	#01 ;draw-log JSR2
 
 	#010e DEO
 	#00 .Screen/auto DEO
@@ -158,27 +162,13 @@ BRK
 
 	( released wst ) #00 .System/wst DEO
 	#0000 .Screen/vector DEO2
-	;redraw JSR2
-
-BRK
-
-@clear ( -- )
-
+	
 	#15 .Screen/auto DEO
-	#00 ;draw-textarea JSR2
-	#00 ;draw-stack JSR2
-	#00 ;draw-assembly JSR2
-
-JMP2r
-
-@redraw ( -- )
-
-	#15 .Screen/auto DEO
-	#01 ;draw-textarea JSR2
+	#01 ;draw-src JSR2
 	#01 ;draw-stack JSR2
 	#01 ;draw-assembly JSR2
 
-JMP2r
+BRK
 
 @draw-flower ( -- )
 
@@ -227,7 +217,7 @@ JMP2r
 		.Screen/x DEI2k #0004 ADD2 ROT DEO2
 		INCk #0f AND ,&continue JCN
 			[ LIT2 &anchor $2 ] .Screen/x DEO2
-			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			;draw-lb JSR2
 			&continue
 		INC GTHk ,&loop JCN
 	POP2
@@ -266,30 +256,19 @@ JMP2r
 
 JMP2r
 
-@draw-textarea ( mask -- )
+@draw-src ( mask -- )
 
 	STH
 	#15 .Screen/auto DEO
 	#0020 .Screen/x DEO2
-	#00 ;log ;count-lines JSR2 #0010 MUL2 #0020 ADD2 .Screen/y DEO2
+	#00 ;log ;count-lines JSR2 #40 SFT2 #0020 ADD2 .Screen/y DEO2
 	;src
 	&while
 		DUP2 ;src SUB2 .selection LDZ2 EQU2 #05 MUL ,&sel STR
 		LDAk #03 [ LIT &sel $1 ] ADD STHkr MUL ,draw-char JSR
-		LDAk #09 NEQ ,&no-tab JCN
-			#03 STHkr MUL ;draw-tab JSR2
-			&no-tab
 		INC2 LDAk ,&while JCN
 	POP2
 	POPr
-
-JMP2r
-
-@draw-tab ( color -- )
-
-	;tab-icn .Screen/addr DEO2
-	.Screen/sprite DEO
-	.Screen/x DEI2k #0010 ADD2 ROT DEO2
 
 JMP2r
 
@@ -299,17 +278,7 @@ JMP2r
 
 JMP2r
 
-( terminal )
-
-@terminal-append ( line* -- )
-
-	#00 ;terminal-draw JSR2
-	;log ;scat JSR2
-	#01 ;terminal-draw JSR2
-
-JMP2r
-
-@terminal-draw ( mask -- )
+@draw-log ( mask -- )
 
 	STH
 	#15 .Screen/auto DEO
@@ -318,9 +287,6 @@ JMP2r
 	;log
 	&while
 		LDAk #01 STHkr MUL ;draw-char JSR2
-		LDAk #09 NEQ ,&no-tab JCN
-			#03 STHkr MUL ;draw-tab JSR2
-			&no-tab
 		LDAk #0a NEQ ,&no-lb JCN
 			#0020 .Screen/x DEO2
 			;draw-lb JSR2
@@ -719,8 +685,6 @@ JMP2r
 @stack-txt "Stack 20 $1
 @program-txt "Program 20 $1
 
-@tab-icn
-	0000 0000 0010 187c 1810 0000 0000 0000
 @flowers-icn ( by elioat )
 	0000 0020 1408 0810 40a0 4205 0200 40a0
 	0810 103c 7e7e 3c18 4205 0234 7e7e 3c18
