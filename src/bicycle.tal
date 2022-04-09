@@ -1,5 +1,12 @@
 ( Bicycle )
 
+( 
+	TODO: 
+	Display prefabs 
+	Display size available
+	Catch console deo
+	)
+
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
 |10 @Console &vector $2 &read $1 &pad $5 &write $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
@@ -20,42 +27,34 @@
 |0100 ( -> )
 
 	( theme )
-	#4f5f .System/r DEO2
-	#6fcc .System/g DEO2
-	#6fad .System/b DEO2
-	( resize )
-	#0300 .Screen/width DEO2
-	#0200 .Screen/height DEO2
+	#06ff .System/r DEO2
+	#0c9f .System/g DEO2
+	#0a7f .System/b DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
 	#20 ;src STA
-	( load src )
-	;&hello-txt .File/name DEO2
-	#1000 .File/length DEO2
-	;src .File/read DEO2
 	( draw )
 	;redraw JSR2
+	( boot )
+	;&boot-txt ;terminal-append JSR2
 
 BRK
-	&hello-txt "etc/paint.tal $1
+	&boot-txt
+		"Varvara's 20 "Bicycle 20 "Version 20 "1.0 0a
+		"51391 20 "Bytes 20 "free 0a "Ready. 0a 0a $1
 
 @on-button ( -> )
 
-	.Controller/button DEI
-	[ #10 ] NEQk NIP ,&no-u JCN ;prev-line JSR2 &no-u
-	[ #20 ] NEQk NIP ,&no-d JCN ;next-line JSR2 &no-d
-	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #ffff ADD2 ;select JSR2 &no-l
-	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 &no-r
-	[ #08 ] NEQk NIP ,&no-start JCN
-		POP
-		;clear JSR2
-		;assemble JSR2
-		;do-eval JMP2 &no-start
-	POP
-
 	.Controller/key DEI
+	.Controller/button DEI
+	[ #10 ] NEQk NIP ,&no-u JCN ;prev-line JSR2 POP2 BRK &no-u
+	[ #20 ] NEQk NIP ,&no-d JCN ;next-line JSR2 POP2 BRK &no-d
+	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #ffff ADD2 ;select JSR2 POP2 BRK &no-l
+	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 POP2 BRK &no-r
+	DUP2 [ LIT 'n #01 ] NEQ2 ,&no-new JCN POP2 ;make-file JSR2 BRK &no-new
+	POP
 	[ #09 ] EQUk NIP ,&tab JCN
-	[ #0d ] EQUk NIP ,&linebreak JCN
+	[ #0d ] EQUk NIP ,&eval JCN
 	[ #08 ] EQUk NIP ,&erase JCN
 	[ #20 ] LTHk NIP ,&end JCN
 	[ #7e ] GTHk NIP ,&end JCN
@@ -65,9 +64,26 @@ BRK
 
 BRK
 	&tab ( char -> ) POP #09 ,&append JMP
-	&linebreak ( char -> ) POP #0a
+
 	&append ( char -> ) ;insert JSR2 BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
+
+	&eval ( char -> ) POP 
+
+	#0a ;src ;scap JSR2 STA
+	;src ;log ;scat JSR2
+	;draw-textarea JSR2
+	;clear JSR2
+	#0000 .selection STZ2
+	;assemble JSR2 
+
+	( cleanup )
+	;src #1000 ;mclr JSR2
+	#20 ;src STA
+	#01 ;terminal-draw JSR2
+	;do-eval JMP2
+
+	BRK
 
 ( controls )
 
@@ -133,11 +149,9 @@ JMP2r
 
 	#010e DEO
 	#00 .Screen/auto DEO
-
 	( time to evaluate program )
 	;on-complete .Screen/vector DEO2
 	( borrow wst ) #ff .System/wst DEO
-	( clear stack ) #00 #ffff STA
 	;dst/clip JMP2
 	
 BRK
@@ -258,19 +272,14 @@ JMP2r
 
 	#15 .Screen/auto DEO
 	#0020 .Screen/x DEO2
-	#0020 .Screen/y DEO2
-	.Screen/x DEI2 ,&anchor STR2
+	#00 ;log ;count-lines JSR2 #0010 MUL2 #0020 ADD2 .Screen/y DEO2
 	;src STH2k
 	&while
-		DUP2 STH2kr SUB2 .selection LDZ2 EQU2 #0b MUL ,&sel STR
-		LDAk #01 [ LIT &sel $1 ] ADD ,draw-char JSR
+		DUP2 STH2kr SUB2 .selection LDZ2 EQU2 #05 MUL ,&sel STR
+		LDAk #03 [ LIT &sel $1 ] ADD ,draw-char JSR
 		LDAk #09 NEQ ,&no-tab JCN
 			#03 ;draw-tab JSR2
 			&no-tab
-		LDAk #0a NEQ ,&no-lb JCN
-			[ LIT2 &anchor $2 ] .Screen/x DEO2
-			;draw-lb JSR2
-			&no-lb
 		INC2 LDAk ,&while JCN
 	POP2
 	POP2r
@@ -281,18 +290,13 @@ JMP2r
 
 	#15 .Screen/auto DEO
 	#0020 .Screen/x DEO2
-	#0020 .Screen/y DEO2
-	.Screen/x DEI2 ,&anchor STR2
+	#00 ;log ;count-lines JSR2 #0010 MUL2 #0020 ADD2 .Screen/y DEO2
 	;src STH2k
 	&while
 		#00 .Screen/sprite DEO
 		LDAk #09 NEQ ,&no-tab JCN
 			#00 ;draw-tab JSR2
 			&no-tab
-		LDAk #0a NEQ ,&no-lb JCN
-			[ LIT2 &anchor $2 ] .Screen/x DEO2
-			;draw-lb JSR2
-			&no-lb
 		INC2 LDAk ,&while JCN
 	POP2
 	POP2r
@@ -313,6 +317,59 @@ JMP2r
 
 JMP2r
 
+@make-file ( -- )
+
+	;clear-textarea JSR2
+	;src DUP2 ;slen JSR2 ;mclr JSR2
+	#20 ;src STA
+	#0000 .selection STZ2
+	;draw-textarea JSR2
+
+JMP2r
+
+( terminal )
+
+@terminal-append ( line* -- )
+
+	#00 ;terminal-draw JSR2
+	;log ;scat JSR2
+	#01 ;terminal-draw JSR2
+
+JMP2r
+
+@terminal-draw ( mask -- )
+
+	STH
+	#15 .Screen/auto DEO
+	#0020 .Screen/x DEO2
+	#0020 .Screen/y DEO2
+	;log
+	&while
+		LDAk #01 STHkr MUL ;draw-char JSR2
+		LDAk #09 NEQ ,&no-tab JCN
+			#03 STHkr MUL ;draw-tab JSR2
+			&no-tab
+		LDAk #0a NEQ ,&no-lb JCN
+			#0020 .Screen/x DEO2
+			;draw-lb JSR2
+			&no-lb
+		INC2 LDAk ,&while JCN
+	POP2
+	POPr
+
+JMP2r
+
+@count-lines ( str* -- lines )
+
+	LITr 00
+	&while
+		LDAk #0a EQU STH ADDr
+		INC2 LDAk ,&while JCN
+	POP2
+	STHr
+
+JMP2r
+
 ( assembler )
 
 @assemble ( -- )
@@ -324,6 +381,7 @@ JMP2r
 	;syms .sym/ptr LDZ2 ;mclr JSR2
 	;refs .ref/ptr LDZ2 ;mclr JSR2
 	;dst .p/len LDZ2 #0100 SUB2 ;mclr JSR2
+	;dst #1000 ;mclr JSR2
 	( load prefabs )
 	;syms/prefabs ;syms SUB2 .sym/ptr STZ2
 	( begin )
@@ -535,6 +593,12 @@ JMP2r
 	LDA2k STH2 INC2 INC2 EQU2r
 	LDA STH LDA STH EQUr
 	ANDr STHr
+
+JMP2r
+
+@sclr ( str* -- )
+
+	DUP2 ;slen JSR2 ;mclr JSR2
 
 JMP2r
 
@@ -823,6 +887,7 @@ JMP2r
 $4000 ( addr* name* )
 @refs $4000 ( addr* name* )
 
+@log $1000
 @src $1000
 @dst $0100 ( zero-page )
 &clip ( program )
