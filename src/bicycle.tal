@@ -52,13 +52,12 @@ BRK
 	.Controller/button DEI
 	[ #10 ] NEQk NIP ,&no-u JCN ;prev-line JSR2 POP2 BRK &no-u
 	[ #20 ] NEQk NIP ,&no-d JCN ;next-line JSR2 POP2 BRK &no-d
-	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #ffff ADD2 ;select JSR2 POP2 BRK &no-l
+	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #0001 SUB2 ;select JSR2 POP2 BRK &no-l
 	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 POP2 BRK &no-r
-	DUP2 [ LIT 'n #01 ] NEQ2 ,&no-new JCN POP2 ;make-file JSR2 BRK &no-new
 	POP
-	[ #09 ] EQUk NIP ,&tab JCN
-	[ #0d ] EQUk NIP ,&eval JCN
 	[ #08 ] EQUk NIP ,&erase JCN
+	[ #09 ] EQUk NIP ,&tab JCN
+	[ #0d ] EQUk NIP ,&run JCN
 	[ #20 ] LTHk NIP ,&end JCN
 	[ #7e ] GTHk NIP ,&end JCN
 	;src ;slen JSR2 #1000 LTH2 ,&append JCN
@@ -66,37 +65,56 @@ BRK
 	POP
 
 BRK
-	&tab ( char -> ) POP #09 ,&append JMP
-
-	&append ( char -> ) ;insert JSR2 BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
-
-	&eval ( char -> ) POP 
-
-	#0a ;src ;scap JSR2 STA
-	;src ;log ;scat JSR2
-	;draw-textarea JSR2
-	;clear JSR2
-	#0000 .selection STZ2
-	;assemble JSR2 
-
-	( cleanup )
-	;src #1000 ;mclr JSR2
-	#20 ;src STA
-	#01 ;terminal-draw JSR2
-	;do-eval JMP2
-
-	BRK
+	&tab ( char -> ) POP #09 ,&append JMP
+	&append ( char -> ) ;insert JSR2 BRK
+	&run ( char -> ) POP 
+		#0a ;src ;scap JSR2 STA
+		;src ;log ;scat JSR2
+		;draw-textarea JSR2
+		;clear JSR2
+		#0000 .selection STZ2
+		;assemble JSR2 
+		( cleanup )
+		;src #1000 ;mclr JSR2
+		#20 ;src STA
+		#01 ;terminal-draw JSR2
+		;do-eval JMP2
+		BRK
 
 ( controls )
+
+@insert ( char -- )
+
+	;src ;slen JSR2 #007f GTH2 ,&skip JCN
+		;clear-textarea JSR2
+		.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
+		.selection LDZ2 ;src ADD2 STA
+		.selection LDZ2 INC2 .selection STZ2
+		;draw-textarea JSR2
+		;draw-flower JSR2
+		&skip
+
+JMP2r
+
+@erase ( -- )
+
+	.selection LDZ2 #0000 EQU2 ,&skip JCN
+		;clear-textarea JSR2
+		.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
+		.selection LDZ2 #0001 SUB2 .selection STZ2
+		;draw-textarea JSR2
+		;draw-flower JSR2
+		&skip
+
+JMP2r
 
 @select ( addr* -- )
 
 	DUP2 ;src ;slen JSR2 #0001 SUB2 GTH2 ,&skip JCN
-
-	DUP2 .selection STZ2
-	;draw-textarea JSR2
-	&skip
+		DUP2 .selection STZ2
+		;draw-textarea JSR2
+		&skip
 	POP2
 
 JMP2r
@@ -120,33 +138,11 @@ JMP2r
 		DUP2 ;src ADD2 LDA #0a EQU ,&end JCN
 		INC2 GTH2k ,&loop JCN
 	&end
-	NIP2 INC2
+	NIP2 #0001 SUB2
 	;select JSR2
 
 JMP2r
 
-@insert ( char -- )
-
-	;clear-textarea JSR2
-	.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
-	.selection LDZ2 ;src ADD2 STA
-	.selection LDZ2 INC2 .selection STZ2
-	;draw-textarea JSR2
-	;draw-flower JSR2
-
-JMP2r
-
-@erase ( -- )
-
-	.selection LDZ2 #0000 EQU2 ,&skip JCN
-	;clear-textarea JSR2
-	.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
-	.selection LDZ2 #0001 SUB2 .selection STZ2
-	;draw-textarea JSR2
-	;draw-flower JSR2
-	&skip
-
-JMP2r
 
 @do-eval ( -- )
 
@@ -890,6 +886,6 @@ $4000 ( addr* name* )
 @refs $4000 ( addr* name* )
 
 @log $1000
-@src $1000
+@src $80
 @dst $0100 ( zero-page )
 &clip ( program )
