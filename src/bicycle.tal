@@ -5,6 +5,8 @@
 	Display prefabs 
 	Display size available
 	Catch console deo
+	Display bytes available for labels in boot
+	Trim lines
 	)
 
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
@@ -32,11 +34,12 @@
 	#0a7f .System/b DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
-	#20 ;src STA
-	( draw )
-	;redraw JSR2
 	( boot )
 	;&boot-txt ;terminal-append JSR2
+	#20 ;insert JSR2
+	#0000 .selection STZ2
+	#20 ;src STA
+	;draw-textarea JSR2
 
 BRK
 	&boot-txt
@@ -169,7 +172,7 @@ BRK
 	#15 .Screen/auto DEO
 	;clear-textarea JSR2
 	#00 ;draw-stack JSR2
-	#00 ;draw-dst JSR2
+	#00 ;draw-assembly JSR2
 
 JMP2r
 
@@ -178,8 +181,7 @@ JMP2r
 	#15 .Screen/auto DEO
 	;draw-textarea JSR2
 	#01 ;draw-stack JSR2
-	#01 ;draw-dst JSR2
-	;draw-flower JSR2
+	#01 ;draw-assembly JSR2
 
 JMP2r
 
@@ -203,18 +205,19 @@ JMP2r
 	.Screen/height DEI2 #0040 SUB2 .Screen/y DEO2
 	#15 .Screen/auto DEO
 	;stack-txt #02 ;draw-str JSR2
-	#ffff LDA #ff00 #01 STHr MUL ,draw-memory JSR
+	#ffff LDA #ff00 [ #01 STHr MUL ] ,draw-memory JSR
 
 JMP2r
 
-@draw-dst ( color -- )
+@draw-assembly ( mask -- )
 
 	STH
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
 	#15 .Screen/auto DEO
 	;program-txt #02 ;draw-str JSR2
-	.p/len LDZ2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP ;dst/clip #01 STHr MUL ,draw-memory JSR
+	.p/len LDZ2 #0100 SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP 
+		;dst/clip [ #01 STHr MUL ] ,draw-memory JSR
 
 JMP2r
 
@@ -750,7 +753,6 @@ JMP2r
 
 ( assets )
 
-@prompt-txt "Do 20 $1
 @stack-txt "Stack 20 $1
 @program-txt "Program 20 $1
 
