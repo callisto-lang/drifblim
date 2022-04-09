@@ -6,7 +6,6 @@
 	Display size available
 	Catch console deo
 	Display bytes available for labels in boot
-	Trim lines
 	)
 
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
@@ -135,6 +134,15 @@ JMP2r
 
 	#0a ;src ;scap JSR2 STA
 	;src ;log ;scat JSR2
+
+	;log ;count-lines JSR2 #0d LTH ,&skip JCN
+		#00 ;draw-log JSR2
+		( from* ) ;log #0a ;schr JSR2 INC2
+		( to* ) ;log
+		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
+		;mcpy JSR2
+		&skip
+
 	#01 ;draw-src JSR2
 	( clear )
 	#15 .Screen/auto DEO
@@ -174,7 +182,7 @@ BRK
 
 	( flower )
 	#0010 .Screen/x DEO2
-	#001f .Screen/y DEO2
+	#001d .Screen/y DEO2
 	#15 .Screen/auto DEO
 	;flowers-icn #00 ;src ;slen JSR2 ADD #06 DIVk MUL SUB #50 SFT2 ADD2 .Screen/addr DEO2
 	#81 .Screen/sprite DEO
@@ -581,6 +589,17 @@ JMP2r
 
 JMP2r
 
+@mcpy ( from* to* len* -- )
+
+	SWP2 STH2
+	ADD2k NIP2 SWP2
+	&loop
+		LDAk STH2kr STA INC2 INC2r
+		GTH2k ,&loop JCN
+	POP2 POP2 POP2r
+
+JMP2r
+
 @msfl ( origin* length* -- )
 
 	SWP2
@@ -597,6 +616,17 @@ JMP2r
 		INC2k STH2 LDAk STH2r STA
 		#0001 SUB2 LTH2k ,&loop JCN
 	POP2 POP2
+
+JMP2r
+
+@schr ( str* char --  str* )
+
+	STH
+	&while
+		LDAk STHkr EQU ,&end JCN
+		INC2 LDAk ,&while JCN
+	&end
+	POPr
 
 JMP2r
 

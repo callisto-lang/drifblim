@@ -2,9 +2,9 @@
 
 [Drifblim](https://wiki.xxiivv.com/drifblim) is a [Uxntal](https://wiki.xxiivv.com/site/uxntal.html) assembler, written in that same language. 
 
-The assembler is written in about 400 lines, it's designed to help bootstrap the Uxn ecosystem and to demonstrate the concept of a personal one-page computer concept. The goal is for Driflim's source code to be released as a print-friendly document, along with its assembled hexadecimal data and the napkin definition of the Uxn virtual machine.
+The assembler is written in about 400 lines, it's designed to help bootstrap the Uxn ecosystem and to demonstrate the concept of a personal one-page computer concept. The goal is for Driflim's source code to be released as a print-friendly document, along with its assembled hexadecimal data and the _napkin definition_ of the Uxn virtual machine.
 
-The Drifblim project also a REPL program, called the `bicycle`. More on this later.
+The Drifblim project also includes a REPL program, called `varvara's bicycle`.
 
 ## Build
 
