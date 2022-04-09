@@ -39,7 +39,7 @@
 	#20 ;insert JSR2
 	#0000 .selection STZ2
 	#20 ;src STA
-	;draw-textarea JSR2
+	#01 ;draw-textarea JSR2
 
 BRK
 	&boot-txt
@@ -71,7 +71,7 @@ BRK
 	&run ( char -> ) POP
 		#0a ;src ;scap JSR2 STA
 		;src ;log ;scat JSR2
-		;draw-textarea JSR2
+		#01 ;draw-textarea JSR2
 		;clear JSR2
 		#0000 .selection STZ2
 		;assemble JSR2
@@ -87,11 +87,11 @@ BRK
 @insert ( char -- )
 
 	;src ;slen JSR2 #007f GTH2 ,&skip JCN
-		;clear-textarea JSR2
+		#00 ;draw-textarea JSR2
 		.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
 		.selection LDZ2 ;src ADD2 STA
 		.selection LDZ2 INC2 .selection STZ2
-		;draw-textarea JSR2
+		#01 ;draw-textarea JSR2
 		;draw-flower JSR2
 		&skip
 
@@ -100,10 +100,10 @@ JMP2r
 @erase ( -- )
 
 	.selection LDZ2 #0000 EQU2 ,&skip JCN
-		;clear-textarea JSR2
+		#00 ;draw-textarea JSR2
 		.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
 		.selection LDZ2 #0001 SUB2 .selection STZ2
-		;draw-textarea JSR2
+		#01 ;draw-textarea JSR2
 		;draw-flower JSR2
 		&skip
 
@@ -113,7 +113,7 @@ JMP2r
 
 	DUP2 ;src ;slen JSR2 #0001 SUB2 GTH2 ,&skip JCN
 		DUP2 .selection STZ2
-		;draw-textarea JSR2
+		#01 ;draw-textarea JSR2
 		&skip
 	POP2
 
@@ -165,7 +165,7 @@ BRK
 @clear ( -- )
 
 	#15 .Screen/auto DEO
-	;clear-textarea JSR2
+	#00 ;draw-textarea JSR2
 	#00 ;draw-stack JSR2
 	#00 ;draw-assembly JSR2
 
@@ -174,7 +174,7 @@ JMP2r
 @redraw ( -- )
 
 	#15 .Screen/auto DEO
-	;draw-textarea JSR2
+	#01 ;draw-textarea JSR2
 	#01 ;draw-stack JSR2
 	#01 ;draw-assembly JSR2
 
@@ -266,38 +266,22 @@ JMP2r
 
 JMP2r
 
-@draw-textarea ( -- )
+@draw-textarea ( mask -- )
 
+	STH
 	#15 .Screen/auto DEO
 	#0020 .Screen/x DEO2
 	#00 ;log ;count-lines JSR2 #0010 MUL2 #0020 ADD2 .Screen/y DEO2
-	;src STH2k
+	;src
 	&while
-		DUP2 STH2kr SUB2 .selection LDZ2 EQU2 #05 MUL ,&sel STR
-		LDAk #03 [ LIT &sel $1 ] ADD ,draw-char JSR
+		DUP2 ;src SUB2 .selection LDZ2 EQU2 #05 MUL ,&sel STR
+		LDAk #03 [ LIT &sel $1 ] ADD STHkr MUL ,draw-char JSR
 		LDAk #09 NEQ ,&no-tab JCN
-			#03 ;draw-tab JSR2
+			#03 STHkr MUL ;draw-tab JSR2
 			&no-tab
 		INC2 LDAk ,&while JCN
 	POP2
-	POP2r
-
-JMP2r
-
-@clear-textarea ( -- )
-
-	#15 .Screen/auto DEO
-	#0020 .Screen/x DEO2
-	#00 ;log ;count-lines JSR2 #0010 MUL2 #0020 ADD2 .Screen/y DEO2
-	;src STH2k
-	&while
-		#00 .Screen/sprite DEO
-		LDAk #09 NEQ ,&no-tab JCN
-			#00 ;draw-tab JSR2
-			&no-tab
-		INC2 LDAk ,&while JCN
-	POP2
-	POP2r
+	POPr
 
 JMP2r
 
