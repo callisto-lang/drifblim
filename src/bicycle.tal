@@ -190,8 +190,8 @@ JMP2r
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0050 SUB2 .Screen/y DEO2
 	( clear )
-	#15 .Screen/auto DEO
-	#3000
+	#11 .Screen/auto DEO
+	.Screen/width DEI2 #03 SFT2 NIP #08 SUB #00
 	&loop
 		#00 .Screen/sprite DEO
 		INC GTHk ,&loop JCN
@@ -690,11 +690,6 @@ JMP2r
 
 JMP2r
 
-@print-err ( token* err* -- )
-
-	LIT '! .Console/write DEO
-	SWP2 ,print-str JSR #2018 DEO
-
 @print-str ( str* -- )
 
 	&while
@@ -721,7 +716,7 @@ JMP2r
 
 @err
 	"Error 20 $1
-	&lithx "Hexadecimal $1 
+	&lithx "Number $1 
 	&label "Label $1 
 	&token "Token $1 
 	&reslv "RESLV $1
@@ -734,7 +729,6 @@ JMP2r
 
 ( assets )
 
-@state-txt "Bicycle 20 $1
 @stack-txt "Stack 20 $1
 @program-txt "Program 20 $1
 
