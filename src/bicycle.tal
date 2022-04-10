@@ -156,7 +156,7 @@ JMP2r
 	;assemble JSR2
 	;src #0080 ;mclr JSR2
 	#20 ;src STA
-	
+
 	#00 .Screen/auto DEO
 	( time to evaluate program )
 	;&on-complete .Screen/vector DEO2
@@ -397,13 +397,17 @@ JMP2r
 	LDAk LIT ': EQU ,&on-rawabs JCN
 	POP2r POP2r
 
-;err/reslv ;draw-state JMP2
+;err/ref ;draw-state JMP2
 
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
-	&on-litrel STH2r ;dst ADD2 STH2kr LDA2 ;dst ADD2 SUB2 #0002 SUB2 NIP STH2r
+	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2
+		DUP2 #0080 ADD2 POP #00 EQU ,&in-range JCN
+			OVR2 INC2 ;err/far ;draw-state JSR2
+			&in-range
+			NIP STH2r
 		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
-	&on-litabs STH2r ;dst ADD2 STH2r ,&set-short JMP
-	&on-rawabs STH2r ;dst ADD2 STH2r
+	&on-litabs STH2r STH2r ,&set-short JMP
+	&on-rawabs STH2r STH2r
 		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
 
 @find-label ( name* -- addr* )
@@ -733,7 +737,8 @@ JMP2r
 	&lithx "Number $1 
 	&label "Label $1 
 	&token "Token $1 
-	&reslv "RESLV $1
+	&far "Out-of-range $1
+	&ref "Reference $1
 	&eval "Eval $1
 	&unknown "Unknown $1
 	&underflow "Underflow $1
@@ -866,7 +871,6 @@ JMP2r
 ( buffers )
 
 @syms
-
 	0008 "System/r $1
 	000a "System/g $1
 	000c "System/b $1
@@ -877,6 +881,7 @@ JMP2r
 	002c "Screen/addr $1
 	002e "Screen/pixel $1
 	002f "Screen/sprite $1
+	:print "print $1
 	&prefabs
 
 $4000 ( addr* name* )
