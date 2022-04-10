@@ -38,9 +38,7 @@
 	#01 ;draw-log JSR2
 	( blank )
 	#20 ;insert JSR2
-	#0000 .selection STZ2
-	#20 ;src STA
-	#01 ;draw-src JSR2
+	#0000 ;select JSR2
 
 BRK
 	&boot-txt
@@ -139,26 +137,26 @@ JMP2r
 	( huh.. clean this up! )
 	#0a ;src ;scap JSR2 STA
 	;src ;log ;scat JSR2
-	;log ;count-lines JSR2 #0d LTH ,&skip JCN
+	;log ;count-lines JSR2 #0c LTH ,&skip JCN
 		#00 ;draw-log JSR2
 		( from* ) ;log #0a ;schr JSR2 INC2
 		( to* ) ;log
 		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
 		;mcpy JSR2
 		&skip
-	#01 ;draw-src JSR2
+	#01 ;draw-log JSR2
 	( clear )
 	#15 .Screen/auto DEO
 	#00 ;draw-src JSR2
 	#00 ;draw-stack JSR2
 	#00 ;draw-assembly JSR2
 	#0000 .selection STZ2
-	;assemble JSR2
+
 	( cleanup )
+	;assemble JSR2
 	;src #0080 ;mclr JSR2
 	#20 ;src STA
-	#01 ;draw-log JSR2
-	#010e DEO
+	
 	#00 .Screen/auto DEO
 	( time to evaluate program )
 	;&on-complete .Screen/vector DEO2
