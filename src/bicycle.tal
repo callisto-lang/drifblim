@@ -5,8 +5,7 @@
 	Display prefabs
 	Display size available
 	Catch console deo
-	Display bytes available for labels in boot
-	)
+	Display bytes available for labels in boot )
 
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
 |10 @Console &vector $2 &read $1 &pad $5 &write $1
@@ -53,6 +52,7 @@ BRK
 	[ #20 ] NEQk NIP ,&no-d JCN ;select-end JSR2 POP2 BRK &no-d
 	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #0001 SUB2 ;select JSR2 POP2 BRK &no-l
 	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 POP2 BRK &no-r
+	DUP2 LIT 'v #01 NEQ2 ,&no-cv JCN ;paste-snarf JSR2 POP2 BRK &no-cv
 	POP
 	[ #08 ] EQUk NIP ,&erase JCN
 	[ #0d ] EQUk NIP ,&run JCN
@@ -134,17 +134,10 @@ JMP2r
 @do-eval ( -- )
 
 	;clear-state JSR2
-	( huh.. clean this up! )
+	( Add linebreak )
 	#0a ;src ;scap JSR2 STA
-	;src ;log ;scat JSR2
-	;log ;count-lines JSR2 #0c LTH ,&skip JCN
-		#00 ;draw-log JSR2
-		( from* ) ;log #0a ;schr JSR2 INC2
-		( to* ) ;log
-		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
-		;mcpy JSR2
-		&skip
-	#01 ;draw-log JSR2
+	( cat to log )
+	;src ;term-cat-str JSR2
 	( clear )
 	#15 .Screen/auto DEO
 	#00 ;draw-src JSR2
@@ -188,6 +181,30 @@ BRK
 	&errcodes
 		:err/unknown :err/underflow :err/overflow :err/zero
 
+@term-cat-str ( str* -- )
+
+	;log ;scat JSR2
+	,term-update JSR
+
+JMP2r
+
+@term-cat-chr ( char -- )
+
+	;log ;scap JSR2 STA
+
+@term-update ( -- )
+
+	;log ;count-lines JSR2 #0c LTH ,&skip JCN
+		#00 ;draw-log JSR2
+		( from* ) ;log #0a ;schr JSR2 INC2
+		( to* ) ;log
+		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
+		;mcpy JSR2
+		&skip
+	#01 ;draw-log JSR2
+
+JMP2r
+
 @draw-flower ( -- )
 
 	( flower )
@@ -226,13 +243,13 @@ JMP2r
 
 JMP2r
 
-@draw-stack ( color -- )
+@draw-stack ( mask -- )
 
 	STH
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0040 SUB2 .Screen/y DEO2
 	;stack-txt #02 ;draw-str JSR2
-	#ffff LDA #ff00 [ #01 STHr MUL ] ,draw-memory JSR
+	#ffff LDA #ff00 STHr ,draw-memory JSR
 
 JMP2r
 
@@ -243,18 +260,18 @@ JMP2r
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
 	;program-txt #02 ;draw-str JSR2
 	.p/len LDZ2 #0100 SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP
-		;dst/clip [ #01 STHr MUL ] ,draw-memory JSR
+		;dst/clip STHr ,draw-memory JSR
 
 JMP2r
 
-@draw-memory ( length addr* color -- )
+@draw-memory ( length addr* mask -- )
 
 	STH
 	,&addr STR2
 	.Screen/x DEI2 ,&anchor STR2
 	#00 EQUk ,&skip JCN
 	&loop
-		#00 OVR [ LIT2 &addr $2 ] ADD2 LDA #01 STHkr MUL ,draw-byte JSR
+		#00 OVR [ LIT2 &addr $2 ] ADD2 LDA STHkr ,draw-byte JSR
 		.Screen/x DEI2k #0004 ADD2 ROT DEO2
 		INCk #0f AND ,&continue JCN
 			[ LIT2 &anchor $2 ] ;draw-lb JSR2
@@ -327,7 +344,7 @@ JMP2r
 	#0020 .Screen/y DEO2
 	;log
 	&while
-		LDAk #01 STHkr MUL ;draw-char JSR2
+		LDAk STHkr ;draw-char JSR2
 		LDAk #0a NEQ ,&no-lb JCN
 			#0020 ;draw-lb JSR2
 			&no-lb
@@ -345,6 +362,22 @@ JMP2r
 		INC2 LDAk ,&while JCN
 	POP2
 	STHr
+
+JMP2r
+
+( snarf )
+
+@snarf-txt ".snarf $1
+
+@paste-snarf ( -- )
+
+	#00 ;draw-src JSR2
+	;src #0080 ;mclr JSR2
+	;snarf-txt .File/name DEO2
+	#0080 .File/length DEO2
+	;src .File/read DEO2
+	#01 ;draw-src JSR2
+	;src ;slen JSR2 #0001 SUB2 ;select JSR2
 
 JMP2r
 
@@ -882,6 +915,8 @@ JMP2r
 	002e "Screen/pixel $1
 	002f "Screen/sprite $1
 	:print "print $1
+	:term-cat-chr "char $1
+	:term-cat-str "text $1
 	&prefabs
 
 $4000 ( addr* name* )
