@@ -135,6 +135,7 @@ JMP2r
 
 @do-eval ( -- )
 
+	;clear-state JSR2
 	( huh.. clean this up! )
 	#0a ;src ;scap JSR2 STA
 	;src ;log ;scat JSR2
@@ -154,7 +155,7 @@ JMP2r
 	#0000 .selection STZ2
 	;assemble JSR2
 	( cleanup )
-	;src #1000 ;mclr JSR2
+	;src #0080 ;mclr JSR2
 	#20 ;src STA
 	#01 ;draw-log JSR2
 	#010e DEO
@@ -181,6 +182,33 @@ BRK
 	#15 .Screen/auto DEO
 	;flowers-icn #00 ;src ;slen JSR2 ADD #06 DIVk MUL SUB #50 SFT2 ADD2 .Screen/addr DEO2
 	#81 .Screen/sprite DEO
+
+JMP2r
+
+@clear-state ( -- )
+
+	#0020 .Screen/x DEO2
+	.Screen/height DEI2 #0050 SUB2 .Screen/y DEO2
+	( clear )
+	#15 .Screen/auto DEO
+	#3000
+	&loop
+		#00 .Screen/sprite DEO
+		INC GTHk ,&loop JCN
+	POP2
+
+JMP2r
+
+@draw-state ( token* msg* -- )
+
+	;clear-state JSR2
+	#0020 .Screen/x DEO2
+	.Screen/height DEI2 #0050 SUB2 .Screen/y DEO2
+	;err #02 ;draw-str JSR2
+	#01 ;draw-str JSR2
+	#28 #01 ;draw-char JSR2
+	#03 ;draw-str JSR2
+	#29 #01 ;draw-char JSR2
 
 JMP2r
 
@@ -355,7 +383,7 @@ JMP2r
 	LDAk LIT ': EQU ,&on-rawabs JCN
 	POP2r POP2r
 
-;err/reslv ;print-err JMP2
+;err/reslv ;draw-state JMP2
 
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
 	&on-litrel STH2r ;dst ADD2 STH2kr LDA2 ;dst ADD2 SUB2 #0002 SUB2 NIP STH2r
@@ -372,7 +400,7 @@ JMP2r
 		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	STH2r ;err/label ;print-err JSR2
+	STH2r ;err/label ;draw-state JSR2
 	#0000
 
 JMP2r
@@ -397,7 +425,7 @@ JMP2r
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/token ;print-err JMP2
+;err/token ;draw-state JMP2
 
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;sshort JSR2 ;write-short JMP2
@@ -410,7 +438,7 @@ JMP2r
 	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/lithx ;print-err JMP2
+;err/lithx ;draw-state JMP2
 
 	&on-short ;sshort JSR2 ;write-litshort JMP2
 	&on-byte ;sbyte JSR2 ;write-litbyte JMP2
@@ -692,7 +720,11 @@ JMP2r
 	&brk "BRK
 
 @err
-	&lithx "LITHX $1 &label "LABEL $1 &token "TOKEN $1 &reslv "RESLV $1
+	"Error 20 $1
+	&lithx "Hexadecimal $1 
+	&label "Label $1 
+	&token "Token $1 
+	&reslv "RESLV $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel
@@ -702,6 +734,7 @@ JMP2r
 
 ( assets )
 
+@state-txt "Bicycle 20 $1
 @stack-txt "Stack 20 $1
 @program-txt "Program 20 $1
 
