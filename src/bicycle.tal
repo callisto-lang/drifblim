@@ -73,26 +73,29 @@ BRK
 
 @insert ( char -- )
 
-	;src ;slen JSR2 #007f GTH2 ,&skip JCN
-		#00 ;draw-src JSR2
-		.selection LDZ2 ;src ADD2 #0001 SUB2 #0fff ;src ADD2 ;msfr JSR2
-		.selection LDZ2 ;src ADD2 STA
-		.selection LDZ2 INC2 .selection STZ2
-		#01 ;draw-src JSR2
-		;draw-flower JSR2
-		&skip
+	;src ;slen JSR2 #0080 LTH2 ,&continue JCN 
+		POP JMP2r 
+		&continue
+	#00 ;draw-src JSR2
+	.selection LDZ2 
+		INC2k .selection STZ2 
+		;src ADD2 DUP2 #0001 SUB2 ;src ;scap JSR2 ;msfr JSR2 STA
+	#01 ;draw-src JSR2
+	;draw-flower JSR2
 
 JMP2r
 
 @erase ( -- )
 
-	.selection LDZ2 #0000 EQU2 ,&skip JCN
-		#00 ;draw-src JSR2
-		.selection LDZ2 ;src ADD2 #0001 SUB2 #1000 ;src ADD2 ;msfl JSR2
-		.selection LDZ2 #0001 SUB2 .selection STZ2
-		#01 ;draw-src JSR2
-		;draw-flower JSR2
-		&skip
+	.selection LDZ2 #0000 NEQ2 ,&continue JCN 
+		JMP2r 
+		&continue
+	#00 ;draw-src JSR2
+	.selection LDZ2 
+		DUP2 #0001 SUB2 .selection STZ2
+		;src ADD2 #0001 SUB2 ;src ;scap JSR2 ;msfl JSR2
+	#01 ;draw-src JSR2
+	;draw-flower JSR2
 
 JMP2r
 
@@ -132,9 +135,9 @@ JMP2r
 
 @do-eval ( -- )
 
+	( huh.. clean this up! )
 	#0a ;src ;scap JSR2 STA
 	;src ;log ;scat JSR2
-
 	;log ;count-lines JSR2 #0d LTH ,&skip JCN
 		#00 ;draw-log JSR2
 		( from* ) ;log #0a ;schr JSR2 INC2
@@ -142,35 +145,27 @@ JMP2r
 		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
 		;mcpy JSR2
 		&skip
-
 	#01 ;draw-src JSR2
 	( clear )
 	#15 .Screen/auto DEO
 	#00 ;draw-src JSR2
 	#00 ;draw-stack JSR2
 	#00 ;draw-assembly JSR2
-
 	#0000 .selection STZ2
 	;assemble JSR2
 	( cleanup )
 	;src #1000 ;mclr JSR2
 	#20 ;src STA
 	#01 ;draw-log JSR2
-
 	#010e DEO
 	#00 .Screen/auto DEO
 	( time to evaluate program )
-	;on-complete .Screen/vector DEO2
+	;&on-complete .Screen/vector DEO2
 	( borrow wst ) #ff .System/wst DEO
 	;dst/clip JMP2
-
-BRK
-
-@on-complete ( -> )
-
+	&on-complete ( -> )
 	( released wst ) #00 .System/wst DEO
 	#0000 .Screen/vector DEO2
-	
 	#15 .Screen/auto DEO
 	#01 ;draw-src JSR2
 	#01 ;draw-stack JSR2
@@ -191,12 +186,9 @@ JMP2r
 
 @draw-stack ( color -- )
 
-	( highlight last item )
 	STH
-	( position )
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0040 SUB2 .Screen/y DEO2
-	#15 .Screen/auto DEO
 	;stack-txt #02 ;draw-str JSR2
 	#ffff LDA #ff00 [ #01 STHr MUL ] ,draw-memory JSR
 
@@ -207,7 +199,6 @@ JMP2r
 	STH
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
-	#15 .Screen/auto DEO
 	;program-txt #02 ;draw-str JSR2
 	.p/len LDZ2 #0100 SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP
 		;dst/clip [ #01 STHr MUL ] ,draw-memory JSR
@@ -219,15 +210,15 @@ JMP2r
 	STH
 	,&addr STR2
 	.Screen/x DEI2 ,&anchor STR2
-	#00
+	#00 EQUk ,&skip JCN
 	&loop
 		#00 OVR [ LIT2 &addr $2 ] ADD2 LDA #01 STHkr MUL ,draw-byte JSR
 		.Screen/x DEI2k #0004 ADD2 ROT DEO2
 		INCk #0f AND ,&continue JCN
-			[ LIT2 &anchor $2 ] .Screen/x DEO2
-			;draw-lb JSR2
+			[ LIT2 &anchor $2 ] ;draw-lb JSR2
 			&continue
 		INC GTHk ,&loop JCN
+	&skip
 	POP2
 	POPr
 
@@ -280,9 +271,9 @@ JMP2r
 
 JMP2r
 
-@draw-lb ( color -- )
+@draw-lb ( x* -- )
 
-	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	.Screen/x DEO2 .Screen/y DEI2k #0010 ADD2 ROT DEO2
 
 JMP2r
 
@@ -296,8 +287,7 @@ JMP2r
 	&while
 		LDAk #01 STHkr MUL ;draw-char JSR2
 		LDAk #0a NEQ ,&no-lb JCN
-			#0020 .Screen/x DEO2
-			;draw-lb JSR2
+			#0020 ;draw-lb JSR2
 			&no-lb
 		INC2 LDAk ,&while JCN
 	POP2
