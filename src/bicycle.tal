@@ -162,17 +162,33 @@ JMP2r
 	#00 .Screen/auto DEO
 	( time to evaluate program )
 	;&on-complete .Screen/vector DEO2
+	;&on-error .System/vector DEO2
 	( borrow wst ) #ff .System/wst DEO
 	;dst/clip JMP2
+	
+BRK
 	&on-complete ( -> )
-	( released wst ) #00 .System/wst DEO
+	( release wst ) #00 .System/wst DEO
+	#0000 .Screen/vector DEO2
+	#0000 .System/vector DEO2
+	#15 .Screen/auto DEO
+	#01 ;draw-src JSR2
+	#01 ;draw-stack JSR2
+	#01 ;draw-assembly JSR2
+	BRK
+	&on-error ( -> )
+	( get wst error code )
+	#00 #fffe LDA #10 SFT2 ;&errcodes ADD2 LDA2 ;err/eval ;draw-state JSR2
+	( release wst ) #00 .System/wst DEO
+	#0000 .System/vector DEO2
 	#0000 .Screen/vector DEO2
 	#15 .Screen/auto DEO
 	#01 ;draw-src JSR2
 	#01 ;draw-stack JSR2
 	#01 ;draw-assembly JSR2
-
-BRK
+	BRK
+	&errcodes
+		:err/unknown :err/underflow :err/overflow :err/zero
 
 @draw-flower ( -- )
 
@@ -720,6 +736,11 @@ JMP2r
 	&label "Label $1 
 	&token "Token $1 
 	&reslv "RESLV $1
+	&eval "Eval $1
+	&unknown "Unknown $1
+	&underflow "Underflow $1
+	&overflow "Overflow $1
+	&zero "Zero-Division $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel
