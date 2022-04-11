@@ -217,7 +217,7 @@ JMP2r
 	( rune ) DUP2 #0001 SUB2 LDA STH2kr STA INC2r
 	( child ) LDAk LIT '& NEQ ,&parent JCN INC2 ,make-sublabel JSR &parent
 	( name ) DUP2 STH2kr ;scpy JSR2
-	( move ) ;slen JSR2 STH2r ADD2 INC2 ;refs SUB2 .ref/ptr STZ2
+	( move ) ;slen JSR2 STH2r ADD2 ;refs SUB2 INC2 .ref/ptr STZ2
 
 JMP2r
 

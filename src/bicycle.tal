@@ -1,12 +1,5 @@
 ( Bicycle )
 
-(
-	TODO:
-	Display prefabs
-	Display size available
-	Catch console deo
-	Display bytes available for labels in boot )
-
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
 |10 @Console &vector $2 &read $1 &pad $5 &write $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
@@ -554,7 +547,7 @@ JMP2r
 @do-padrel ( t* -- ) ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
 @do-plabel ( t* -- ) ,set-scope JSR ,create-label JMP
 @do-slabel ( t* -- ) ,make-sublabel JSR ,create-label JMP
-@do-litbyt ( t* -- ) DUP2 #0001 SUB2 LDAk .p/ptr LDZ2 INC2 ,create-ref JSR #ff ;write-litbyte JMP2
+@do-litbyt ( t* -- ) DUP2 #0001 SUB2 LDA .p/ptr LDZ2 INC2 ,create-ref JSR #ff ;write-litbyte JMP2
 @do-litabs ( t* -- ) LIT '; .p/ptr LDZ2 INC2 ,create-ref JSR #ffff ;write-litshort JMP2
 @do-rawabs ( t* -- ) LIT ': .p/ptr LDZ2 ,create-ref JSR #ffff ;write-short JMP2
 @do-rawchr ( t* -- ) LDA ;write-byte JMP2
@@ -572,11 +565,11 @@ JMP2r
 
 @create-ref ( name* rune addr* -- )
 
-	( addr* ) ;refs .ref/ptr LDZ2 ADD2 STH2k STA2 INC2r INC2r
+	( addr ) ;refs .ref/ptr LDZ2 ADD2 STH2k STA2 INC2r INC2r
 	( rune ) DUP STH2kr STA INC2r
 	( child ) LIT '& NEQ ,&parent JCN INC2 ,make-sublabel JSR &parent
-	( name* ) DUP2 STH2kr ;scpy JSR2
-	( move ptr ) ;slen JSR2 STH2r ADD2 ;refs SUB2 INC2 .ref/ptr STZ2
+	( name ) DUP2 STH2kr ;scpy JSR2
+	( move ) ;slen JSR2 STH2r ADD2 ;refs SUB2 INC2 .ref/ptr STZ2
 
 JMP2r
 
@@ -771,23 +764,6 @@ JMP2r
 
 JMP2r
 
-@print-str ( str* -- )
-
-	&while
-		LDAk .Console/write DEO
-		INC2 LDAk ,&while JCN
-	POP2
-
-JMP2r
-
-@print ( short* -- )
-
-	SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
-
 @opcodes
 	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
@@ -947,7 +923,6 @@ JMP2r
 	&list
 	:help "help $1
 	:list "list $1
-	:print "print $1
 	:term-cat-chr "char $1
 	:term-cat-str "text $1
 	&prefabs
