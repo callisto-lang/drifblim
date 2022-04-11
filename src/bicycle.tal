@@ -52,6 +52,7 @@ BRK
 	[ #20 ] NEQk NIP ,&no-d JCN ;select-end JSR2 POP2 BRK &no-d
 	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #0001 SUB2 ;select JSR2 POP2 BRK &no-l
 	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 POP2 BRK &no-r
+	DUP2 LIT 'c #01 NEQ2 ,&no-cc JCN ;copy-snarf JSR2 POP2 BRK &no-cc
 	DUP2 LIT 'v #01 NEQ2 ,&no-cv JCN ;paste-snarf JSR2 POP2 BRK &no-cv
 	POP
 	[ #08 ] EQUk NIP ,&erase JCN
@@ -389,15 +390,24 @@ JMP2r
 
 @snarf-txt ".snarf $1
 
+@copy-snarf ( -- )
+
+	;snarf-txt .File/name DEO2
+	;src 
+		DUP2 ;slen JSR2 .File/length DEO2
+		.File/write DEO2
+
+JMP2r
+
 @paste-snarf ( -- )
 
-	#00 ;draw-src JSR2
-	;src #0080 ;mclr JSR2
 	;snarf-txt .File/name DEO2
 	#0080 .File/length DEO2
-	;src .File/read DEO2
-	#01 ;draw-src JSR2
-	;src ;slen JSR2 #0001 SUB2 ;select JSR2
+	#00 ;draw-src JSR2
+	;src 
+		DUP2 #0080 ;mclr JSR2
+		DUP2 .File/read DEO2
+		;slen JSR2 #0001 SUB2 ;select JSR2
 
 JMP2r
 
@@ -505,7 +515,6 @@ JMP2r
 	&on-short ;shex JSR2 ;write-short JMP2
 	&on-byte ;shex JSR2 NIP ;write-byte JMP2
 	&on-word
-		DUP2 ;print-str JSR2 #0a18 DEO
 		LIT '; .p/ptr LDZ2 INC2 ;create-word JSR2
 		#ffff ;write-litshort JSR2 ( JSR2 ) #2e ;write-byte JMP2
 
@@ -545,9 +554,9 @@ JMP2r
 @do-padrel ( t* -- ) ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
 @do-plabel ( t* -- ) ,set-scope JSR ,create-label JMP
 @do-slabel ( t* -- ) ,make-sublabel JSR ,create-label JMP
-@do-litbyt ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ff ;write-litbyte JMP2
-@do-litabs ( t* -- ) .p/ptr LDZ2 INC2 ,create-reference JSR #ffff ;write-litshort JMP2
-@do-rawabs ( t* -- ) .p/ptr LDZ2 ,create-reference JSR #ffff ;write-short JMP2
+@do-litbyt ( t* -- ) DUP2 #0001 SUB2 LDAk .p/ptr LDZ2 INC2 ,create-word JSR #ff ;write-litbyte JMP2
+@do-litabs ( t* -- ) LIT '; .p/ptr LDZ2 INC2 ,create-word JSR #ffff ;write-litshort JMP2
+@do-rawabs ( t* -- ) LIT ': .p/ptr LDZ2 ,create-word JSR #ffff ;write-short JMP2
 @do-rawchr ( t* -- ) LDA ;write-byte JMP2
 @do-rawstr ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
@@ -561,28 +570,11 @@ JMP2r
 
 JMP2r
 
-@create-reference ( name* addr* -- )
-
-	( addr )
-	;refs .ref/ptr LDZ2 STH2k ADD2 STA2
-	( rune )
-	INC2r INC2r
-	#0001 SUB2 LDAk ;refs STH2kr ADD2 STA
-	INC2r INC2
-	( sublabel )
-	LDAk LIT '& NEQ ,&no-sublabel JCN
-		INC2 ,make-sublabel JSR
-		&no-sublabel
-	( write string )
-	DUP2 ;refs STH2kr ADD2 ;scpy JSR2
-	;slen JSR2 STH2 ADD2r INC2r STH2r .ref/ptr STZ2
-
-JMP2r
-
 @create-word ( name* rune addr* -- )
 
 	( addr* ) ;refs .ref/ptr LDZ2 ADD2 STH2k STA2 INC2r INC2r
-	( rune ) STH2kr STA INC2r
+	( rune ) DUP STH2kr STA INC2r
+	( child ) LIT '& NEQ ,&parent JCN INC2 ,make-sublabel JSR &parent
 	( name* ) DUP2 STH2kr ;scpy JSR2
 	( move ptr ) ;slen JSR2 STH2r ADD2 ;refs SUB2 INC2 .ref/ptr STZ2
 
@@ -790,7 +782,7 @@ JMP2r
 
 @print ( short* -- )
 
-	&short ( short* -- ) SWP ,&byte JSR
+	SWP ,&byte JSR
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 

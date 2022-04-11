@@ -105,13 +105,15 @@ JMP2r
 @resolve-ref ( ref* -- )
 
 	STH2k
-	INC2 INC2 INC2k ,find-label JSR LDA2 STH2
+	INC2 INC2 INC2k ,find-label JSR DUP2 #ffff EQU2 ,&no-found JCN
+	LDA2 STH2
 	( rune )
 	LDAk LIT '. EQU ,&on-litzp JCN
 	LDAk LIT ', EQU ,&on-litrel JCN
 	LDAk LIT '; EQU ,&on-litabs JCN
 	LDAk LIT ': EQU ,&on-rawabs JCN
-	POP2r POP2r
+	&no-found
+	POP2 STH2r INC2 INC2 POP2r
 
 ;str/ref ;print-err JMP2
 
@@ -379,7 +381,7 @@ JMP2r
 
 @print ( short* -- )
 
-	&short ( short* -- ) SWP ,&byte JSR
+	SWP ,&byte JSR
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 
