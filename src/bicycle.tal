@@ -27,9 +27,9 @@
 |0100 ( -> )
 
 	( theme )
-	#06ff .System/r DEO2
-	#0c9f .System/g DEO2
-	#0a7f .System/b DEO2
+	#0f6f .System/r DEO2
+	#0fc9 .System/g DEO2
+	#0fa7 .System/b DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
 	( boot )
@@ -66,17 +66,17 @@ BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
 	&append ( char -> ) ;insert JSR2 BRK
 	&run ( char -> ) POP ;do-eval JMP2
-		
+	
 ( terminal )
 
 @insert ( char -- )
 
-	;src ;slen JSR2 #0080 LTH2 ,&continue JCN 
-		POP JMP2r 
+	;src ;slen JSR2 #0080 LTH2 ,&continue JCN
+		POP JMP2r
 		&continue
 	#00 ;draw-src JSR2
-	.selection LDZ2 
-		INC2k .selection STZ2 
+	.selection LDZ2
+		INC2k .selection STZ2
 		;src ADD2 DUP2 #0001 SUB2 ;src ;scap JSR2 ;msfr JSR2 STA
 	#01 ;draw-src JSR2
 	;draw-flower JSR2
@@ -85,11 +85,11 @@ JMP2r
 
 @erase ( -- )
 
-	.selection LDZ2 #0000 NEQ2 ,&continue JCN 
-		JMP2r 
+	.selection LDZ2 #0000 NEQ2 ,&continue JCN
+		JMP2r
 		&continue
 	#00 ;draw-src JSR2
-	.selection LDZ2 
+	.selection LDZ2
 		DUP2 #0001 SUB2 .selection STZ2
 		;src ADD2 #0001 SUB2 ;src ;scap JSR2 ;msfl JSR2
 	#01 ;draw-src JSR2
@@ -156,7 +156,7 @@ JMP2r
 	;&on-error .System/vector DEO2
 	( borrow wst ) #ff .System/wst DEO
 	;dst/clip JMP2
-	
+
 BRK
 	&on-complete ( -> )
 	( release wst ) #00 .System/wst DEO
@@ -378,6 +378,13 @@ JMP2r
 
 JMP2r
 
+@help ( -- )
+
+	;&txt ;term-cat-str JSR2
+
+JMP2r
+	&txt "Type 20 "`list` 20 "to 20 "see 20 "all 20 "available 20 "commands. 0a00
+
 ( snarf )
 
 @snarf-txt ".snarf $1
@@ -394,7 +401,7 @@ JMP2r
 
 JMP2r
 
-( assembler )
+( ---- assembler ------------------------------------------------------------ )
 
 @assemble ( -- )
 
@@ -488,6 +495,7 @@ JMP2r
 	( special )
 	;token
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
+		DUP2 ;find-label JSR2 #ffff NEQ2 ,&on-word JCN
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
@@ -496,6 +504,10 @@ JMP2r
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;shex JSR2 ;write-short JMP2
 	&on-byte ;shex JSR2 NIP ;write-byte JMP2
+	&on-word
+		DUP2 ;print-str JSR2 #0a18 DEO
+		LIT '; .p/ptr LDZ2 INC2 ;create-word JSR2
+		#ffff ;write-litshort JSR2 ( JSR2 ) #2e ;write-byte JMP2
 
 ( runic )
 
@@ -564,6 +576,15 @@ JMP2r
 	( write string )
 	DUP2 ;refs STH2kr ADD2 ;scpy JSR2
 	;slen JSR2 STH2 ADD2r INC2r STH2r .ref/ptr STZ2
+
+JMP2r
+
+@create-word ( name* rune addr* -- )
+
+	( addr* ) ;refs .ref/ptr LDZ2 ADD2 STH2k STA2 INC2r INC2r
+	( rune ) STH2kr STA INC2r
+	( name* ) DUP2 STH2kr ;scpy JSR2
+	( move ptr ) ;slen JSR2 STH2r ADD2 ;refs SUB2 INC2 .ref/ptr STZ2
 
 JMP2r
 
@@ -784,11 +805,11 @@ JMP2r
 
 @err
 	"Error 20 $1
-	&num "Number $1 
+	&num "Number $1
 	&dup "Duplicate $1
 	&far "Out-of-range $1
 	&ref "Reference $1
-	&token "Token $1 
+	&token "Token $1
 	&eval "Eval $1
 	&unknown "Unknown $1
 	&underflow "Underflow $1
@@ -932,6 +953,7 @@ JMP2r
 	002e "Screen/pixel $1
 	002f "Screen/sprite $1
 	&list
+	:help "help $1
 	:list "list $1
 	:print "print $1
 	:term-cat-chr "char $1
