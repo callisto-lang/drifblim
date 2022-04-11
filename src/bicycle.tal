@@ -515,7 +515,7 @@ JMP2r
 	&on-short ;shex JSR2 ;write-short JMP2
 	&on-byte ;shex JSR2 NIP ;write-byte JMP2
 	&on-word
-		LIT '; .p/ptr LDZ2 INC2 ;create-word JSR2
+		LIT '; .p/ptr LDZ2 INC2 ;create-ref JSR2
 		#ffff ;write-litshort JSR2 ( JSR2 ) #2e ;write-byte JMP2
 
 ( runic )
@@ -554,9 +554,9 @@ JMP2r
 @do-padrel ( t* -- ) ;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2 JMP2r
 @do-plabel ( t* -- ) ,set-scope JSR ,create-label JMP
 @do-slabel ( t* -- ) ,make-sublabel JSR ,create-label JMP
-@do-litbyt ( t* -- ) DUP2 #0001 SUB2 LDAk .p/ptr LDZ2 INC2 ,create-word JSR #ff ;write-litbyte JMP2
-@do-litabs ( t* -- ) LIT '; .p/ptr LDZ2 INC2 ,create-word JSR #ffff ;write-litshort JMP2
-@do-rawabs ( t* -- ) LIT ': .p/ptr LDZ2 ,create-word JSR #ffff ;write-short JMP2
+@do-litbyt ( t* -- ) DUP2 #0001 SUB2 LDAk .p/ptr LDZ2 INC2 ,create-ref JSR #ff ;write-litbyte JMP2
+@do-litabs ( t* -- ) LIT '; .p/ptr LDZ2 INC2 ,create-ref JSR #ffff ;write-litshort JMP2
+@do-rawabs ( t* -- ) LIT ': .p/ptr LDZ2 ,create-ref JSR #ffff ;write-short JMP2
 @do-rawchr ( t* -- ) LDA ;write-byte JMP2
 @do-rawstr ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
@@ -570,7 +570,7 @@ JMP2r
 
 JMP2r
 
-@create-word ( name* rune addr* -- )
+@create-ref ( name* rune addr* -- )
 
 	( addr* ) ;refs .ref/ptr LDZ2 ADD2 STH2k STA2 INC2r INC2r
 	( rune ) DUP STH2kr STA INC2r
