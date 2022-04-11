@@ -213,11 +213,11 @@ JMP2r
 
 @create-ref ( name* addr* -- )
 
-	( addr ) ;refs .ref/ptr LDZ2 STH2k ADD2 STA2 INC2r INC2r
-	( rune ) DUP2 #0001 SUB2 LDA ;refs STH2kr ADD2 STA INC2r
+	( addr ) ;refs .ref/ptr LDZ2 ADD2 STH2k STA2 INC2r INC2r
+	( rune ) DUP2 #0001 SUB2 LDA STH2kr STA INC2r
 	( child ) LDAk LIT '& NEQ ,&parent JCN INC2 ,make-sublabel JSR &parent
-	( name ) DUP2 ;refs STH2kr ADD2 ;scpy JSR2
-	( move ) ;slen JSR2 STH2r ADD2 INC2 .ref/ptr STZ2
+	( name ) DUP2 STH2kr ;scpy JSR2
+	( move ) ;slen JSR2 STH2r ADD2 INC2 ;refs SUB2 .ref/ptr STZ2
 
 JMP2r
 
