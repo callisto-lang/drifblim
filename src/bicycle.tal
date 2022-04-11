@@ -418,30 +418,32 @@ JMP2r
 		.p/sleep LDZ ,&no-cap JCN
 		( listen )
 		LDAk #21 LTH ,&no-put JCN LDAk ;token ;scap JSR2 STA &no-put
-		LDAk #20 GTH ,&no-cap JCN ;token DUP2 ;find-token JSR2 #0030 ;mclr JSR2 &no-cap
+		LDAk #20 GTH ,&no-cap JCN ;token DUP2 ;walk-token JSR2 #0030 ;mclr JSR2 &no-cap
 		INC2 LDAk ,&pass1 JCN
 	POP2
 	( resolve references )
-	.ref/ptr LDZ2 #0000 EQU2 ,&skip-refs JCN
+	.ref/ptr LDZ2 #0000 EQU2 ,&skip JCN
 	;refs
-	&pass2
-		DUP2 ,resolve-reference JSR
-		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&pass2 JCN
+	&while
+		DUP2 ,resolve-ref JSR
+		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	&skip-refs
+	&skip
 
 JMP2r
 
-@resolve-reference ( ref* -- )
+@resolve-ref ( ref* -- )
 
 	STH2k
-	INC2 INC2 INC2k ,find-label JSR LDA2 STH2
+	INC2 INC2 INC2k ,find-label JSR DUP2 #ffff EQU2 ,&no-found JCN
+	LDA2 STH2
 	( rune )
 	LDAk LIT '. EQU ,&on-litzp JCN
 	LDAk LIT ', EQU ,&on-litrel JCN
 	LDAk LIT '; EQU ,&on-litabs JCN
 	LDAk LIT ': EQU ,&on-rawabs JCN
-	POP2r POP2r
+	&no-found
+	POP2 STH2r INC2 INC2 POP2r
 
 ;err/ref ;draw-state JMP2
 
@@ -464,13 +466,13 @@ JMP2r
 		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	STH2r ;err/label ;draw-state JSR2
-	#0000
+	POP2r
+	#ffff
 
 JMP2r
 	&on-found POP2r JMP2r
 
-@find-token ( token* -- )
+@walk-token ( token* -- )
 
 	( skip blank )
 	;slen JSR2 ORA #01 JCN JMP2r
@@ -492,8 +494,8 @@ JMP2r
 ;err/token ;draw-state JMP2
 
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
-	&on-short ;sshort JSR2 ;write-short JMP2
-	&on-byte ;sbyte JSR2 ;write-byte JMP2
+	&on-short ;shex JSR2 ;write-short JMP2
+	&on-byte ;shex JSR2 NIP ;write-byte JMP2
 
 ( runic )
 
@@ -502,10 +504,24 @@ JMP2r
 	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/lithx ;draw-state JMP2
+;err/num ;draw-state JMP2
 
-	&on-short ;sshort JSR2 ;write-litshort JMP2
-	&on-byte ;sbyte JSR2 ;write-litbyte JMP2
+	&on-short ;shex JSR2 ;write-litshort JMP2
+	&on-byte ;shex JSR2 NIP ;write-litbyte JMP2
+
+@create-label ( name* -- )
+
+	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
+		DUP2 ;err/dup ;draw-state JSR2
+		&unique
+	( write ref )
+	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
+	INC2r INC2r
+	( write string )
+	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
+	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
+
+JMP2r
 
 @set-scope ( token* -- name* )
 
@@ -523,17 +539,6 @@ JMP2r
 @do-rawchr ( t* -- ) LDA ;write-byte JMP2
 @do-rawstr ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-ignore ( t* -- ) POP2 JMP2r
-
-@create-label ( name* -- )
-
-	( write ref )
-	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
-	INC2r INC2r
-	( write string )
-	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
-	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
-
-JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
@@ -624,23 +629,11 @@ JMP2r
 
 JMP2r
 
-@sshort ( str* -- short* )
-
-	INC2k INC2 ,sbyte JSR STH
-	,sbyte JSR STHr
-
-JMP2r
-
-@sbyte ( str* -- byte )
-
-	LDAk ,chex JSR STH
-	INC2 LDA ,chex JSR
-	STHr #40 SFT ADD
-
-JMP2r
-
 @shex ( str* -- short* )
 
+	DUP2 ,sihx JSR ,&valid JCN
+		;err/num ;draw-state JSR2 #0000 JMP2r
+		&valid
 	LIT2r 0000
 	&while
 		LITr 40 SFT2r
@@ -651,11 +644,22 @@ JMP2r
 
 JMP2r
 
-@chex ( char -- value )
+@sihx ( str* -- flag )
+
+	&while
+		LDAk ,chex JSR #ff NEQ ,&valid JCN
+			POP2 #00 JMP2r &valid
+		INC2 LDAk ,&while JCN
+	POP2
+	#01
+
+JMP2r
+
+@chex ( char -- value/ff )
 
 	DUP #2f GTH OVR #3a LTH AND ,&number JCN
 	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
-		POP #00
+		POP #ff
 
 JMP2r
 	&number #30 SUB JMP2r
@@ -780,11 +784,11 @@ JMP2r
 
 @err
 	"Error 20 $1
-	&lithx "Number $1 
-	&label "Label $1 
-	&token "Token $1 
+	&num "Number $1 
+	&dup "Duplicate $1
 	&far "Out-of-range $1
 	&ref "Reference $1
+	&token "Token $1 
 	&eval "Eval $1
 	&unknown "Unknown $1
 	&underflow "Underflow $1
