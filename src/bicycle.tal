@@ -365,6 +365,19 @@ JMP2r
 
 JMP2r
 
+( prefabs )
+
+@list ( -- )
+
+	;syms/list
+	&while
+		INC2k INC2 ;term-cat-str JSR2 #20 ;term-cat-chr JSR2
+		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
+	POP2
+	#0a ;term-cat-chr JSR2
+
+JMP2r
+
 ( snarf )
 
 @snarf-txt ".snarf $1
@@ -914,6 +927,8 @@ JMP2r
 	002c "Screen/addr $1
 	002e "Screen/pixel $1
 	002f "Screen/sprite $1
+	&list
+	:list "list $1
 	:print "print $1
 	:term-cat-chr "char $1
 	:term-cat-str "text $1
