@@ -11,7 +11,7 @@
 	@buf $30
 	@sym &ptr $2
 	@ref &ptr $2
-	@p &ptr $2 &len $2 &sleep $1
+	@p &ptr $2 &len $2
 
 |0100
 
@@ -22,31 +22,25 @@ BRK
 @on-console ( -> )
 
 	;src STH2
-	( read input )
+	( filepath )
 	.Console/read DEI
 	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
 	STH2kr ;slen JSR2 #003f GTH2 ,&end JCN
 		STH2kr ;scap JSR2 STA POP2r BRK
 		&end
 	POP
-	( begin )
-	STH2kr ;assemble JSR2
+	( assemble )
+	STH2kr .File/name DEO2
+	#0001 .File/length DEO2
+	&stream
+		;&c .File/read DEO2 [ LIT &c $1 ] ,walk JSR
+		.File/success DEI2 ORA ,&stream JCN
 	;resolve JSR2
 	STH2r ;build JSR2
 	( debugger )
 	#010f DEO
 
 BRK
-
-@assemble ( filename* -- )
-
-	.File/name DEO2
-	#0001 .File/length DEO2
-	&stream
-		;&c .File/read DEO2 [ LIT &c $1 ] ,walk JSR
-		.File/success DEI2 ORA ,&stream JCN
-
-JMP2r
 
 @walk ( char -- )
 
@@ -66,18 +60,12 @@ JMP2r
 
 @walk-token ( token* -- )
 
-	( skip blank )
-	;slen JSR2 ORA #01 JCN JMP2r
-	( runic )
+	( skip empty ) ;slen JSR2 ORA #01 JCN JMP2r
 	;runes/end ;runes
 	&loop
-		LDAk ;token LDA NEQ ,&continue JCN
-			INC2k LDA2 ;token INC2 SWP2 JSR2
-			POP2 POP2 JMP2r
-			&continue
+		LDAk ;token LDA EQU ,&on-runic JCN
 		INC2 INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
-	( special )
 	;token
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
@@ -85,19 +73,19 @@ JMP2r
 
 ;str/key ;print-err JMP2
 
+	&on-runic NIP2 ;token INC2 SWP2 [ INC2 LDA2 JMP2 ]
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;shex JSR2 ;write-short JMP2
 	&on-byte ;shex JSR2 NIP ;write-byte JMP2
 
 @resolve ( -- )
 
-	.ref/ptr LDZ2 #0000 EQU2 ,&skip JCN
+	( skip empty ) .ref/ptr LDZ2 ORA #01 JCN JMP2r
 	;refs
 	&while
 		DUP2 ,resolve-ref JSR
 		( eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	&skip
 
 JMP2r
 
