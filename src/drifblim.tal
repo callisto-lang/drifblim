@@ -50,9 +50,9 @@ JMP2r
 
 @walk ( char -- )
 
-	[ #28 ] EQUk NIP ,&sleep JCN
-	[ #29 ] EQUk NIP ,&unsleep JCN
-	.p/sleep LDZ ,&skip JCN
+	[ #28 ] EQUk NIP ,&toggle JCN
+	[ #29 ] EQUk NIP ,&toggle JCN
+	[ LIT &sleep $1 ] ,&skip JCN
 	[ #20 ] GTHk NIP ,&append JCN
 	;token
 		DUP2 ,walk-token JSR
@@ -61,8 +61,7 @@ JMP2r
 	POP
 
 JMP2r
-	&sleep #01 .p/sleep STZ POP JMP2r
-	&unsleep #00 .p/sleep STZ POP JMP2r
+	&toggle #29 SUB ,&sleep STR JMP2r
 	&append ;token ;scap JSR2 STA JMP2r
 
 @walk-token ( token* -- )
