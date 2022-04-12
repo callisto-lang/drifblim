@@ -26,7 +26,7 @@ BRK
 	.Console/read DEI
 	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
 	STH2kr ;slen JSR2 #003f GTH2 ,&end JCN
-		STH2kr ;scap JSR2 STA POP2r BRK
+		STH2kr ;sput JSR2 POP2r BRK
 		&end
 	POP
 	( assemble )
@@ -56,7 +56,7 @@ BRK
 
 JMP2r
 	&toggle #29 SUB ,&sleep STR JMP2r
-	&append ;token ;scap JSR2 STA JMP2r
+	&append ;token ;sput JMP2
 
 @walk-token ( token* -- )
 
@@ -95,7 +95,7 @@ JMP2r
 	INC2 INC2 INC2k ,find-label JSR DUP2 #ffff EQU2 ,&no-found JCN
 	LDA2 STH2
 	( rune )
-	LDAk LIT '. EQU ,&on-litzp JCN
+	LDAk LIT '. EQU ,&on-litzer JCN
 	LDAk LIT ', EQU ,&on-litrel JCN
 	LDAk LIT '; EQU ,&on-litabs JCN
 	LDAk LIT ': EQU ,&on-rawabs JCN
@@ -104,7 +104,7 @@ JMP2r
 
 ;str/ref ;print-err JMP2
 
-	&on-litzp STH2r NIP STH2r ,&set-byte JMP
+	&on-litzer STH2r NIP STH2r ,&set-byte JMP
 	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2
 		DUP2 #0080 ADD2 POP #00 EQU ,&in-range JCN
 			OVR2 INC2 ;str/far ;print-err JSR2
@@ -120,7 +120,7 @@ JMP2r
 	STH2
 	;syms
 	&while
-		( test ) INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
+		INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 	POP2r
@@ -131,6 +131,7 @@ JMP2r
 
 @build ( name* -- )
 
+	( write file  )
 	;str/rom OVR2 ;scap JSR2 #0003 SUB2 ;scpy JSR2
 	DUP2 .File/name DEO2
 	.p/len LDZ2 #0100 SUB2 .File/length DEO2
@@ -160,6 +161,7 @@ JMP2r
 
 @create-label ( name* -- )
 
+	( check duplicate )
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
 		DUP2 ;str/dup ;print-err JSR2
 		&unique
@@ -193,7 +195,7 @@ JMP2r
 
 	;buf STH2k #0030 ;mclr JSR2
 	;scope STH2kr ;scpy JSR2
-	LIT '/ STH2kr ;scap JSR2 STA
+	LIT '/ STH2kr ;sput JSR2
 	STH2kr ;scat JSR2 STH2r
 
 JMP2r
@@ -327,6 +329,12 @@ JMP2r
 
 JMP2r
 
+@sput ( char str* -- )
+
+	,scap JSR STA
+
+JMP2r
+
 @scat ( src* dst* -- )
 
 	DUP2 ,slen JSR ADD2
@@ -405,5 +413,6 @@ JMP2r
 
 @syms $3000 ( addr* name* )
 @refs $3000 ( addr* name* )
-@dst $0100 ( zero-page )
-&clip ( program )
+
+@dst $0100 ( zero-page ) 
+	&clip ( program )
