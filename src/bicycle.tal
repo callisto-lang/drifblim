@@ -359,7 +359,7 @@ JMP2r
 
 JMP2r
 
-( prefabs )
+( prefabs ------------------------------------------------------------------- )
 
 @list ( -- )
 
@@ -378,6 +378,20 @@ JMP2r
 
 JMP2r
 	&txt "Type 20 "`list` 20 "to 20 "see 20 "all 20 "available 20 "commands. 0a00
+
+@term-print ( -- )
+	
+	DUP #04 SFT ,&char JSR ,&char JSR
+	#0a ;term-cat-chr JSR2
+
+JMP2r
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD ;log ;scap JSR2 STA JMP2r
+
+@term-print2 ( -- )
+
+	( TODO )
+
+JMP2r
 
 ( snarf )
 
@@ -404,7 +418,7 @@ JMP2r
 
 JMP2r
 
-( ---- assembler ------------------------------------------------------------ )
+( assembler ----------------------------------------------------------------- )
 
 @assemble ( -- )
 
@@ -921,6 +935,8 @@ JMP2r
 	&list
 	:help "help $1
 	:list "list $1
+	:term-print "print $1
+	:term-print2 "print2 $1
 	:term-cat-chr "char $1
 	:term-cat-str "text $1
 	&prefabs
