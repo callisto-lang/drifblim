@@ -255,21 +255,19 @@ JMP2r
 	POP2 POP2r #00
 
 JMP2r
-	&on-found NIP STH2r ,find-mode JSR ADD JMP2r
+	&on-found 
+		NIP ( LITk ) DUP #00 EQU #70 SFT ADD 
+		STH2r INC2 INC2 INC2 ,find-mode JSR ADD JMP2r
 	&on-brk POP2 #01 JMP2r
 
 @find-mode ( mode* -- byte )
 
 	LITr 00
-	;opcodes OVR2 ,scmp3 JSR #70 SFT STH ADDr
-	INC2 INC2 INC2
-	LDAk #00 EQU ,&end JCN
 	&while
 		LDAk LIT '2 EQU #50 SFT STH ADDr
 		LDAk LIT 'r EQU #60 SFT STH ADDr
 		LDAk LIT 'k EQU #70 SFT STH ADDr
 		INC2 LDAk ,&while JCN
-	&end
 	POP2 STHr
 
 JMP2r
