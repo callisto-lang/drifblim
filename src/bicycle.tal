@@ -3,9 +3,10 @@
 |00 @System &vector $2 &wst $1 &rst $1 &pad $4 &r $2 &g $2 &b $2
 |10 @Console &vector $2 &read $1 &pad $5 &write $1
 |20 @Screen &vector $2 &width $2 &height $2 &auto $1 &pad $1 &x $2 &y $2 &addr $2 &pixel $1 &sprite $1
-|80 @Controller &vector $2 &button  $1 &key $1
+|80 @Controller &vector $2 &button $1 &key $1
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &chord $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|c0 @DateTime &year $2 &month $1 &day $1 &hour $1 &minute $1 &second $1 &dotw $1 &doty $2 &isdst $1
 
 |0000
 
@@ -16,6 +17,10 @@
 	@ref &ptr $2
 	@p &ptr $2 &len $2 &sleep $1
 	@selection $2
+	@cursor
+		&x $2 &y $2
+	@line
+		&x $2 &y $2 &dx $2 &dy $2 &e1 $2
 
 |0100 ( -> )
 
@@ -25,9 +30,11 @@
 	#0fa7 .System/b DEO2
 	( vectors )
 	;on-button .Controller/vector DEO2
+	;on-mouse .Mouse/vector DEO2
 	( boot )
 	;&boot-txt ;log ;scat JSR2
 	#01 ;draw-log JSR2
+	;prng-init JSR2
 	( blank )
 	#20 ;insert JSR2
 	#0000 ;select JSR2
@@ -60,7 +67,40 @@ BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
 	&append ( char -> ) ;insert JSR2 BRK
 	&run ( char -> ) POP ;do-eval JMP2
-	
+
+@on-mouse ( -> )
+
+	( clear last cursor )
+	.cursor/x LDZ2 .Screen/x DEO2
+	.cursor/y LDZ2 .Screen/y DEO2
+	#40 .Screen/sprite DEO
+	( record mouse positions )
+	.Mouse/x DEI2 DUP2 .cursor/x STZ2 .Screen/x DEO2
+	.Mouse/y DEI2 DUP2 .cursor/y STZ2 .Screen/y DEO2
+	( draw new cursor )
+	;cursor-icn .Screen/addr DEO2
+	#42 .Mouse/state DEI #00 NEQ ADD .Screen/sprite DEO
+
+	.Mouse/state DEI #02 NEQ ,&no-mouse1 JCN
+		.Mouse/x DEI2 ;insert-short JSR2
+		#20 ;insert JSR2
+		.Mouse/y DEI2 ;insert-short JSR2
+		#20 ;insert JSR2
+		#00 .Mouse/state DEO
+		&no-mouse1
+
+BRK
+
+@insert-short ( short* -- )
+
+	LIT '# ;insert JSR2
+	SWP DUP #04 SFT ;ch2a JSR2 ;insert JSR2
+	;ch2a JSR2 ;insert JSR2
+	DUP #04 SFT ;ch2a JSR2 ;insert JSR2
+	;ch2a JSR2 ;insert JSR2
+
+JMP2r
+
 ( terminal )
 
 @insert ( char -- )
@@ -138,12 +178,14 @@ JMP2r
 	#00 ;draw-stack JSR2
 	#00 ;draw-assembly JSR2
 	#0000 .selection STZ2
-
+	( clear last cursor )
+	.cursor/x LDZ2 .Screen/x DEO2
+	.cursor/y LDZ2 .Screen/y DEO2
+	#40 .Screen/sprite DEO
 	( cleanup )
 	;assemble JSR2
 	;src #0080 ;mclr JSR2
 	#20 ;src STA
-
 	#00 .Screen/auto DEO
 	( time to evaluate program )
 	;&on-complete .Screen/vector DEO2
@@ -182,7 +224,7 @@ BRK
 
 JMP2r
 
-@term-cat-chr ( char -- )
+@term-ccat ( char -- )
 
 	;log ;scap JSR2 STA
 
@@ -361,37 +403,129 @@ JMP2r
 
 ( prefabs ------------------------------------------------------------------- )
 
-@list ( -- )
+@prefab-list ( -- )
 
 	;syms/list
 	&while
-		INC2k INC2 ;term-cat-str JSR2 #20 ;term-cat-chr JSR2
+		INC2k INC2 ;term-cat-str JSR2 #20 ;term-ccat JSR2
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
-	#0a ;term-cat-chr JSR2
+	#0a ;term-ccat JSR2
 
 JMP2r
 
-@help ( -- )
+@prefab-append ( c -- )
 
-	;&txt ;term-cat-str JSR2
+	;log ;scap JSR2 STA
 
 JMP2r
-	&txt "Type 20 "`list` 20 "to 20 "see 20 "all 20 "available 20 "commands. 0a00
 
-@term-print ( -- )
+@prefab-print ( -- )
 	
-	DUP #04 SFT ,&char JSR ,&char JSR
-	#0a ;term-cat-chr JSR2
+	LIT '# ,prefab-append JSR
+	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
+	;ch2a JSR2 ,prefab-append JSR
+	#0a ;term-ccat JSR2
 
 JMP2r
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD ;log ;scap JSR2 STA JMP2r
 
-@term-print2 ( -- )
+@prefab-print2 ( -- )
+	
+	LIT '# ,prefab-append JSR
+	SWP
+	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
+	;ch2a JSR2 ,prefab-append JSR
+	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
+	;ch2a JSR2 ,prefab-append JSR
+	#0a ;term-ccat JSR2
+
+JMP2r
+
+@prefab-abs ( -- )
+
+	#0000 OVR #07 SFT JMP SWP SWP SUB
+
+JMP2r
+
+@prefab-abs2 ( a* -- a* )
+
+	#ffff #0000 OVR2 #0f SFT EQU JMP SWP2 SUB2
+
+JMP2r
+
+@prefab-mod ( a b -- c )
+
+	DIVk MUL SUB
+
+JMP2r
+
+@prefab-mod2 ( a* b* -- c* )
+
+	DIV2k MUL2 SUB2
+
+JMP2r
+
+@prefab-rand ( limit -- a )
+
+	;prng JSR2 ROT #00 SWP ,prefab-mod2 JSR NIP
+
+JMP2r
+
+@prefab-rand2 ( limit2 -- a* )
+
+	;prng JSR2 SWP2 ,prefab-mod2 JSR
+
+JMP2r
+
+@prefab-fre ( -- )
 
 	( TODO )
 
 JMP2r
+
+@prefab-new ( -- )
+
+	( TODO )
+
+JMP2r
+
+@prefab-quit ( -- )
+
+	#010f DEO
+
+JMP2r
+
+@draw-line ( x1* y1* x2* y2* color -- )
+
+	( load ) STH ,&y STR2 ,&x STR2 .line/y STZ2 .line/x STZ2
+	,&x LDR2 .line/x LDZ2 SUB2 ;abs2 JSR2 .line/dx STZ2
+	#0000 ,&y LDR2 .line/y LDZ2 SUB2 ;abs2 JSR2 SUB2 .line/dy STZ2
+	#ffff #00 .line/x LDZ2 ,&x LDR2 ;lts2 JSR2 #10 SFT2 ADD2 ,&sx STR2
+	#ffff #00 .line/y LDZ2 ,&y LDR2 ;lts2 JSR2 #10 SFT2 ADD2 ,&sy STR2
+	.line/dx LDZ2 .line/dy LDZ2 ADD2 .line/e1 STZ2
+	&loop
+		.line/x LDZ2 DUP2 .Screen/x DEO2 [ LIT2 &x $2 ] EQU2
+		.line/y LDZ2 DUP2 .Screen/y DEO2 [ LIT2 &y $2 ] EQU2
+			STHkr .Screen/pixel DEO
+			AND ,&end JCN
+		.line/e1 LDZ2 #10 SFT2 DUP2
+		.line/dy LDZ2 ;lts2 JSR2 ,&skipy JCN
+			.line/e1 LDZ2 .line/dy LDZ2 ADD2 .line/e1 STZ2
+			.line/x LDZ2 [ LIT2 &sx $2 ] ADD2 .line/x STZ2
+		&skipy
+		.line/dx LDZ2 ;gts2 JSR2 ,&skipx JCN
+			.line/e1 LDZ2 .line/dx LDZ2 ADD2 .line/e1 STZ2
+			.line/y LDZ2 [ LIT2 &sy $2 ] ADD2 .line/y STZ2
+		&skipx
+		,&loop JMP
+	&end
+	POPr
+
+JMP2r
+
+@abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
+@lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+@gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
 
 ( snarf )
 
@@ -400,7 +534,7 @@ JMP2r
 @copy-snarf ( -- )
 
 	;snarf-txt .File/name DEO2
-	;src 
+	;src
 		DUP2 ;slen JSR2 .File/length DEO2
 		.File/write DEO2
 
@@ -411,10 +545,34 @@ JMP2r
 	;snarf-txt .File/name DEO2
 	#0080 .File/length DEO2
 	#00 ;draw-src JSR2
-	;src 
+	;src
 		DUP2 #0080 ;mclr JSR2
 		DUP2 .File/read DEO2
 		;slen JSR2 #0001 SUB2 ;select JSR2
+
+JMP2r
+
+@prng-init ( -- )
+
+	( seed )
+	#00 .DateTime/second DEI
+	#00 .DateTime/minute DEI #60 SFT2 EOR2
+	#00 .DateTime/hour DEI #c0 SFT2 EOR2 ,prng/x STR2
+	#00 .DateTime/hour DEI #04 SFT2
+	#00 .DateTime/day DEI #10 SFT2 EOR2
+	#00 .DateTime/month DEI #60 SFT2 EOR2
+		.DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+
+JMP2r
+
+@prng ( -- number* )
+
+	LIT2 &x $2
+	DUP2 #50 SFT2 EOR2
+	DUP2 #03 SFT2 EOR2
+	LIT2 &y $2 DUP2 ,&x STR2
+	DUP2 #01 SFT2 EOR2 EOR2
+	,&y STR2k POP
 
 JMP2r
 
@@ -621,8 +779,8 @@ JMP2r
 	POP2 POP2r #00
 
 JMP2r
-	&on-found 
-		NIP ( LITk ) DUP #00 EQU #70 SFT ADD 
+	&on-found
+		NIP ( LITk ) DUP #00 EQU #70 SFT ADD
 		STH2r INC2 INC2 INC2 ,find-mode JSR ADD JMP2r
 	&on-brk POP2 #01 JMP2r
 
@@ -656,7 +814,7 @@ JMP2r
 	&while
 		LITr 40 SFT2r
 		LITr 00
-		LDAk ,chex JSR STH ADD2r
+		LDAk ,ca2h JSR STH ADD2r
 		INC2 LDAk ,&while JCN
 	POP2 STH2r
 
@@ -665,7 +823,7 @@ JMP2r
 @sihx ( str* -- flag )
 
 	&while
-		LDAk ,chex JSR #ff NEQ ,&valid JCN
+		LDAk ,ca2h JSR #ff NEQ ,&valid JCN
 			POP2 #00 JMP2r &valid
 		INC2 LDAk ,&while JCN
 	POP2
@@ -673,7 +831,7 @@ JMP2r
 
 JMP2r
 
-@chex ( char -- value/ff )
+@ca2h ( ascii -- hex )
 
 	DUP #2f GTH OVR #3a LTH AND ,&number JCN
 	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
@@ -682,6 +840,12 @@ JMP2r
 JMP2r
 	&number #30 SUB JMP2r
 	&lc #57 SUB JMP2r
+
+@ch2a ( hex -- ascii )
+
+	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD
+
+JMP2r
 
 @mclr ( addr* len* -- )
 
@@ -723,7 +887,7 @@ JMP2r
 
 JMP2r
 
-@schr ( str* char --  str* )
+@schr ( str* char -- str* )
 
 	STH
 	&while
@@ -776,6 +940,14 @@ JMP2r
 
 JMP2r
 
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) ;ch2a JSR2 #18 DEO
+
+JMP2r
+
 @opcodes
 	"LIT "INC "POP "DUP "NIP "SWP "OVR "ROT
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
@@ -806,6 +978,9 @@ JMP2r
 
 @stack-txt "Stack 20 $1
 @program-txt "Program 20 $1
+
+@cursor-icn
+	0040 6070 787c 7008 0000 0000 0000 0000
 
 @flowers-icn ( by elioat )
 	0000 0020 1408 0810 40a0 4205 0200 40a0
@@ -932,13 +1107,31 @@ JMP2r
 	002c "Screen/addr $1
 	002e "Screen/pixel $1
 	002f "Screen/sprite $1
+	( LIST Displays a list of all available routines. )
+	:prefab-list "LIST $1
 	&list
-	:help "help $1
-	:list "list $1
-	:term-print "print $1
-	:term-print2 "print2 $1
-	:term-cat-chr "char $1
+	( PRINT Consumes and displays the value at the top of the stack. )
+	:prefab-print "PRINT $1
+	:prefab-print2 "PRINT2 $1
+	( MOD Pushes the modulo of X and Y, onto the stack. )
+	:prefab-mod "MOD $1
+	:prefab-mod2 "MOD2 $1
+	( ABS Pushes the absolute value of X, onto the stack. )
+	:prefab-abs "ABS $1
+	:prefab-abs2 "ABS2 $1
+	( RAND Pushes a random value between 0 and X, onto the stack. )
+	:prefab-rand "RAND $1
+	:prefab-rand2 "RAND2 $1
+	( FRE Prints the number of bytes left in memory. )
+	:prefab-fre "FRE $1
+	( NEW Erases the current routines in memory. )
+	:prefab-new "NEW $1
+	( QUIT Turns off the system. )
+	:prefab-quit "QUIT $1
+	( misc )
+	:term-ccat "char $1
 	:term-cat-str "text $1
+	:draw-line "line $1
 	&prefabs
 
 $4000 ( addr* name* )
