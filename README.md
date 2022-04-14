@@ -9,7 +9,7 @@ The Drifblim project also includes a REPL program, called [varvara's bicycle](ht
 ## Manual
 
 - `LIST` Displays a list of all available routines.
-- `PRINT/PRINT2` Consumes and displays the value at the top of the stack.
+- `PRINT/PRINT2` Prints the value at the top of the stack.
 - `MOD/MOD2` Pushes the modulo of X and Y, onto the stack.
 - `ABS/ABS2` Pushes the absolute value of X, onto the stack.
 - `RAND/RAND2` Pushes a random value between 0 and X, onto the stack.

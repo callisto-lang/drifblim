@@ -420,7 +420,7 @@ JMP2r
 
 JMP2r
 
-@prefab-print ( -- )
+@prefab-print ( a -- )
 	
 	LIT '# ,prefab-append JSR
 	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
@@ -429,7 +429,7 @@ JMP2r
 
 JMP2r
 
-@prefab-print2 ( -- )
+@prefab-print2 ( a* -- )
 	
 	LIT '# ,prefab-append JSR
 	SWP
@@ -477,7 +477,7 @@ JMP2r
 
 JMP2r
 
-@prefab-fre ( -- )
+@prefab-free ( -- )
 
 	( TODO )
 
@@ -1110,7 +1110,7 @@ JMP2r
 	( LIST Displays a list of all available routines. )
 	:prefab-list "LIST $1
 	&list
-	( PRINT Consumes and displays the value at the top of the stack. )
+	( PRINT Prints the value at the top of the stack. )
 	:prefab-print "PRINT $1
 	:prefab-print2 "PRINT2 $1
 	( MOD Pushes the modulo of X and Y, onto the stack. )
@@ -1122,16 +1122,16 @@ JMP2r
 	( RAND Pushes a random value between 0 and X, onto the stack. )
 	:prefab-rand "RAND $1
 	:prefab-rand2 "RAND2 $1
-	( FRE Prints the number of bytes left in memory. )
-	:prefab-fre "FRE $1
+	( FREE Prints the number of bytes left in memory. )
+	:prefab-free "FREE $1
 	( NEW Erases the current routines in memory. )
 	:prefab-new "NEW $1
 	( QUIT Turns off the system. )
 	:prefab-quit "QUIT $1
 	( misc )
-	:term-ccat "char $1
-	:term-cat-str "text $1
-	:draw-line "line $1
+	:term-ccat "CHAR $1
+	:term-cat-str "TEXT $1
+	:draw-line "LINE $1
 	&prefabs
 
 $4000 ( addr* name* )
