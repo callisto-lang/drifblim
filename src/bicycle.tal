@@ -169,7 +169,7 @@ JMP2r
 	( Add linebreak )
 	#0a ;src ;scap JSR2 STA
 	( cat to log )
-	;src ;term-cat-str JSR2
+	;src ;prefab-text JSR2
 	( clear )
 	#15 .Screen/auto DEO
 	#00 ;draw-src JSR2
@@ -379,13 +379,6 @@ JMP2r
 
 JMP2r
 
-@term-cat-str ( str* -- )
-
-	;log ;scat JSR2
-	,term-update JSR
-
-JMP2r
-
 @term-ccat ( char -- )
 
 	;log ;scap JSR2 STA
@@ -400,12 +393,6 @@ JMP2r
 		;mcpy JSR2
 		&skip
 	#01 ;draw-log JSR2
-
-JMP2r
-
-@term-append ( c -- )
-
-	;log ;scap JSR2 STA
 
 JMP2r
 
@@ -441,30 +428,37 @@ JMP2r
 
 	;syms/list
 	&while
-		INC2k INC2 ;term-cat-str JSR2 #20 ;term-ccat JSR2
+		INC2k INC2 ;prefab-text JSR2 #20 ;term-ccat JSR2
 		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 	#0a ;term-ccat JSR2
 
 JMP2r
 
+@prefab-text ( str* -- )
+
+	;log ;scat JSR2
+	;term-update JSR2
+
+JMP2r
+
 @prefab-print ( a -- )
 	
-	LIT '# ,term-append JSR
-	DUP #04 SFT ;ch2a JSR2 ,term-append JSR
-	;ch2a JSR2 ,term-append JSR
+	LIT '# ;log ;scap JSR2 STA
+	DUP #04 SFT ;ch2a JSR2 ;log ;scap JSR2 STA
+	;ch2a JSR2 ;log ;scap JSR2 STA
 	#0a ;term-ccat JSR2
 
 JMP2r
 
 @prefab-print2 ( a* -- )
 	
-	LIT '# ,term-append JSR
+	LIT '# ;log ;scap JSR2 STA
 	SWP
-	DUP #04 SFT ;ch2a JSR2 ,term-append JSR
-	;ch2a JSR2 ,term-append JSR
-	DUP #04 SFT ;ch2a JSR2 ,term-append JSR
-	;ch2a JSR2 ,term-append JSR
+	DUP #04 SFT ;ch2a JSR2 ;log ;scap JSR2 STA
+	;ch2a JSR2 ;log ;scap JSR2 STA
+	DUP #04 SFT ;ch2a JSR2 ;log ;scap JSR2 STA
+	;ch2a JSR2 ;log ;scap JSR2 STA
 	#0a ;term-ccat JSR2
 
 JMP2r
@@ -1084,6 +1078,9 @@ JMP2r
 	( LIST Displays a list of all available routines. )
 	:prefab-list "LIST $1
 	&list
+	( misc )
+	:term-ccat "CHAR $1
+	:prefab-text "TEXT $1
 	( PRINT Prints the value at the top of the stack. )
 	:prefab-print "PRINT $1
 	:prefab-print2 "PRINT2 $1
@@ -1102,9 +1099,6 @@ JMP2r
 	:prefab-new "NEW $1
 	( QUIT Turns off the system. )
 	:prefab-quit "QUIT $1
-	( misc )
-	:term-ccat "CHAR $1
-	:term-cat-str "TEXT $1
 	&prefabs
 
 $4000 ( addr* name* )
