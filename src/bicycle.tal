@@ -78,7 +78,7 @@ BRK
 	( draw new cursor )
 	;cursor-icn .Screen/addr DEO2
 	#42 .Mouse/state DEI #00 NEQ ADD .Screen/sprite DEO
-
+	( special )
 	.Mouse/state DEI #02 NEQ ,&no-mouse1 JCN
 		.Mouse/x DEI2 ;insert-short JSR2
 		#20 ;insert JSR2
@@ -88,6 +88,22 @@ BRK
 		&no-mouse1
 
 BRK
+
+( terminal )
+
+@insert ( char -- )
+
+	( clamp ) ;src ;slen JSR2 #0080 LTH2 ,&continue JCN POP
+		JMP2r
+		&continue
+	#00 ;draw-src JSR2
+	.selection LDZ2
+		INC2k .selection STZ2
+		;src ADD2 DUP2 #0001 SUB2 ;src ;scap JSR2 ;msfr JSR2 STA
+	#01 ;draw-src JSR2
+	;draw-flower JSR2
+
+JMP2r
 
 @insert-short ( short* -- )
 
@@ -99,25 +115,9 @@ BRK
 
 JMP2r
 
-( terminal )
-
-@insert ( char -- )
-
-	;src ;slen JSR2 #0080 LTH2 ,&continue JCN
-		POP JMP2r
-		&continue
-	#00 ;draw-src JSR2
-	.selection LDZ2
-		INC2k .selection STZ2
-		;src ADD2 DUP2 #0001 SUB2 ;src ;scap JSR2 ;msfr JSR2 STA
-	#01 ;draw-src JSR2
-	;draw-flower JSR2
-
-JMP2r
-
 @delete ( -- )
 
-	;src .selection LDZ2 ADD2 ;slen JSR2 #0001 GTH2 ,&continue JCN
+	( clamp ) ;src .selection LDZ2 ADD2 ;slen JSR2 #0001 GTH2 ,&continue JCN
 		JMP2r
 		&continue
 	#00 ;draw-src JSR2
@@ -129,7 +129,7 @@ JMP2r
 
 @erase ( -- )
 
-	.selection LDZ2 #0000 NEQ2 ,&continue JCN
+	( clamp ) .selection LDZ2 #0000 NEQ2 ,&continue JCN
 		JMP2r
 		&continue
 	#00 ;draw-src JSR2
@@ -153,31 +153,19 @@ JMP2r
 
 @select-start ( -- )
 
-	#0000 .selection LDZ2 #0001 SUB2
-	&loop
-		DUP2 ;src ADD2 LDA #0a EQU ,&end JCN
-		#0001 SUB2 LTH2k ,&loop JCN
-	&end
-	NIP2
-	;select JSR2
+	#0000 ;select JSR2
 
 JMP2r
 
 @select-end ( -- )
 
-	;src ;slen JSR2 .selection LDZ2
-	&loop
-		DUP2 ;src ADD2 LDA #0a EQU ,&end JCN
-		INC2 GTH2k ,&loop JCN
-	&end
-	NIP2 #0001 SUB2
-	;select JSR2
+	;src ;slen JSR2 #0001 SUB2 ;select JSR2
 
 JMP2r
 
 @do-eval ( -- )
 
-	;clear-state JSR2
+	;clear-error JSR2
 	( Add linebreak )
 	#0a ;src ;scap JSR2 STA
 	( cat to log )
@@ -215,7 +203,7 @@ BRK
 	BRK
 	&on-error ( -> )
 	( get wst error code )
-	#00 #fffe LDA #10 SFT2 ;&errcodes ADD2 LDA2 ;err/eval ;draw-state JSR2
+	#00 #fffe LDA #10 SFT2 ;&errcodes ADD2 LDA2 ;err/eval ;draw-error JSR2
 	( release wst ) #00 .System/wst DEO
 	#0000 .System/vector DEO2
 	#0000 .Screen/vector DEO2
@@ -227,29 +215,7 @@ BRK
 	&errcodes
 		:err/unknown :err/underflow :err/overflow :err/zero
 
-@term-cat-str ( str* -- )
-
-	;log ;scat JSR2
-	,term-update JSR
-
-JMP2r
-
-@term-ccat ( char -- )
-
-	;log ;scap JSR2 STA
-
-@term-update ( -- )
-
-	;log ;count-lines JSR2 #0c LTH ,&skip JCN
-		#00 ;draw-log JSR2
-		( from* ) ;log #0a ;schr JSR2 INC2
-		( to* ) ;log
-		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
-		;mcpy JSR2
-		&skip
-	#01 ;draw-log JSR2
-
-JMP2r
+( Drawing ------------------------------------------------------------------- )
 
 @draw-flower ( -- )
 
@@ -262,7 +228,7 @@ JMP2r
 
 JMP2r
 
-@clear-state ( -- )
+@clear-error ( -- )
 
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0050 SUB2 .Screen/y DEO2
@@ -276,9 +242,9 @@ JMP2r
 
 JMP2r
 
-@draw-state ( token* msg* -- )
+@draw-error ( token* msg* -- )
 
-	;clear-state JSR2
+	,clear-error JSR
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0050 SUB2 .Screen/y DEO2
 	;err #02 ;draw-str JSR2
@@ -305,7 +271,7 @@ JMP2r
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
 	;program-txt #02 ;draw-str JSR2
-	.p/len LDZ2 #0100 SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP
+	.p/len LDZ2 ;dst/clip SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP
 		;dst/clip STHr ,draw-memory JSR
 
 JMP2r
@@ -402,7 +368,7 @@ JMP2r
 
 JMP2r
 
-@count-lines ( str* -- lines )
+@term-count-lines ( str* -- lines )
 
 	LITr 00
 	&while
@@ -410,6 +376,62 @@ JMP2r
 		INC2 LDAk ,&while JCN
 	POP2
 	STHr
+
+JMP2r
+
+@term-cat-str ( str* -- )
+
+	;log ;scat JSR2
+	,term-update JSR
+
+JMP2r
+
+@term-ccat ( char -- )
+
+	;log ;scap JSR2 STA
+
+@term-update ( -- )
+
+	;log ;term-count-lines JSR2 #0c LTH ,&skip JCN
+		#00 ;draw-log JSR2
+		( from* ) ;log #0a ;schr JSR2 INC2
+		( to* ) ;log
+		( length* ) ;log #0a ;schr JSR2 ;slen JSR2
+		;mcpy JSR2
+		&skip
+	#01 ;draw-log JSR2
+
+JMP2r
+
+@term-append ( c -- )
+
+	;log ;scap JSR2 STA
+
+JMP2r
+
+( random )
+
+@prng-init ( -- )
+
+	( seed )
+	#00 .DateTime/second DEI
+	#00 .DateTime/minute DEI #60 SFT2 EOR2
+	#00 .DateTime/hour DEI #c0 SFT2 EOR2 ,prng/x STR2
+	#00 .DateTime/hour DEI #04 SFT2
+	#00 .DateTime/day DEI #10 SFT2 EOR2
+	#00 .DateTime/month DEI #60 SFT2 EOR2
+		.DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
+
+JMP2r
+
+@prng ( -- number* )
+
+	LIT2 &x $2
+	DUP2 #50 SFT2 EOR2
+	DUP2 #03 SFT2 EOR2
+	LIT2 &y $2 DUP2 ,&x STR2
+	DUP2 #01 SFT2 EOR2 EOR2
+	,&y STR2k POP
 
 JMP2r
 
@@ -426,29 +448,23 @@ JMP2r
 
 JMP2r
 
-@prefab-append ( c -- )
-
-	;log ;scap JSR2 STA
-
-JMP2r
-
 @prefab-print ( a -- )
 	
-	LIT '# ,prefab-append JSR
-	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
-	;ch2a JSR2 ,prefab-append JSR
+	LIT '# ,term-append JSR
+	DUP #04 SFT ;ch2a JSR2 ,term-append JSR
+	;ch2a JSR2 ,term-append JSR
 	#0a ;term-ccat JSR2
 
 JMP2r
 
 @prefab-print2 ( a* -- )
 	
-	LIT '# ,prefab-append JSR
+	LIT '# ,term-append JSR
 	SWP
-	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
-	;ch2a JSR2 ,prefab-append JSR
-	DUP #04 SFT ;ch2a JSR2 ,prefab-append JSR
-	;ch2a JSR2 ,prefab-append JSR
+	DUP #04 SFT ;ch2a JSR2 ,term-append JSR
+	;ch2a JSR2 ,term-append JSR
+	DUP #04 SFT ;ch2a JSR2 ,term-append JSR
+	;ch2a JSR2 ,term-append JSR
 	#0a ;term-ccat JSR2
 
 JMP2r
@@ -532,30 +548,6 @@ JMP2r
 
 JMP2r
 
-@prng-init ( -- )
-
-	( seed )
-	#00 .DateTime/second DEI
-	#00 .DateTime/minute DEI #60 SFT2 EOR2
-	#00 .DateTime/hour DEI #c0 SFT2 EOR2 ,prng/x STR2
-	#00 .DateTime/hour DEI #04 SFT2
-	#00 .DateTime/day DEI #10 SFT2 EOR2
-	#00 .DateTime/month DEI #60 SFT2 EOR2
-		.DateTime/year DEI2 #a0 SFT2 EOR2 ,prng/y STR2
-
-JMP2r
-
-@prng ( -- number* )
-
-	LIT2 &x $2
-	DUP2 #50 SFT2 EOR2
-	DUP2 #03 SFT2 EOR2
-	LIT2 &y $2 DUP2 ,&x STR2
-	DUP2 #01 SFT2 EOR2 EOR2
-	,&y STR2k POP
-
-JMP2r
-
 ( assembler ----------------------------------------------------------------- )
 
 @assemble ( -- )
@@ -607,12 +599,12 @@ JMP2r
 	&no-found
 	POP2 STH2r INC2 INC2 POP2r
 
-;err/ref ;draw-state JMP2
+;err/ref ;draw-error JMP2
 
 	&on-litzp STH2r NIP STH2r ,&set-byte JMP
 	&on-litrel STH2r STH2kr LDA2 SUB2 #0002 SUB2
 		DUP2 #0080 ADD2 POP #00 EQU ,&in-range JCN
-			OVR2 INC2 ;err/far ;draw-state JSR2
+			OVR2 INC2 ;err/far ;draw-error JSR2
 			&in-range
 			NIP STH2r
 		&set-byte LDA2 STA POP2 JMP2r
@@ -654,7 +646,7 @@ JMP2r
 		DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 		DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/token ;draw-state JMP2
+;err/token ;draw-error JMP2
 
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;shex JSR2 ;write-short JMP2
@@ -670,7 +662,7 @@ JMP2r
 	DUP2 ;slen JSR2 #0004 EQU2 ,&on-short JCN
 	DUP2 ;slen JSR2 #0002 EQU2 ,&on-byte JCN
 
-;err/num ;draw-state JMP2
+;err/num ;draw-error JMP2
 
 	&on-short ;shex JSR2 ;write-litshort JMP2
 	&on-byte ;shex JSR2 NIP ;write-litbyte JMP2
@@ -678,7 +670,7 @@ JMP2r
 @create-label ( name* -- )
 
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
-		DUP2 ;err/dup ;draw-state JSR2
+		DUP2 ;err/dup ;draw-error JSR2
 		&unique
 	( write ref )
 	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
@@ -788,7 +780,7 @@ JMP2r
 @shex ( str* -- short* )
 
 	DUP2 ,sihx JSR ,&valid JCN
-		;err/num ;draw-state JSR2 #0000 JMP2r
+		;err/num ;draw-error JSR2 #0000 JMP2r
 		&valid
 	LIT2r 0000
 	&while
