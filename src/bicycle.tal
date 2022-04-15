@@ -17,8 +17,7 @@
 	@ref &ptr $2
 	@p &ptr $2 &len $2 &sleep $1
 	@selection $2
-	@cursor
-		&x $2 &y $2
+	@cursor &x $2 &y $2
 
 |0100 ( -> )
 
@@ -55,15 +54,16 @@ BRK
 	POP
 	[ #08 ] EQUk NIP ,&erase JCN
 	[ #0d ] EQUk NIP ,&run JCN
+	[ #7f ] EQUk NIP ,&delete JCN
 	[ #20 ] LTHk NIP ,&end JCN
 	[ #7e ] GTHk NIP ,&end JCN
-	DUP ,&append JCN
+	DUP ;insert JSR2
 	&end
 	POP
 
 BRK
 	&erase ( char -> ) POP ;erase JSR2 BRK
-	&append ( char -> ) ;insert JSR2 BRK
+	&delete ( char -> ) POP ;delete JSR2 BRK
 	&run ( char -> ) POP ;do-eval JMP2
 
 @on-mouse ( -> )
@@ -110,6 +110,18 @@ JMP2r
 	.selection LDZ2
 		INC2k .selection STZ2
 		;src ADD2 DUP2 #0001 SUB2 ;src ;scap JSR2 ;msfr JSR2 STA
+	#01 ;draw-src JSR2
+	;draw-flower JSR2
+
+JMP2r
+
+@delete ( -- )
+
+	;src .selection LDZ2 ADD2 ;slen JSR2 #0001 GTH2 ,&continue JCN
+		JMP2r
+		&continue
+	#00 ;draw-src JSR2
+	.selection LDZ2 INC2 ;src ADD2 #0001 SUB2 ;src ;scap JSR2 ;msfl JSR2
 	#01 ;draw-src JSR2
 	;draw-flower JSR2
 
@@ -552,14 +564,14 @@ JMP2r
 	.selection LDZ2
 	#0000 #0100 ;mclr JSR2
 	.selection STZ2
-	;syms .sym/ptr LDZ2 ;mclr JSR2
-	;refs .ref/ptr LDZ2 ;mclr JSR2
+	;syms/prefabs #4000 ;mclr JSR2
+	;refs #4000 ;mclr JSR2
 	;dst .p/len LDZ2 #0100 SUB2 ;mclr JSR2
 	;dst #1000 ;mclr JSR2
 	( load prefabs )
 	;syms/prefabs ;syms SUB2 .sym/ptr STZ2
 	( begin )
-	#0100 .p/ptr STZ2
+	;dst/clip .p/ptr STZ2
 	;src
 	&pass1
 		( comment )
@@ -603,10 +615,10 @@ JMP2r
 			OVR2 INC2 ;err/far ;draw-state JSR2
 			&in-range
 			NIP STH2r
-		&set-byte LDA2 ;dst ADD2 STA POP2 JMP2r
+		&set-byte LDA2 STA POP2 JMP2r
 	&on-litabs STH2r STH2r ,&set-short JMP
 	&on-rawabs STH2r STH2r
-		&set-short LDA2 ;dst ADD2 STA2 POP2 JMP2r
+		&set-short LDA2 STA2 POP2 JMP2r
 
 @find-label ( name* -- addr* )
 
@@ -727,7 +739,7 @@ JMP2r
 
 @write-byte ( byte -- )
 
-	;dst .p/ptr LDZ2 STH2k ADD2 STA
+	.p/ptr LDZ2 STH2k STA
 	INC2r STH2kr .p/ptr STZ2
 	STH2r .p/len STZ2
 
@@ -999,6 +1011,7 @@ JMP2r
 	0000 0000 4020 1008 0408 1020 4000 0000
 	0000 0038 4482 8202 0c10 1000 1010 0000
 	0000 0038 4482 0262 9292 9292 926c 0000
+	( uc )
 	0000 0010 2844 8282 8282 fe82 8282 0000
 	0000 00f8 8482 8284 f884 8282 84f8 0000
 	0000 0038 4482 8080 8080 8082 4438 0000
@@ -1026,11 +1039,12 @@ JMP2r
 	0000 0082 8282 4428 1010 1010 1010 0000
 	0000 00fe 0202 0408 1020 4080 80fe 0000
 	0000 001c 1010 1010 1010 1010 101c 0000
-	0000 0082 4428 10fe 1010 fe10 1010 0000
+	0000 0020 2020 1010 1008 0808 0404 0000
 	0000 0070 1010 1010 1010 1010 1070 0000
 	0000 0010 2844 8200 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 00fe 0000
 	0000 0060 6020 1000 0000 0000 0000 0000
+	( lc )
 	0000 0000 0000 7884 047c 8484 8c74 0000
 	0000 0040 4040 5864 4242 4242 6458 0000
 	0000 0000 0000 3844 8280 8082 4438 0000
