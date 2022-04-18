@@ -24,8 +24,8 @@ uxncli bin/drifblim.rom etc/hello.tal
 # uxncli bin/drifblim.rom etc/error.tal
 
 # echo "Dumping hex.."
-# uxncli bin/drifblim.rom etc/drifblim-hex.tal
-# uxncli etc/drifblim-hex.rom bin/drifblim.rom
+uxncli bin/drifblim.rom etc/format-hex.tal
+uxncli etc/format-hex.rom bin/drifblim.rom
 
 # echo "Running rom.."
 uxncli etc/hello.rom
