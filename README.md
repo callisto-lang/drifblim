@@ -26,8 +26,6 @@ If do not wish to assemble it yourself, you can download [drifblim.rom](https://
 - `MOD/MOD2` Pushes the modulo of X and Y, onto the stack.
 - `ABS/ABS2` Pushes the absolute value of X, onto the stack.
 - `RAND/RAND2` Pushes a random value between 0 and X, onto the stack.
-- `FRE` Prints the number of bytes left in memory.
-- `NEW` Erases the current routines in memory.
 - `QUIT` Turns off the system.
 
 ## Controls

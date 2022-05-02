@@ -499,18 +499,6 @@ JMP2r
 
 JMP2r
 
-@prefab-free ( -- )
-
-	( TODO )
-
-JMP2r
-
-@prefab-new ( -- )
-
-	( TODO )
-
-JMP2r
-
 @prefab-quit ( -- )
 
 	#010f DEO
@@ -1093,10 +1081,6 @@ JMP2r
 	( RAND Pushes a random value between 0 and X, onto the stack. )
 	:prefab-rand "RAND $1
 	:prefab-rand2 "RAND2 $1
-	( FREE Prints the number of bytes left in memory. )
-	:prefab-free "FREE $1
-	( NEW Erases the current routines in memory. )
-	:prefab-new "NEW $1
 	( QUIT Turns off the system. )
 	:prefab-quit "QUIT $1
 	&prefabs
