@@ -71,7 +71,7 @@ BRK
 
 	.p/len LDZ2 #0004 EQU2 ,&skip JCN
 	;&asm-txt ;print-str JSR2
-	;dst DUP2 .p/len LDZ2 ADD2 #0003 SUB2 SWP2
+	;dst DUP2 .p/len LDZ2 ADD2 #0004 SUB2 SWP2
 	&loop
 		LDAk ;print/byte JSR2 #2018 DEO
 		INC2 GTH2k ,&loop JCN
