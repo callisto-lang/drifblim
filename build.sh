@@ -31,3 +31,5 @@ uxncli etc/format-hex.rom bin/drifblim.rom
 uxncli etc/hello.rom
 
 # uxncli bin/drifblim.rom src/bicycle.tal && mv src/bicycle.rom bin/ && uxn11 bin/bicycle.rom
+
+# uxnasm src/unicycle.tal bin/unicycle.rom && uxncli bin/unicycle.rom

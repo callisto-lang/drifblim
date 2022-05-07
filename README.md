@@ -4,7 +4,11 @@
 
 The assembler is written in about 400 lines, it's designed to help bootstrap the Uxn ecosystem and to demonstrate the concept of a personal one-page computer concept. The goal is for Driflim's source code to be released as a print-friendly document, along with its assembled hexadecimal data and the _napkin definition_ of the Uxn virtual machine.
 
-The Drifblim project also includes a REPL program, called [varvara's bicycle](https://wiki.xxiivv.com/bicycle).
+### Project
+
+- `drifblim.tal` Self-hosted assembler.
+- `unicycle.tal` Console REPL.
+- `bicycle.tal` [Graphical REPL](https://wiki.xxiivv.com/bicycle).
 
 ## Build
 
