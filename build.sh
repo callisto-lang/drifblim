@@ -7,6 +7,12 @@ mkdir bin
 rm -rf etc/*.sym
 rm -rf etc/*.rom
 
+if [ -e "$HOME/roms/uxnlin.rom" ]
+then
+	echo "Linting.."
+	uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
+fi
+
 echo "Assembling.."
 uxnasm src/drifblim.tal bin/drifblim-bootstrap.rom 
 uxncli bin/drifblim-bootstrap.rom src/drifblim.tal 
