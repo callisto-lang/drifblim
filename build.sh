@@ -11,6 +11,8 @@ if [ -e "$HOME/roms/uxnlin.rom" ]
 then
 	echo "Linting.."
 	uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
+	uxncli $HOME/roms/uxnlin.rom src/bicycle.tal
+	uxncli $HOME/roms/uxnlin.rom src/unicycle.tal
 fi
 
 echo "Assembling.."

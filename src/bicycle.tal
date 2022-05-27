@@ -48,7 +48,7 @@ BRK
 	[ #10 ] NEQk NIP ,&no-u JCN ;select-start JSR2 POP2 BRK &no-u
 	[ #20 ] NEQk NIP ,&no-d JCN ;select-end JSR2 POP2 BRK &no-d
 	[ #40 ] NEQk NIP ,&no-l JCN .selection LDZ2 #0001 SUB2 ;select JSR2 POP2 BRK &no-l
-	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 #0001 ADD2 ;select JSR2 POP2 BRK &no-r
+	[ #80 ] NEQk NIP ,&no-r JCN .selection LDZ2 INC2 ;select JSR2 POP2 BRK &no-r
 	DUP2 LIT 'c #01 NEQ2 ,&no-cc JCN ;copy-snarf JSR2 POP2 BRK &no-cc
 	DUP2 LIT 'v #01 NEQ2 ,&no-cv JCN ;paste-snarf JSR2 POP2 BRK &no-cv
 	POP
@@ -129,7 +129,7 @@ JMP2r
 
 @erase ( -- )
 
-	( clamp ) .selection LDZ2 #0000 NEQ2 ,&continue JCN
+	( clamp ) .selection LDZ2 ORA ,&continue JCN
 		JMP2r
 		&continue
 	#00 ;draw-src JSR2
@@ -271,7 +271,7 @@ JMP2r
 	#0020 .Screen/x DEO2
 	.Screen/height DEI2 #0030 SUB2 .Screen/y DEO2
 	;program-txt #02 ;draw-str JSR2
-	.p/len LDZ2 ;dst/clip SUB2 #0020 ( max ) LTH2k JMP SWP2 POP2 NIP
+	.p/len LDZ2 ;dst/clip SUB2 #0020 ( max ) [ LTH2k JMP SWP2 POP2 ] NIP
 		;dst/clip STHr ,draw-memory JSR
 
 JMP2r
@@ -465,7 +465,7 @@ JMP2r
 
 @prefab-abs ( -- )
 
-	#0000 OVR #07 SFT JMP SWP SWP SUB
+	#0000 OVR #07 SFT JMP ( not sure.. ) [ SWP SWP ] SUB
 
 JMP2r
 
