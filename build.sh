@@ -16,6 +16,8 @@ then
 fi
 
 echo "Assembling.."
+uxnasm src/unicycle.tal bin/unicycle.rom
+uxnasm src/bicycle.tal bin/bicycle.rom
 uxnasm src/drifblim.tal bin/drifblim-bootstrap.rom 
 uxncli bin/drifblim-bootstrap.rom src/drifblim.tal 
 mv src/drifblim.rom bin/drifblim.rom
@@ -23,7 +25,9 @@ mv src/drifblim.rom bin/drifblim.rom
 echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/drifblim.rom ]
 then
-	cp ./bin/drifblim.rom $HOME/roms
+	cp bin/drifblim.rom $HOME/roms
+	cp bin/unicycle.rom $HOME/roms
+	cp bin/bicycle.rom $HOME/roms
     echo "Installed in $HOME/roms" 
 fi
 
@@ -40,4 +44,3 @@ uxncli etc/hello.rom
 
 # uxncli bin/drifblim.rom src/bicycle.tal && mv src/bicycle.rom bin/ && uxn11 bin/bicycle.rom
 
-# uxnasm src/unicycle.tal bin/unicycle.rom && uxncli bin/unicycle.rom
