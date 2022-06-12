@@ -213,7 +213,7 @@ BRK
 	#01 ;draw-assembly JSR2
 	BRK
 	&errcodes
-		:err/unknown :err/underflow :err/overflow :err/zero :err/busy
+		:err/unknown :err/underflow :err/overflow :err/zero
 
 ( Drawing ------------------------------------------------------------------- )
 
@@ -921,7 +921,6 @@ JMP2r
 	&underflow "Underflow $1
 	&overflow "Overflow $1
 	&zero "Zero-Division $1
-	&busy "Busy $1
 
 @runes
 	'| :do-padabs	'$ :do-padrel	'@ :do-plabel	'& :do-slabel
