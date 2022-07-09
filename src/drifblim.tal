@@ -26,7 +26,7 @@ BRK
 	.Console/read DEI
 	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
 	STH2kr ;slen JSR2 #003f GTH2 ,&end JCN
-		STH2kr ;sput JSR2 POP2r BRK
+		STH2r ;sput JSR2 BRK
 		&end
 	POP
 	( assemble )
@@ -37,7 +37,7 @@ BRK
 		.File/success DEI2 ORA ,&stream JCN
 	;resolve JSR2
 	STH2r ;build JSR2
-	( debugger )
+	( halt )
 	#010f DEO
 
 BRK

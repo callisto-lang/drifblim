@@ -40,7 +40,8 @@ uxncli bin/drifblim.rom etc/format-hex.tal
 uxncli etc/format-hex.rom bin/drifblim.rom
 
 # echo "Running rom.."
-uxncli etc/hello.rom
+# uxncli etc/hello.rom
+uxn11 bin/bicycle.rom
 
 # uxncli bin/drifblim.rom src/bicycle.tal && mv src/bicycle.rom bin/ && uxn11 bin/bicycle.rom
 
