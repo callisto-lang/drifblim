@@ -1,4 +1,4 @@
-( Procblim - Usage: uxncli procblim.rom src/source.tal )
+( Usage: uxncli procblim.rom src/source.tal )
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -140,20 +140,7 @@ JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @sput ( char str* -- ) ,scap JSR STA JMP2r
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
-
-@scmp ( a* b* -- flag )
-
-	STH2
-	&loop
-		LDAk LDAkr STHr NEQ ,&end JCN
-		LDAk LDAkr STHr ORA ,&not-end JCN
-			POP2 POP2r #01 JMP2r
-			&not-end
-		INC2 INC2r ,&loop JMP
-	&end
-	POP2 POP2r #00
-
-JMP2r
 
 @macros ( name | body | name | body .. )
