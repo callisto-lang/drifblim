@@ -85,7 +85,6 @@ JMP2r
 	( push name )
 	DUP2 .next LDZ2 ;scpy JSR2
 	;slen JSR2 .next LDZ2 ADD2 INC2 .next STZ2
-
 	&stream
 		;&c .File/read DEO2
 		,&c LDR LIT '{ EQU ,&stream JCN
@@ -106,60 +105,13 @@ JMP2r
 
 ( stdlib )
 
-@slen ( str* -- len* )
-
-	DUP2 ,scap JSR SWP2 SUB2
-
-JMP2r
-
-@scap ( str* -- str-end* )
-
-	LDAk #00 NEQ JMP JMP2r
-	&while INC2 LDAk ,&while JCN
-
-JMP2r
-
-@sput ( char str* -- )
-
-	,scap JSR STA
-
-JMP2r
-
-@scat ( src* dst* -- )
-
-	DUP2 ,slen JSR ADD2
-
-@scpy ( src* dst* -- )
-
-	STH2
-	&while
-		LDAk STH2kr STA INC2r
-		INC2 LDAk ,&while JCN
-	POP2
-	#00 STH2r STA
-
-JMP2r
-
-@mclr ( addr* len* -- )
-
-	OVR2 ADD2 SWP2
-	&loop
-		STH2k #00 STH2r STA
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-
-JMP2r
-
-@mcpy ( from* to* len* -- )
-
-	SWP2 STH2
-	ADD2k NIP2 SWP2
-	&loop
-		LDAk STH2kr STA INC2 INC2r
-		GTH2k ,&loop JCN
-	POP2 POP2 POP2r
-
-JMP2r
+@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
+@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@sput ( char str* -- ) ,scap JSR STA JMP2r
+@scat ( src* dst* -- ) DUP2 ,slen JSR ADD2
+@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 ADD2k NIP2 SWP2 &l LDAk STH2kr STA INC2 INC2r GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
 
 @print ( short* -- )
 
