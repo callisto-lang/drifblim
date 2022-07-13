@@ -1,12 +1,17 @@
+( Comment )
+
+%EMIT { #18 DEO }
+%HALT { #010f DEO }
+
 |0100 @program
 
 	;hello-word
 	&while
-		( send ) LDAk #18 DEO
+		( send ) LDAk EMIT
 		( loop ) INC2 LDAk ,&while JCN
 	POP2
-	( halt ) #010f DEO
+	HALT
 
 BRK
 
-@hello-word "Hello 20 "World! 0a00
+@hello-word "Hello 20 "Uxn! 0a00

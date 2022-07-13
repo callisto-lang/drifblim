@@ -10,40 +10,33 @@ rm -rf etc/*.rom
 if [ -e "$HOME/roms/uxnlin.rom" ]
 then
 	echo "Linting.."
+	uxncli $HOME/roms/uxnlin.rom src/procblim.tal
 	uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
-	uxncli $HOME/roms/uxnlin.rom src/bicycle.tal
-	uxncli $HOME/roms/uxnlin.rom src/unicycle.tal
 fi
 
-echo "Assembling.."
-uxnasm src/unicycle.tal bin/unicycle.rom
-uxnasm src/bicycle.tal bin/bicycle.rom
 uxnasm src/drifblim.tal bin/drifblim-bootstrap.rom 
-uxncli bin/drifblim-bootstrap.rom src/drifblim.tal 
+uxncli bin/drifblim-bootstrap.rom src/procblim.tal
+uxncli bin/drifblim-bootstrap.rom src/drifblim.tal
+mv src/procblim.rom bin/procblim.rom
 mv src/drifblim.rom bin/drifblim.rom
 
-echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/drifblim.rom ]
 then
+	cp bin/procblim.rom $HOME/roms
 	cp bin/drifblim.rom $HOME/roms
-	cp bin/unicycle.rom $HOME/roms
-	cp bin/bicycle.rom $HOME/roms
     echo "Installed in $HOME/roms" 
 fi
 
-echo "Assembling Examples, from Drifblim.."
-uxncli bin/drifblim.rom etc/hello.tal
-# uxncli bin/drifblim.rom etc/error.tal
+# Pre-processing hello.tal
+uxncli bin/procblim.rom etc/hello.tal
+
+# Assembling hello.tal
+uxncli bin/drifblim.rom etc/hello.pro.tal
+mv etc/hello.pro.rom bin/hello.rom
 
 # echo "Dumping hex.."
 uxncli bin/drifblim.rom etc/format-hex.tal
 uxncli etc/format-hex.rom bin/drifblim.rom
 
-# echo "Running rom.."
-# uxncli etc/hello.rom
-uxn11 bin/bicycle.rom
-
-# uxncli bin/drifblim.rom src/bicycle.tal && mv src/bicycle.rom bin/ && uxn11 bin/bicycle.rom
-
-# uxncli ~/roms/uxnlin.rom src/prepro.tal && uxnasm src/prepro.tal bin/prepro.rom && uxncli bin/prepro.rom etc/macros.tal
-
+# Running hello.tal
+echo "" && uxncli bin/hello.rom

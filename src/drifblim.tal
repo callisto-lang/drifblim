@@ -44,23 +44,22 @@ BRK
 
 @walk ( char -- )
 
-	LIT '( EQUk NIP ,&toggle JCN
-	LIT ') EQUk NIP ,&toggle JCN
-	[ LIT &sleep $1 ] ,&skip JCN
 	#20 GTHk NIP ,&append JCN
 	;token
 		DUP2 ,walk-token JSR
 		#0030 ;mclr JSR2
-	&skip
 	POP
 
 JMP2r
-	&toggle #29 SUB ,&sleep STR JMP2r
 	&append ;token ;sput JMP2
 
 @walk-token ( token* -- )
 
-	( skip empty ) ;slen JSR2 ORA #01 JCN JMP2r
+	LDAk LIT '( EQU ,&on-parens JCN
+	LDAk LIT ') EQU ,&on-parens JCN
+	[ LIT &sleep $1 ] ,&on-sleep JCN
+	;slen JSR2 ORA #01 JCN JMP2r
+
 	;runes/end ;runes
 	&loop
 		LDAk ;token LDA EQU ,&on-runic JCN
@@ -77,6 +76,8 @@ JMP2r
 	&on-opcode ;find-opcode JSR2 ;write-byte JMP2
 	&on-short ;shex JSR2 ;write-short JMP2
 	&on-byte ;shex JSR2 NIP ;write-byte JMP2
+	&on-parens LDA #29 SUB ,&sleep STR JMP2r
+	&on-sleep POP2 JMP2r
 
 @resolve ( -- )
 
