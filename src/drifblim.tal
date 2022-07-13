@@ -44,10 +44,10 @@ BRK
 
 @walk ( char -- )
 
-	[ #28 ] EQUk NIP ,&toggle JCN
-	[ #29 ] EQUk NIP ,&toggle JCN
+	LIT '( EQUk NIP ,&toggle JCN
+	LIT ') EQUk NIP ,&toggle JCN
 	[ LIT &sleep $1 ] ,&skip JCN
-	[ #20 ] GTHk NIP ,&append JCN
+	#20 GTHk NIP ,&append JCN
 	;token
 		DUP2 ,walk-token JSR
 		#0030 ;mclr JSR2

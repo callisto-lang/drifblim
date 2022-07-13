@@ -1,0 +1,184 @@
+( Prepro - Usage: uxncli prepro.rom src/source.tal )
+
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@src $40
+	@token $30
+	@next $2
+
+|0100
+
+	;on-console .Console/vector DEO2
+	;macros .next STZ2
+
+BRK
+
+@on-console ( -> )
+
+	;src STH2
+	( filepath )
+	.Console/read DEI
+	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
+	STH2kr ;slen JSR2 #003f GTH2 ,&end JCN
+		STH2r ;sput JSR2 BRK
+		&end
+	POP
+	STH2r ,parse JSR
+	#0a18 DEO
+	;macros ;print-mem JSR2
+	( halt )
+	#010f DEO
+
+BRK
+
+@parse ( name* -- )
+
+	.File/name DEO2
+	#0001 .File/length DEO2
+	&stream
+		;&c .File/read DEO2
+		.File/success DEI2 ORA #01 JCN JMP2r
+		[ LIT &c $1 ] ,walk JSR
+		,&stream JMP
+
+JMP2r
+
+@walk ( char -- )
+
+	LIT '( EQUk NIP ,&toggle JCN
+	LIT ') EQUk NIP ,&toggle JCN
+	[ LIT &sleep $1 ] ,&skip JCN
+	#20 GTHk NIP ,&append JCN
+	;token
+		DUP2 ,walk-token JSR
+		#0030 ;mclr JSR2
+	&skip
+	POP
+
+JMP2r
+	&toggle #29 SUB ,&sleep STR JMP2r
+	&append ;token ;sput JMP2
+
+@walk-token ( token* -- )
+
+	( skip empty ) ;slen JSR2 ORA #01 JCN JMP2r
+
+	( macro )
+	;token
+		LDAk LIT '% EQU ;create-macro JCN2
+		LDAk LIT '~ EQU ;create-include JCN2
+
+	POP2
+
+
+	( ;token ;print-str JSR2 #2018 DEO )
+
+JMP2r
+
+@create-macro ( token* -- )
+
+	INC2
+	DUP2 .next LDZ2 ;scpy JSR2
+	DUP2 ;slen JSR2 .next LDZ2 ADD2 INC2 .next STZ2
+	;print-str JSR2
+
+JMP2r
+
+@create-include ( token* -- )
+
+	;print-str JSR2
+
+JMP2r
+
+( stdlib )
+
+@slen ( str* -- len* )
+
+	DUP2 ,scap JSR SWP2 SUB2
+
+JMP2r
+
+@scap ( str* -- str-end* )
+
+	LDAk #00 NEQ JMP JMP2r
+	&while INC2 LDAk ,&while JCN
+
+JMP2r
+
+@sput ( char str* -- )
+
+	,scap JSR STA
+
+JMP2r
+
+@scat ( src* dst* -- )
+
+	DUP2 ,slen JSR ADD2
+
+@scpy ( src* dst* -- )
+
+	STH2
+	&while
+		LDAk STH2kr STA INC2r
+		INC2 LDAk ,&while JCN
+	POP2
+	#00 STH2r STA
+
+JMP2r
+
+@mclr ( addr* len* -- )
+
+	OVR2 ADD2 SWP2
+	&loop
+		STH2k #00 STH2r STA
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
+
+JMP2r
+
+@mcpy ( from* to* len* -- )
+
+	SWP2 STH2
+	ADD2k NIP2 SWP2
+	&loop
+		LDAk STH2kr STA INC2 INC2r
+		GTH2k ,&loop JCN
+	POP2 POP2 POP2r
+
+JMP2r
+
+@print ( short* -- )
+
+	SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@print-mem ( addr* -- )
+
+	STH2
+	#0000
+	&loop
+		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
+		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
+		INC NEQk ,&loop JCN
+	POP2
+	POP2r
+
+JMP2r
+
+@print-str ( str* -- )
+
+	&while
+		LDAk #18 DEO
+		INC2 LDAk ,&while JCN
+	POP2
+
+JMP2r
+
+@macros
+	( name | body | name | body .. )

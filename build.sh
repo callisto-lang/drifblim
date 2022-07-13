@@ -45,3 +45,5 @@ uxn11 bin/bicycle.rom
 
 # uxncli bin/drifblim.rom src/bicycle.tal && mv src/bicycle.rom bin/ && uxn11 bin/bicycle.rom
 
+# uxncli ~/roms/uxnlin.rom src/prepro.tal && uxnasm src/prepro.tal bin/prepro.rom && uxncli bin/prepro.rom etc/macros.tal
+
