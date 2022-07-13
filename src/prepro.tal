@@ -73,17 +73,28 @@ JMP2r
 
 	POP2
 
-
 	( ;token ;print-str JSR2 #2018 DEO )
 
 JMP2r
 
+( macro )
+
 @create-macro ( token* -- )
 
 	INC2
+	( push name )
 	DUP2 .next LDZ2 ;scpy JSR2
-	DUP2 ;slen JSR2 .next LDZ2 ADD2 INC2 .next STZ2
-	;print-str JSR2
+	;slen JSR2 .next LDZ2 ADD2 INC2 .next STZ2
+
+	&stream
+		;&c .File/read DEO2
+		,&c LDR LIT '{ EQU ,&stream JCN
+		,&c LDR LIT '} EQU ,&end JCN
+		.File/success DEI2 #0000 EQU2 ,&end JCN
+		[ LIT &c $1 ] .next LDZ2 ;sput JSR2
+		,&stream JMP
+	&end
+	.next LDZ2 ;slen JSR2 .next LDZ2 ADD2 .next STZ2
 
 JMP2r
 
