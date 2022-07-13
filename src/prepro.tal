@@ -2,10 +2,12 @@
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
 	@src $40
+	@dst $40
 	@token $30
 	@next $2
 
@@ -26,18 +28,25 @@ BRK
 		STH2r ;sput JSR2 BRK
 		&end
 	POP
+
+	( output )
+	STH2kr
+	;dst ;scpy JSR2
+	;&ext-txt ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
+	;dst .File2/name DEO2
+
 	STH2r ,parse JSR
-	#0a18 DEO
-	;macros ;print-mem JSR2
 	( halt )
 	#010f DEO
 
 BRK
+	&ext-txt ".pro.tal $1
 
 @parse ( name* -- )
 
 	.File1/name DEO2
 	#0001 .File1/length DEO2
+
 	&stream
 		;&c .File1/read DEO2
 		.File1/success DEI2 ORA #01 JCN JMP2r
@@ -76,9 +85,13 @@ JMP2r
 	;token ;print-str JSR2 #2018 DEO
 	;token ;find-macro JSR2 ;print JSR2 #0a18 DEO
 
-	( ;token ;print-str JSR2 #2018 DEO )
+	;token ;slen JSR2 .File2/length DEO2
+	;token .File2/write DEO2
+	#0001 .File2/length DEO2
+	;&ws .File2/write DEO2
 
 JMP2r
+	&ws 20
 
 ( macro )
 
@@ -126,10 +139,8 @@ JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @sput ( char str* -- ) ,scap JSR STA JMP2r
-@scat ( src* dst* -- ) DUP2 ,slen JSR ADD2
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 ADD2k NIP2 SWP2 &l LDAk STH2kr STA INC2 INC2r GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
 
 @scmp ( a* b* -- flag )
 
@@ -153,19 +164,6 @@ JMP2r
 
 JMP2r
 
-@print-mem ( addr* -- )
-
-	STH2
-	#0000
-	&loop
-		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
-		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
-		INC NEQk ,&loop JCN
-	POP2
-	POP2r
-
-JMP2r
-
 @print-str ( str* -- )
 
 	&while
@@ -175,5 +173,4 @@ JMP2r
 
 JMP2r
 
-@macros
-	( name | body | name | body .. )
+@macros ( name | body | name | body .. )
