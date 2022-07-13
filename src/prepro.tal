@@ -1,7 +1,7 @@
 ( Prepro - Usage: uxncli prepro.rom src/source.tal )
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
-|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
@@ -36,11 +36,11 @@ BRK
 
 @parse ( name* -- )
 
-	.File/name DEO2
-	#0001 .File/length DEO2
+	.File1/name DEO2
+	#0001 .File1/length DEO2
 	&stream
-		;&c .File/read DEO2
-		.File/success DEI2 ORA #01 JCN JMP2r
+		;&c .File1/read DEO2
+		.File1/success DEI2 ORA #01 JCN JMP2r
 		[ LIT &c $1 ] ,walk JSR
 		,&stream JMP
 
@@ -70,8 +70,11 @@ JMP2r
 	;token
 		LDAk LIT '% EQU ;create-macro JCN2
 		LDAk LIT '~ EQU ;create-include JCN2
-
 	POP2
+
+	( print )
+	;token ;print-str JSR2 #2018 DEO
+	;token ;find-macro JSR2 ;print JSR2 #0a18 DEO
 
 	( ;token ;print-str JSR2 #2018 DEO )
 
@@ -86,16 +89,31 @@ JMP2r
 	DUP2 .next LDZ2 ;scpy JSR2
 	;slen JSR2 .next LDZ2 ADD2 INC2 .next STZ2
 	&stream
-		;&c .File/read DEO2
+		;&c .File1/read DEO2
 		,&c LDR LIT '{ EQU ,&stream JCN
 		,&c LDR LIT '} EQU ,&end JCN
-		.File/success DEI2 #0000 EQU2 ,&end JCN
+		.File1/success DEI2 #0000 EQU2 ,&end JCN
 		[ LIT &c $1 ] .next LDZ2 ;sput JSR2
 		,&stream JMP
 	&end
-	.next LDZ2 ;slen JSR2 .next LDZ2 ADD2 .next STZ2
+	.next LDZ2 ;slen JSR2 .next LDZ2 ADD2 INC2 .next STZ2
 
 JMP2r
+
+@find-macro ( token* -- macro* )
+
+	STH2
+	;macros
+	&while
+		DUP2 STH2kr ;scmp JSR2 ,&found JCN
+		;scap JSR2 INC2 ;scap JSR2 INC2
+		LDAk ,&while JCN
+	POP2
+	POP2r
+	#0000
+
+JMP2r
+	&found POP2r JMP2r
 
 @create-include ( token* -- )
 
@@ -112,6 +130,20 @@ JMP2r
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 ADD2k NIP2 SWP2 &l LDAk STH2kr STA INC2 INC2r GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
+
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		LDAk LDAkr STHr ORA ,&not-end JCN
+			POP2 POP2r #01 JMP2r
+			&not-end
+		INC2 INC2r ,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
 
 @print ( short* -- )
 
