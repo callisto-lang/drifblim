@@ -1,0 +1,4 @@
+( this file is included by hello.tal )
+
+@string
+    "Hello 20 "Include $1
