@@ -41,28 +41,12 @@ BRK
 	STH2r ,assemble JSR
 
 	( print symbols )
-	;print-unused JSR2
-
-	( result )
-	;&assembled-txt ;pstr JSR2
-	;dst ;pstr JSR2
-	;&in-txt ;pstr JSR2
-	.size LDZ2 ;pdec JSR2
-	;&bytes-txt ;pstr JSR2
-	LIT '( #18 DEO
-	;create-label/count LDA2 ;pdec JSR2
-	;&labels-txt ;pstr JSR2
-	LIT ') #18 DEO
-	#0a18 DEO
+	;print-summary JSR2
 
 	( halt )
 	#0101 #0e DEO2
 
 BRK
-	&assembled-txt "Assembled 20 $1
-	&in-txt 20 "in 20 $1
-	&bytes-txt 20 "bytes $1
-	&labels-txt 20 "labels $1
 
 @assemble ( file* -- )
 
@@ -315,7 +299,7 @@ JMP2r
 
 JMP2r
 
-@print-unused ( -- )
+@print-summary ( -- )
 
 	;syms
 	&w
@@ -327,7 +311,23 @@ JMP2r
 		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
 	POP2
 
+	( result )
+	;&assembled-txt ;pstr JSR2
+	;dst ;pstr JSR2
+	;&in-txt ;pstr JSR2
+	.size LDZ2 ;pdec JSR2
+	;&bytes-txt ;pstr JSR2
+	LIT '( #18 DEO
+	;create-label/count LDA2 ;pdec JSR2
+	;&labels-txt ;pstr JSR2
+	LIT ') #18 DEO
+	#0a18 DEO
+
 JMP2r
+	&assembled-txt "Assembled 20 $1
+	&in-txt 20 "in 20 $1
+	&bytes-txt 20 "bytes $1
+	&labels-txt 20 "labels $1
 	&unused-txt "-- 20 "Unused 20 "label: 20 $1
 
 ( assets )
@@ -428,14 +428,6 @@ JMP2r
 JMP2r
 	&n #30 SUB JMP2r
 	&l #57 SUB JMP2r
-
-@print ( short* -- )
-
-	SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
 
 @pdec ( short* -- )
 
