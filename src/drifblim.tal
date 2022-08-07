@@ -12,6 +12,7 @@
 		@buf $30
 		@scope $30
 		@token $30
+		@size $2
 		@prg-ptr $2
 		@sym-ptr $2
 
@@ -32,17 +33,35 @@ BRK
 		&end
 	POP
 	( pass1 )
-	STH2kr ,assemble JSR
+	STH2kr ;assemble JSR2
+
 	( print symbols )
 	;print-symbols JSR2
 	( pass2 )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
 	STH2r ,assemble JSR
+
+	( result )
+	;&assembled-txt ;pstr JSR2
+	;dst ;pstr JSR2
+	;&in-txt ;pstr JSR2
+	.size LDZ2 ;pdec JSR2
+	;&bytes-txt ;pstr JSR2
+	LIT '( #18 DEO
+	;create-label/count LDA2 ;pdec JSR2
+	;&labels-txt ;pstr JSR2
+	LIT ') #18 DEO
+	#0a18 DEO
+
 	( halt )
 	#0101 #0e DEO2
 
 BRK
+	&assembled-txt "Assembled 20 $1
+	&in-txt 20 "in 20 $1
+	&bytes-txt 20 "bytes $1
+	&labels-txt 20 "labels $1
 
 @assemble ( file* -- )
 
@@ -164,6 +183,8 @@ JMP2r
 	( save str ) STH2k .sym-ptr LDZ2 ;scpy JSR2
 	( move ) .sym-ptr LDZ2k STH2r ;slen JSR2 ADD2 INC2 ROT STZ2
 
+	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
+
 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
@@ -235,6 +256,7 @@ JMP2
 	,&b STR
 	.prg-ptr LDZ2 #0100 LTH2 ,&zp JCN
 		;&b .File2/write DEO2
+		.size LDZ2k INC2 ROT STZ2
 		&zp
 	.prg-ptr LDZ2k INC2 ROT STZ2
 
@@ -413,5 +435,21 @@ JMP2r
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 
 JMP2r
+
+@pdec ( short* -- )
+
+	#00 ,&z STR
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	NIP #30 ADD #18 DEO
+
+JMP2r
+	&parse
+		DIV2k DUPk [ LIT &z $1 ] EQU ,&skip JCN
+		DUP #30 ADD #18 DEO #ff ,&z STR
+		&skip POP MUL2 SUB2
+	JMP2r
 
 @syms ( addr*, text, 00 )
