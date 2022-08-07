@@ -1,4 +1,4 @@
-( Usage: uxncli driflim.rom src/source.tal )
+( Usage: uxncli driflim.rom src/source.tal -> src/source.rom )
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -8,10 +8,10 @@
 
 	@src $40
 	@inc $40
-	@buf $40
+	@buf $30
 	@scope $30
 	@token $30
-	@p &ptr $2 &len $2
+	@p &ptr $2
 	@sym &ptr $2
 
 |0100
@@ -23,6 +23,7 @@ BRK
 @on-console ( -> )
 
 	;src STH2
+
 	( filepath )
 	.Console/read DEI
 	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
@@ -30,6 +31,7 @@ BRK
 		STH2r ;sput JSR2 BRK
 		&end
 	POP
+
 	( assemble )
 	STH2r ,assemble JSR
 
@@ -48,7 +50,8 @@ BRK
 	DUP2 ;dst #0040 ;mcpy JSR2
 	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
 	;dst .File2/name DEO2
-	#0001 .File/length DEO2
+	#0001 .File2/length DEO2
+
 	( stream )
 	.File/name DEO2
 	#0001 .File/length DEO2
@@ -64,7 +67,8 @@ JMP2r
 @walk ( char -- )
 
 	#20 GTHk NIP ,&append JCN POP
-	;token DUP2 ;slen JSR2 ORA ,&run JCN POP2
+	;token DUP2 ;slen JSR2 ORA ,&run JCN
+	( skip empty ) POP2
 
 JMP2r
 	&run DUP2 ,walk-token JSR #0030 ;mclr JSR2 JMP2r
@@ -82,7 +86,7 @@ JMP2r
 	DUP2 ;pstr JSR2 #0a18 DEO
 
 	( pass1 token )
-	DUP2 ;find-token JSR2 INC2 LDA2 JSR2
+	DUP2 ,find-token JSR INC2 LDA2 JSR2
 
 JMP2r
 	&on-parens LDA #29 SUB ,&sleep STR JMP2r
@@ -128,7 +132,7 @@ JMP2r
 
 	( check duplicate )
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
-		( ERROR: Duplicate )
+		;errors/duplicate ;error JMP2
 		&unique
 	( write ref )
 	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
@@ -148,7 +152,7 @@ JMP2r
 
 JMP2r
 
-@find-label ( name* -- addr/ffff* )
+@find-label ( name* -- addr*|ffff )
 
 	STH2
 	;syms
@@ -248,33 +252,26 @@ JMP2r
 
 @do-refzep ( token* -- )
 
-	;pstr JSR2 #0a18 DEO
+	POP2 #ff ;write-litbyte JSR2
 
 JMP2r
 
 @do-refrel ( token* -- )
 
-	;pstr JSR2 #0a18 DEO
+	POP2 #ff ;write-litbyte JSR2
 
 JMP2r
 
-
 @do-refabs ( token* -- )
 
-	;pstr JSR2 #0a18 DEO
+	POP2 #ffff ;write-litshort JSR2
 
 JMP2r
 
 @do-refraw ( token* -- )
 
-	;pstr JSR2 #0a18 DEO
+	POP2 #ffff ;write-short JSR2
 
-JMP2r
-
-@do-something ( token* -- )
-
-
-	POP2
 JMP2r
 
 @do-opc ( token* -- )
@@ -291,11 +288,9 @@ JMP2r
 
 @do-err ( token* -- )
 
-	;&error ;pstr JSR2 ;pstr JSR2
-	#010f DEO
+	;errors/unknown ;error JMP2
 
 BRK
-	&error "Error: 20 $1
 
 @is-opcode ( string* -- flag )
 
@@ -358,9 +353,26 @@ JMP2r
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	&brk "BRK
 
+@errors
+	&duplicate "Duplicate 20 "Label $1
+	&unknown "Unknown 20 "Token $1
+
+@error ( id* name* -- )
+
+	;&err-txt ;perr JSR2
+	;perr JSR2
+	LIT ': #19 DEO
+	#2019 DEO
+	;perr JSR2
+	#0a19 DEO
+	#010f DEO
+
+BRK
+	&err-txt "!! 20 "Error 20 $1
+
 @pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
+@perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
-@spop ( str* -- ) LDAk ,&n JCN POP2 JMP2r &n ,scap JSR #0001 SUB2 #00 ROT ROT STA JMP2r
 @sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scat ( src* dst* -- ) ,scap JSR
