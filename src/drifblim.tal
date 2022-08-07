@@ -37,6 +37,7 @@ BRK
 
 	( print symbols )
 	;print-symbols JSR2
+
 	( pass2 )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
@@ -158,7 +159,7 @@ JMP2r
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 INC2 INC2 ;errors/far ;perr JMP2
+	&fail POP2 INC2 INC2 INC2 ;errors/far ;perr JMP2
 
 @get-ref ( token* -- label*|ffff )
 
@@ -178,7 +179,7 @@ JMP2r
 		;errors/duplicate ;perr JMP2
 		&unique
 	( save ptr ) .prg-ptr LDZ2 .sym-ptr LDZ2 STA2
-	( move ) .sym-ptr LDZ2k INC2 INC2 ROT STZ2
+	( move ) .sym-ptr LDZ2k INC2 INC2 INC2 ROT STZ2
 	( save str ) STH2k .sym-ptr LDZ2 ;scpy JSR2
 	( move ) .sym-ptr LDZ2k STH2r ;slen JSR2 ADD2 INC2 ROT STZ2
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
@@ -200,14 +201,14 @@ JMP2r
 	STH2
 	;syms
 	&w
-		INC2 INC2 DUP2 STH2kr ;scmp JSR2 ,&found JCN
-		;scap JSR2 INC2 INC2k INC2 LDA ,&w JCN
+		INC2 INC2 INC2 DUP2 STH2kr ;scmp JSR2 ,&found JCN
+		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
 	POP2
 	POP2r
 	#ffff
 
 JMP2r
-	&found #0002 SUB2 POP2r JMP2r
+	&found #0003 SUB2 POP2r JMP2r
 
 @write-lithex ( str* -- )
 
@@ -319,10 +320,11 @@ JMP2r
 	&w
 		LIT '@ #18 DEO
 		LDA2k ;print JSR2 #2018 DEO
+		INC2 INC2 LDAk ;print/byte JSR2 #2018 DEO
 		LIT '( #18 DEO
-		INC2 INC2 DUP2 ;pstr JSR2
+		INC2 DUP2 ;pstr JSR2
 		LIT ') #18 DEO #0a18 DEO
-		;scap JSR2 INC2 INC2k INC2 LDA ,&w JCN
+		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
 	POP2
 
 JMP2r
@@ -450,4 +452,4 @@ JMP2r
 		&skip POP MUL2 SUB2
 	JMP2r
 
-@syms ( addr*, text, 00 )
+@syms ( addr*, refs, text, 00 )
