@@ -251,19 +251,11 @@ JMP2r
 @do-refabs ( t* -- ) INC2 ;get-ref JSR2 LDA2 ;write-litshort JMP2
 @do-refraw ( t* -- ) INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
 
-@get-rel ( ref* -- distance )
+@get-rel ( label* -- distance )
 
-
-
-	DUP2 LDA2 LDA2 .p/ptr LDZ2 SUB2
-
-	DUP2 ;print JSR2 #0a18 DEO
-
-	DUP2 #fff0 GTH2 ,&fail JCN
-
-
-
-			NIP2 NIP
+	LDA2k .p/ptr LDZ2 SUB2 #0003 SUB2
+	DUP2 #0080 ADD2 POP ,&fail JCN
+	NIP2 NIP
 
 JMP2r
 	&fail POP2 INC2 INC2 ;errors/far ;error JMP2
