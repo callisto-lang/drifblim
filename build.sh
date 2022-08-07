@@ -39,6 +39,6 @@ fi
 # uxncli etc/format-hex.rom bin/drifblim.rom
 
 # Running hello.tal
-uxncli bin/drifblim.rom etc/hello.tal
-# uxncli src/drifblim.rom etc/hello.tal
-# uxncli etc/hello.rom
+uxncli bin/drifblim.rom src/drifblim.tal
+uxncli src/drifblim.rom etc/hello.tal
+uxncli etc/hello.rom
