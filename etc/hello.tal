@@ -2,7 +2,7 @@
 
 |0100 @program
 
-	;hello-word
+	;hello-world
 	&while
 		( send ) LDAk #18 DEO
 		( loop ) INC2 LDAk ,&while JCN
@@ -11,4 +11,4 @@
 
 BRK
 
-@hello-word "Hello 20 "Uxn! 0a $1
+@hello-world "Hello 20 "Uxn! 0a $1

@@ -52,8 +52,9 @@ BRK
 
 @assemble ( file* -- )
 
-	;res #00c0 ;mclr JSR2
+	#0000 .p/ptr STZ2
 	;syms .sym/ptr STZ2
+
 	( prepare output )
 	DUP2 ;dst #0040 ;mcpy JSR2
 	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
@@ -126,6 +127,7 @@ JMP2r
 
 	( check duplicate )
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
+		#1234 ;print JSR2 #0a18 DEO
 		;errors/duplicate ;error JMP2
 		&unique
 
@@ -153,14 +155,14 @@ JMP2r
 	STH2
 	;syms
 	&while
-		INC2k INC2 STH2kr ;scmp JSR2 ,&on-found JCN
-		( go eol ) INC2 INC2 ;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
+		INC2 INC2 DUP2 STH2kr ;scmp JSR2 ,&found JCN
+		;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 	POP2r
 	#ffff
 
 JMP2r
-	&on-found POP2r JMP2r
+	&found #0002 SUB2 POP2r JMP2r
 
 @set-scope ( t* -- name* ) ;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy ( .. ) JMP2
 
@@ -206,26 +208,29 @@ JMP2
 
 @write-byte ( byte -- )
 
-	,&b STR ;&b .File2/write DEO2
+	,&b STR
+	.p/ptr LDZ2 #0100 LTH2 ,&zp JCN
+		;&b .File2/write DEO2
+		&zp
 	.p/ptr LDZ2k INC2 ROT STZ2
 
 JMP2r
 	&b $1
 
-@set-ptr ( abs* offset* -- )
+@fill ( length* -- )
 
-	,&offset STR2
-	DUP2 ;sihx JSR2 ,&valid JCN
-		;errors/padding ;error JMP2
-		&valid
-	;shex JSR2 [ LIT2 &offset 0000 ] ADD2 .p/ptr STZ2
+	#0000
+	&loop
+		#00 ,write-byte JSR
+		INC2 GTH2k ,&loop JCN
+	POP2 POP2
 
 JMP2r
 
 ( operations )
 
-@do-padabs ( t* -- ) INC2 #0000  ;set-ptr JMP2
-@do-padrel ( t* -- ) INC2 .p/ptr LDZ2 ;set-ptr JMP2
+@do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr LDZ2 SUB2 ,fill JSR JMP2r
+@do-padrel ( t* -- ) INC2 ;shex JSR2 ,fill JSR JMP2r
 @do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JMP2
 @do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JMP2
 @do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
@@ -234,14 +239,46 @@ JMP2r
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
 @do-rawhex ( t* -- ) ;write-rawhex JMP2
 @do-errors ( t* -- ) ;errors/unknown ;error JMP2
+
 @do-neuzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neurel ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neuabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
 @do-neuraw ( t* -- ) POP2 #ffff ;write-short JMP2
-@do-refzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
-@do-refrel ( t* -- ) POP2 #ff ;write-litbyte JMP2
-@do-refabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
-@do-refraw ( t* -- ) POP2 #ffff ;write-short JMP2
+@do-neutop ( t* -- ) INC2 ;set-scope JSR2 POP2 JMP2r
+
+@do-refzep ( t* -- ) INC2 ;get-ref JSR2 LDA2 NIP ;write-litbyte JMP2
+@do-refrel ( t* -- ) INC2 ;get-ref JSR2 ;get-rel JSR2 ;write-litbyte JMP2
+@do-refabs ( t* -- ) INC2 ;get-ref JSR2 LDA2 ;write-litshort JMP2
+@do-refraw ( t* -- ) INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
+
+@get-rel ( ref* -- distance )
+
+
+
+	DUP2 LDA2 LDA2 .p/ptr LDZ2 SUB2
+
+	DUP2 ;print JSR2 #0a18 DEO
+
+	DUP2 #fff0 GTH2 ,&fail JCN
+
+
+
+			NIP2 NIP
+
+JMP2r
+	&fail POP2 INC2 INC2 ;errors/far ;error JMP2
+
+@get-ref ( token* -- label*|ffff )
+
+	LDAk LIT '& NEQ ,&no-sub JCN
+		INC2 ;make-sublabel JSR2
+		&no-sub
+	;find-label JSR2
+	DUP2 #ffff EQU2 ,&fail JCN
+
+JMP2r
+	&fail POP2 ;errors/label ;error JMP2
+
 @do-ignore ( t* -- ) POP2 JMP2r
 
 @is-opcode ( string* -- flag )
@@ -315,7 +352,7 @@ JMP2r
 
 @pass2
 	'| :do-padabs '$ :do-padrel
-	'@ :do-ignore '& :do-ignore
+	'@ :do-neutop '& :do-ignore
 	'" :do-rawtxt '' :do-rawchr
 	'. :do-refzep ', :do-refrel
 	'; :do-refabs ': :do-refraw
@@ -334,6 +371,8 @@ JMP2r
 	&unknown "Unknown 20 "Token $1
 	&number "Invalid 20 "Number $1
 	&padding "Invalid 20 "Padding $1
+	&label "Unknown 20 "Label $1
+	&far "Too 20 "Far $1
 
 @error ( id* name* -- )
 
@@ -343,6 +382,7 @@ JMP2r
 	#2019 DEO
 	;perr JSR2
 	#0a19 DEO
+	#010e DEO
 	#010f DEO
 
 BRK
