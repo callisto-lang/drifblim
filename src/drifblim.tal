@@ -72,7 +72,7 @@ JMP2r
 	( skip empty ) POP2
 
 JMP2r
-	&run DUP2 ,walk-token JSR #0030 ;mclr JSR2 JMP2r
+	&run DUP2 ,walk-token JSR #0030 ;mclr JMP2
 	&append ;token ;sput JMP2
 
 @walk-token ( token* -- )
@@ -87,9 +87,10 @@ JMP2r
 	DUP2 ;pstr JSR2 #0a18 DEO
 
 	( pass1 token )
-	DUP2 ,find-token JSR INC2 LDA2 JSR2
+	DUP2 ,find-token JSR INC2 LDA2 ( .. )
 
-JMP2r
+JMP2
+
 	&on-parens LDA #29 SUB ,&sleep STR JMP2r
 	&on-sleep POP2 JMP2r
 
@@ -107,7 +108,7 @@ JMP2r
 	( variable )
 	STH2r
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
-		DUP2 ;sihx JSR2 ,&on-hex JCN
+		DUP2 ;sihx JSR2 ,&on-rawhex JCN
 
 	( error )
 	POP2 ;runes/err
@@ -115,7 +116,7 @@ JMP2r
 JMP2r
 	&on-runic NIP2 POP2r JMP2r
 	&on-opcode POP2 ;runes/opc JMP2r
-	&on-hex POP2 ;runes/hex JMP2r
+	&on-rawhex POP2 ;runes/hex JMP2r
 
 ( helpers )
 
@@ -159,11 +160,7 @@ JMP2r
 JMP2r
 	&on-found POP2r JMP2r
 
-@set-scope ( token* -- name* )
-
-	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy JSR2
-
-JMP2r
+@set-scope ( t* -- name* ) ;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy ( .. ) JMP2
 
 @write-lithex ( str* -- )
 
@@ -175,9 +172,9 @@ JMP2r
 		;shex JSR2 NIP ,write-litbyte JMP
 		&no-byte
 	&invalid
-	;errors/number ;error JMP2
+	;errors/number ;error ( .. )
 
-JMP2r
+JMP2
 
 @write-rawhex ( str* -- )
 
@@ -189,9 +186,9 @@ JMP2r
 		;shex JSR2 NIP ,write-byte JMP
 		&no-byte
 	&invalid
-	;errors/number ;error JMP2
+	;errors/number ;error ( .. )
 
-JMP2r
+JMP2
 
 @write-litbyte ( byte -- )
 
@@ -225,15 +222,16 @@ JMP2r
 
 ( operations )
 
-@do-padabs ( t* -- ) INC2 #0000  ;set-ptr JSR2 JMP2r
-@do-padrel ( t* -- ) INC2 .p/ptr LDZ2 ;set-ptr JSR2 JMP2r
-@do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JSR2 JMP2r
-@do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JSR2 JMP2r
-@do-rawchr ( t* -- ) INC2 LDA ;write-byte JSR2 JMP2r
-@do-rawtxt ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
-@do-lithex ( t* -- ) INC2 ;write-lithex JSR2 JMP2r
-@do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2 JMP2r
-@do-rawhex ( token* -- ) ;write-rawhex JMP2 JMP2r
+@do-padabs ( t* -- ) INC2 #0000  ;set-ptr JMP2
+@do-padrel ( t* -- ) INC2 .p/ptr LDZ2 ;set-ptr JMP2
+@do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JMP2
+@do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JMP2
+@do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
+@do-rawtxt ( t* -- ) INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
+@do-lithex ( t* -- ) INC2 ;write-lithex JMP2
+@do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
+@do-rawhex ( t* -- ) ;write-rawhex JMP2
+@do-errors ( t* -- ) ;errors/unknown ;error JMP2
 
 @do-refzep ( token* -- )
 
@@ -259,11 +257,6 @@ JMP2r
 
 JMP2r
 
-@do-err ( token* -- )
-
-	;errors/unknown ;error JMP2
-
-BRK
 
 @is-opcode ( string* -- flag )
 
@@ -328,7 +321,7 @@ JMP2r
 	'; :do-refabs ': :do-refraw
 	'# :do-lithex
 	&err
-	00 :do-err
+	00 :do-errors
 	&opc
 	00 :do-opcode
 	&hex
