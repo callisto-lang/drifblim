@@ -115,8 +115,8 @@ JMP2
 
 JMP2r
 	&on-runic NIP2 POP2r JMP2r
-	&on-opcode POP2 ;runes/opc JMP2r
-	&on-rawhex POP2 ;runes/hex JMP2r
+	&on-opcode POP2 ;runes/opcode JMP2r
+	&on-rawhex POP2 ;runes/rawhex JMP2r
 
 ( helpers )
 
@@ -322,9 +322,9 @@ JMP2r
 	'# :do-lithex
 	&err
 	00 :do-errors
-	&opc
+	&opcode
 	00 :do-opcode
-	&hex
+	&rawhex
 	00 :do-rawhex
 
 @opcodes
