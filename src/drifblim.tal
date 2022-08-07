@@ -41,7 +41,7 @@ BRK
 	STH2r ,assemble JSR
 
 	( print symbols )
-	;print-symbols JSR2
+	;print-unused JSR2
 
 	( result )
 	;&assembled-txt ;pstr JSR2
@@ -315,21 +315,20 @@ JMP2r
 
 JMP2r
 
-@print-symbols ( -- )
+@print-unused ( -- )
 
-	LIT '- #18 DEOk DEOk DEO #0a18 DEO
 	;syms
 	&w
-		LIT '@ #18 DEO
-		LDA2k ;print JSR2 #2018 DEO
-		INC2 INC2 LDAk ;print/byte JSR2 #2018 DEO
-		LIT '( #18 DEO
-		INC2 DUP2 ;pstr JSR2
-		LIT ') #18 DEO #0a18 DEO
+		LDA2k #0100 LTH2 ,&used JCN
+		INC2k INC2 LDA ,&used JCN
+			;&unused-txt ;pstr JSR2
+			INC2 INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
+			&used
 		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
 	POP2
 
 JMP2r
+	&unused-txt "-- 20 "Unused 20 "label: 20 $1
 
 ( assets )
 
