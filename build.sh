@@ -23,7 +23,7 @@ uxnasm src/drifblim.tal bin/drifblim.rom
 if [ -d "$HOME/roms" ] && [ -e ./bin/drifblim.rom ]
 then
 	# cp bin/procblim.rom $HOME/roms
-	# cp bin/drifblim.rom $HOME/roms
+	cp bin/drifblim.rom $HOME/roms
     echo "Installed in $HOME/roms" 
 fi
 
