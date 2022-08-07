@@ -1,14 +1,26 @@
-( Comment )
+( hey )
+|0000
+|0010 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
+|00a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+( init )
+
+|0000
+
+    @zp $4
 
 |0100 @program
 
-	;hello-world
+	;hello-word
+
 	&while
 		( send ) LDAk #18 DEO
 		( loop ) INC2 LDAk ,&while JCN
 	POP2
+
 	#010f DEO
 
 BRK
 
-@hello-world "Hello 20 "Uxn! 0a $1
+@hello-word "Hello 20 "World! 00

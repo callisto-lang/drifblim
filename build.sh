@@ -40,3 +40,5 @@ fi
 
 # Running hello.tal
 uxncli bin/drifblim.rom etc/hello.tal
+# uxncli src/drifblim.rom etc/hello.tal
+# uxncli etc/hello.rom

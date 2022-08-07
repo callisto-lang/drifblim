@@ -6,9 +6,9 @@
 
 |0000
 
-	@src $40
+	@src $30
 	@res
-		@dst $40
+		@dst $30
 		@buf $30
 		@scope $30
 		@token $30
@@ -28,7 +28,7 @@ BRK
 	( filepath )
 	.Console/read DEI
 	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
-	STH2kr ;slen JSR2 #003f GTH2 ,&end JCN
+	STH2kr ;slen JSR2 #002f GTH2 ,&end JCN
 		STH2r ;sput JSR2 BRK
 		&end
 	POP
@@ -37,12 +37,14 @@ BRK
 	STH2kr ,assemble JSR
 
 	( print symbols )
+	;syms ;print-mem JSR2
 	;print-symbols JSR2
 
 	( pass2 )
 	;pass2/err ;find-token/to STA2
 	;pass2 ;find-token/from STA2
 	STH2r ,assemble JSR
+
 
 	( halt )
 	#010e DEO
@@ -52,11 +54,11 @@ BRK
 
 @assemble ( file* -- )
 
-	#0000 .p/ptr STZ2
+	;res #00d0 ;mclr JSR2
 	;syms .sym/ptr STZ2
 
 	( prepare output )
-	DUP2 ;dst #0040 ;mcpy JSR2
+	DUP2 ;dst #0030 ;mcpy JSR2
 	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
@@ -131,12 +133,22 @@ JMP2r
 		;errors/duplicate ;error JMP2
 		&unique
 
-	( write ref )
-	.p/ptr LDZ2 .sym/ptr LDZ2 STH2k STA2 INC2r INC2r
+	.p/ptr LDZ2 ;print JSR2 #2018 DEO
+	.sym/ptr LDZ2 ;print JSR2 #2018 DEO
+	DUP2 ;pstr JSR2 #2018 DEO
+	DUP2 ;slen JSR2 ;print JSR2 #0a18 DEO
 
-	( write string )
-	DUP2 STH2kr ;scpy JSR2
-	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
+	( save ptr )
+	.p/ptr LDZ2 .sym/ptr LDZ2 STA2
+
+	( move )
+	.sym/ptr LDZ2k INC2 INC2 ROT STZ2
+
+	( save str )
+	STH2k .sym/ptr LDZ2 ;scpy JSR2
+
+	( move )
+	.sym/ptr LDZ2k STH2r ;slen JSR2 ADD2 INC2 ROT STZ2
 
 JMP2r
 
@@ -219,17 +231,26 @@ JMP2r
 
 @fill ( length* -- )
 
-	#0000
+	#0000 EQU2k ,&skip JCN
 	&loop
 		#00 ,write-byte JSR
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
 JMP2r
+	&skip POP2 POP2 JMP2r
 
 ( operations )
 
-@do-padabs ( t* -- ) INC2 ;shex JSR2 .p/ptr LDZ2 SUB2 ,fill JSR JMP2r
+@do-padabs ( t* -- )
+
+	INC2 ;shex JSR2 .p/ptr LDZ2
+	LTH2k ,&backward JCN
+	SUB2 ,fill JSR
+
+JMP2r
+	&backward POP2 .p/ptr STZ2 JMP2r
+
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ,fill JSR JMP2r
 @do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JMP2
 @do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JMP2
@@ -316,12 +337,15 @@ JMP2r
 @print-symbols ( -- )
 
 	LIT '- #18 DEOk DEOk DEO #0a18 DEO
+
 	;syms
 	&while
+		LIT '@ #18 DEO
 		LDA2k ;print JSR2 #2018 DEO
-		INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
-		;scap JSR2
-		INC2 LDAk ,&while JCN
+		LIT '( #18 DEO
+		INC2 INC2 DUP2 ;pstr JSR2
+		LIT ') #18 DEO #0a18 DEO
+		;scap JSR2 INC2 INC2k INC2 LDA ,&while JCN
 	POP2
 
 JMP2r
@@ -334,6 +358,7 @@ JMP2r
 	'" :do-rawtxt '' :do-rawchr
 	'. :do-neuzep ', :do-neurel
 	'; :do-neuabs ': :do-neuraw
+	'[ :do-ignore '] :do-ignore
 	'# :do-lithex
 	&err
 	00 :do-errors
@@ -348,6 +373,7 @@ JMP2r
 	'" :do-rawtxt '' :do-rawchr
 	'. :do-refzep ', :do-refrel
 	'; :do-refabs ': :do-refraw
+	'[ :do-ignore '] :do-ignore
 	'# :do-lithex
 	&err
 
@@ -429,6 +455,19 @@ JMP2r
 	SWP ,&byte JSR
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
+@print-mem ( addr* -- )
+
+	STH2
+	#0000
+	&l
+		#00 OVR STH2kr ADD2 LDA ,print/byte JSR
+		DUP #0f AND #0f NEQ #16 MUL #0a ADD #18 DEO
+		INC NEQk ,&l JCN
+	POP2
+	POP2r
 
 JMP2r
 
