@@ -4,7 +4,6 @@
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
-
 |0000
 
 	@src $40
@@ -45,6 +44,12 @@ BRK
 
 @assemble ( file* -- )
 
+	( prepare output )
+	DUP2 ;dst #0040 ;mcpy JSR2
+	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
+	;dst .File2/name DEO2
+	#0001 .File/length DEO2
+	( stream )
 	.File/name DEO2
 	#0001 .File/length DEO2
 	&stream
@@ -54,6 +59,7 @@ BRK
 		,&stream JMP &eof
 
 JMP2r
+	&rom-ext ".rom $1
 
 @walk ( char -- )
 
@@ -163,6 +169,26 @@ JMP2r
 
 JMP2r
 
+@write-litbyte ( byte -- )
+
+	( LITk ) #80 SWP ,write-short JMP
+
+@write-litshort ( short* -- )
+
+	( LIT2k ) #a0 ,write-byte JSR
+
+@write-short ( short -- )
+
+	SWP ,write-byte JSR
+
+@write-byte ( byte -- )
+
+	,&b STR ;&b .File2/write DEO2
+	.p/ptr LDZ2k INC2 ROT STZ2
+
+JMP2r
+	&b $1
+
 ( operations )
 
 @do-padabs ( token* -- )
@@ -189,6 +215,62 @@ JMP2r
 
 JMP2r
 
+@do-labsub ( token* -- )
+
+	INC2 ;make-sublabel JSR2 ;create-label JSR2
+
+JMP2r
+
+@do-rawchr ( token* -- )
+
+	INC2 LDA ;write-byte JSR2
+
+JMP2r
+
+@do-rawtxt ( token* -- )
+
+	&w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2
+
+JMP2r
+
+@do-lithex ( token* -- )
+
+	INC2 DUP2 ;sihx JSR2 ,&valid JCN
+		;do-err JMP2
+		&valid
+	DUP2 ;slen JSR2 #0004 EQU2 ,&short JCN
+	DUP2 ;slen JSR2 #0002 EQU2 ,&byte JCN
+	;do-err JMP2
+
+JMP2r
+	&short ;shex JSR2 ;write-litshort JMP2
+	&byte ;shex JSR2 NIP ;write-litbyte JMP2
+
+@do-refzep ( token* -- )
+
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+
+@do-refrel ( token* -- )
+
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+
+
+@do-refabs ( token* -- )
+
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+
+@do-refraw ( token* -- )
+
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+
 @do-something ( token* -- )
 
 
@@ -197,28 +279,13 @@ JMP2r
 
 @do-opc ( token* -- )
 
-	POP2
+	;find-opcode JSR2 ;write-byte JMP2
 
 JMP2r
 
 @do-hex ( token* -- )
 
 	POP2
-
-JMP2r
-
-@do-inc ( token* -- )
-
-	;inc STH2k #0040 ;mclr JSR2
-	INC2k STH2kr ;scpy JSR2
-	#0030 ;mclr JSR2
-	STH2r .File2/name DEO2
-	#0001 .File2/length DEO2
-	&stream
-		;&c .File2/read DEO2
-		.File2/success DEI2 #0000 EQU2 ,&eof JCN
-		[ LIT &c $1 ] ;walk JSR2
-		,&stream JMP &eof
 
 JMP2r
 
@@ -270,25 +337,19 @@ JMP2r
 
 JMP2r
 
-@runes             ( pass1 )
-	'| ( padabs ) :do-padabs
-	'$ ( padrel ) :do-padrel
-	'@ ( labtop ) :do-labtop
-	'& ( lab-sub ) :do-something
-	'" ( asc-wrd ) :do-something
-	'' ( asc-chr ) :do-something
-	'. ( ref-zep ) :do-something
-	', ( ref-rel ) :do-something
-	'; ( ref-abs ) :do-something
-	': ( ref-raw ) :do-something
-	'# ( lit-hex ) :do-something
-	'~ ( include ) :do-inc
+@runes
+	'| :do-padabs '$ :do-padrel
+	'@ :do-labtop '& :do-labsub
+	'" :do-rawtxt '' :do-rawchr
+	'. :do-refzep ', :do-refrel
+	'; :do-refabs ': :do-refraw
+	'# :do-lithex
 	&err
-	00 ( unknown ) :do-err
+	00 :do-err
 	&opc
-	00 ( opcodes ) :do-opc
+	00 :do-opc
 	&hex
-	00 ( hexcode ) :do-hex
+	00 :do-hex
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
@@ -341,7 +402,6 @@ JMP2r
 	&number #30 SUB JMP2r
 	&lc #57 SUB JMP2r
 
-
 @print ( short* -- )
 
 	SWP ,&byte JSR
@@ -349,5 +409,7 @@ JMP2r
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 
 JMP2r
+
+@dst $40
 
 @syms ( addr*, text, 00 )
