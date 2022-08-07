@@ -7,12 +7,13 @@
 |0000
 
 	@src $40
-	@inc $40
-	@buf $30
-	@scope $30
-	@token $30
-	@p &ptr $2
-	@sym &ptr $2
+	@res
+		@dst $40
+		@buf $30
+		@scope $30
+		@token $30
+		@p &ptr $2
+		@sym &ptr $2
 
 |0100
 
@@ -32,11 +33,16 @@ BRK
 		&end
 	POP
 
-	( assemble )
-	STH2r ,assemble JSR
+	( pass1 )
+	STH2kr ,assemble JSR
 
 	( print symbols )
 	;print-symbols JSR2
+
+	( pass2 )
+	;pass2/err ;find-token/to STA2
+	;pass2 ;find-token/from STA2
+	STH2r ,assemble JSR
 
 	( halt )
 	#010e DEO
@@ -46,6 +52,7 @@ BRK
 
 @assemble ( file* -- )
 
+	;res #00c0 ;mclr JSR2
 	;syms .sym/ptr STZ2
 	( prepare output )
 	DUP2 ;dst #0040 ;mcpy JSR2
@@ -81,12 +88,7 @@ JMP2r
 	LDAk LIT ') EQU ,&on-parens JCN
 	[ LIT &sleep $1 ] ,&on-sleep JCN
 
-	( print )
-	.p/ptr LDZ2 ;print JSR2 #2018 DEO
-	DUP2 ;find-token JSR2 INC2 LDA2 ;print JSR2 #2018 DEO
-	DUP2 ;pstr JSR2 #0a18 DEO
-
-	( pass1 token )
+	( parse )
 	DUP2 ,find-token JSR INC2 LDA2 ( .. )
 
 JMP2
@@ -99,7 +101,7 @@ JMP2
 	STH2
 
 	( runes )
-	;runes/err ;runes
+	[ LIT2 &to :pass1/err ] [ LIT2 &from :pass1 ]
 	&loop
 		LDAk STH2kr LDA EQU ,&on-runic JCN
 		INC2 INC2 INC2 GTH2k ,&loop JCN
@@ -111,12 +113,12 @@ JMP2
 		DUP2 ;sihx JSR2 ,&on-rawhex JCN
 
 	( error )
-	POP2 ;runes/err
+	POP2 ;pass1/err
 
 JMP2r
 	&on-runic NIP2 POP2r JMP2r
-	&on-opcode POP2 ;runes/opcode JMP2r
-	&on-rawhex POP2 ;runes/rawhex JMP2r
+	&on-opcode POP2 ;pass1/opcode JMP2r
+	&on-rawhex POP2 ;pass1/rawhex JMP2r
 
 ( helpers )
 
@@ -232,31 +234,15 @@ JMP2r
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
 @do-rawhex ( t* -- ) ;write-rawhex JMP2
 @do-errors ( t* -- ) ;errors/unknown ;error JMP2
-
-@do-refzep ( token* -- )
-
-	POP2 #ff ;write-litbyte JSR2
-
-JMP2r
-
-@do-refrel ( token* -- )
-
-	POP2 #ff ;write-litbyte JSR2
-
-JMP2r
-
-@do-refabs ( token* -- )
-
-	POP2 #ffff ;write-litshort JSR2
-
-JMP2r
-
-@do-refraw ( token* -- )
-
-	POP2 #ffff ;write-short JSR2
-
-JMP2r
-
+@do-neuzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
+@do-neurel ( t* -- ) POP2 #ff ;write-litbyte JMP2
+@do-neuabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
+@do-neuraw ( t* -- ) POP2 #ffff ;write-short JMP2
+@do-refzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
+@do-refrel ( t* -- ) POP2 #ff ;write-litbyte JMP2
+@do-refabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
+@do-refraw ( t* -- ) POP2 #ffff ;write-short JMP2
+@do-ignore ( t* -- ) POP2 JMP2r
 
 @is-opcode ( string* -- flag )
 
@@ -313,12 +299,12 @@ JMP2r
 
 ( assets )
 
-@runes
+@pass1
 	'| :do-padabs '$ :do-padrel
 	'@ :do-labtop '& :do-labsub
 	'" :do-rawtxt '' :do-rawchr
-	'. :do-refzep ', :do-refrel
-	'; :do-refabs ': :do-refraw
+	'. :do-neuzep ', :do-neurel
+	'; :do-neuabs ': :do-neuraw
 	'# :do-lithex
 	&err
 	00 :do-errors
@@ -326,6 +312,15 @@ JMP2r
 	00 :do-opcode
 	&rawhex
 	00 :do-rawhex
+
+@pass2
+	'| :do-padabs '$ :do-padrel
+	'@ :do-ignore '& :do-ignore
+	'" :do-rawtxt '' :do-rawchr
+	'. :do-refzep ', :do-refrel
+	'; :do-refabs ': :do-refraw
+	'# :do-lithex
+	&err
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
@@ -389,13 +384,13 @@ JMP2r
 
 @chex ( char -- value/ff )
 
-	DUP #2f GTH OVR #3a LTH AND ,&number JCN
-	DUP #60 GTH OVR #67 LTH AND ,&lc JCN
+	DUP #2f GTH OVR #3a LTH AND ,&n JCN
+	DUP #60 GTH OVR #67 LTH AND ,&l JCN
 		POP #ff
 
 JMP2r
-	&number #30 SUB JMP2r
-	&lc #57 SUB JMP2r
+	&n #30 SUB JMP2r
+	&l #57 SUB JMP2r
 
 @print ( short* -- )
 
@@ -404,7 +399,5 @@ JMP2r
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 
 JMP2r
-
-@dst $40
 
 @syms ( addr*, text, 00 )
