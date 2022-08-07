@@ -35,13 +35,13 @@ BRK
 	( pass1 )
 	STH2kr ;assemble JSR2
 
-	( print symbols )
-	;print-symbols JSR2
-
 	( pass2 )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
 	STH2r ,assemble JSR
+
+	( print symbols )
+	;print-symbols JSR2
 
 	( result )
 	;&assembled-txt ;pstr JSR2
@@ -168,6 +168,8 @@ JMP2r
 		&no-sub
 	;find-label JSR2
 	DUP2 #ffff EQU2 ,&fail JCN
+
+	( count ) INC2k INC2 LDAk INC ROT ROT STA
 
 JMP2r
 	&fail POP2 ;errors/label ;perr JMP2
