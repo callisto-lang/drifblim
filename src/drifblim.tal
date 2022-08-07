@@ -46,6 +46,7 @@ BRK
 
 @assemble ( file* -- )
 
+	;syms .sym/ptr STZ2
 	( prepare output )
 	DUP2 ;dst #0040 ;mcpy JSR2
 	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
@@ -95,16 +96,19 @@ JMP2r
 @find-token ( token* -- type* )
 
 	STH2
+
 	( runes )
 	;runes/err ;runes
 	&loop
 		LDAk STH2kr LDA EQU ,&on-runic JCN
 		INC2 INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2
+
 	( variable )
 	STH2r
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
 		DUP2 ;sihx JSR2 ,&on-hex JCN
+
 	( error )
 	POP2 ;runes/err
 
@@ -115,30 +119,18 @@ JMP2r
 
 ( helpers )
 
-@print-symbols ( -- )
-
-	LIT '- #18 DEOk DEOk DEO #0a18 DEO
-	;syms
-	&while
-		LDA2k ;print JSR2 #2018 DEO
-		INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
-		;scap JSR2
-		INC2 LDAk ,&while JCN
-	POP2
-
-JMP2r
-
 @create-label ( name* -- )
 
 	( check duplicate )
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
 		;errors/duplicate ;error JMP2
 		&unique
+
 	( write ref )
-	.p/ptr LDZ2 ;syms .sym/ptr LDZ2 STH2k ADD2 STA2
-	INC2r INC2r
+	.p/ptr LDZ2 .sym/ptr LDZ2 STH2k STA2 INC2r INC2r
+
 	( write string )
-	DUP2 ;syms STH2kr ADD2 ;scpy JSR2
+	DUP2 STH2kr ;scpy JSR2
 	;slen JSR2 STH2 ADD2r INC2r STH2r .sym/ptr STZ2
 
 JMP2r
@@ -148,7 +140,8 @@ JMP2r
 	;buf STH2k #0030 ;mclr JSR2
 	;scope STH2kr ;scpy JSR2
 	LIT '/ STH2kr ;sput JSR2
-	STH2kr ;scat JSR2 STH2r
+	STH2kr ;scat JSR2
+	STH2r
 
 JMP2r
 
@@ -168,8 +161,35 @@ JMP2r
 
 @set-scope ( token* -- name* )
 
-	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r
-	;scpy JSR2
+	;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy JSR2
+
+JMP2r
+
+@write-lithex ( str* -- )
+
+	DUP2 ;sihx JSR2 #00 EQU ,&invalid JCN
+	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		;shex JSR2 ,write-litshort JMP
+		&no-short
+	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
+		;shex JSR2 NIP ,write-litbyte JMP
+		&no-byte
+	&invalid
+	;errors/number ;error JMP2
+
+JMP2r
+
+@write-rawhex ( str* -- )
+
+	DUP2 ;sihx JSR2 #00 EQU ,&invalid JCN
+	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		;shex JSR2 ,write-short JMP
+		&no-short
+	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
+		;shex JSR2 NIP ,write-byte JMP
+		&no-byte
+	&invalid
+	;errors/number ;error JMP2
 
 JMP2r
 
@@ -193,62 +213,27 @@ JMP2r
 JMP2r
 	&b $1
 
+@set-ptr ( abs* offset* -- )
+
+	,&offset STR2
+	DUP2 ;sihx JSR2 ,&valid JCN
+		;errors/padding ;error JMP2
+		&valid
+	;shex JSR2 [ LIT2 &offset 0000 ] ADD2 .p/ptr STZ2
+
+JMP2r
+
 ( operations )
 
-@do-padabs ( token* -- )
-
-	INC2 DUP2 ;sihx JSR2 ,&valid JCN
-		;do-err JMP2
-		&valid
-	;shex JSR2 .p/ptr STZ2
-
-JMP2r
-
-@do-padrel ( token* -- )
-
-	INC2 DUP2 ;sihx JSR2 ,&valid JCN
-		;do-err JMP2
-		&valid
-	;shex JSR2 .p/ptr LDZ2 ADD2 .p/ptr STZ2
-
-JMP2r
-
-@do-labtop ( token* -- )
-
-	INC2 ;set-scope JSR2 ;create-label JSR2
-
-JMP2r
-
-@do-labsub ( token* -- )
-
-	INC2 ;make-sublabel JSR2 ;create-label JSR2
-
-JMP2r
-
-@do-rawchr ( token* -- )
-
-	INC2 LDA ;write-byte JSR2
-
-JMP2r
-
-@do-rawtxt ( token* -- )
-
-	&w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2
-
-JMP2r
-
-@do-lithex ( token* -- )
-
-	INC2 DUP2 ;sihx JSR2 ,&valid JCN
-		;do-err JMP2
-		&valid
-	DUP2 ;slen JSR2 #0004 EQU2 ,&short JCN
-	DUP2 ;slen JSR2 #0002 EQU2 ,&byte JCN
-	;do-err JMP2
-
-JMP2r
-	&short ;shex JSR2 ;write-litshort JMP2
-	&byte ;shex JSR2 NIP ;write-litbyte JMP2
+@do-padabs ( t* -- ) INC2 #0000  ;set-ptr JSR2 JMP2r
+@do-padrel ( t* -- ) INC2 .p/ptr LDZ2 ;set-ptr JSR2 JMP2r
+@do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JSR2 JMP2r
+@do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JSR2 JMP2r
+@do-rawchr ( t* -- ) INC2 LDA ;write-byte JSR2 JMP2r
+@do-rawtxt ( t* -- ) &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
+@do-lithex ( t* -- ) INC2 ;write-lithex JSR2 JMP2r
+@do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2 JMP2r
+@do-rawhex ( token* -- ) ;write-rawhex JMP2 JMP2r
 
 @do-refzep ( token* -- )
 
@@ -271,18 +256,6 @@ JMP2r
 @do-refraw ( token* -- )
 
 	POP2 #ffff ;write-short JSR2
-
-JMP2r
-
-@do-opc ( token* -- )
-
-	;find-opcode JSR2 ;write-byte JMP2
-
-JMP2r
-
-@do-hex ( token* -- )
-
-	POP2
 
 JMP2r
 
@@ -332,6 +305,21 @@ JMP2r
 
 JMP2r
 
+@print-symbols ( -- )
+
+	LIT '- #18 DEOk DEOk DEO #0a18 DEO
+	;syms
+	&while
+		LDA2k ;print JSR2 #2018 DEO
+		INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
+		;scap JSR2
+		INC2 LDAk ,&while JCN
+	POP2
+
+JMP2r
+
+( assets )
+
 @runes
 	'| :do-padabs '$ :do-padrel
 	'@ :do-labtop '& :do-labsub
@@ -342,9 +330,9 @@ JMP2r
 	&err
 	00 :do-err
 	&opc
-	00 :do-opc
+	00 :do-opcode
 	&hex
-	00 :do-hex
+	00 :do-rawhex
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
@@ -356,6 +344,8 @@ JMP2r
 @errors
 	&duplicate "Duplicate 20 "Label $1
 	&unknown "Unknown 20 "Token $1
+	&number "Invalid 20 "Number $1
+	&padding "Invalid 20 "Padding $1
 
 @error ( id* name* -- )
 
