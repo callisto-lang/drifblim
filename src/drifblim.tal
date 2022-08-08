@@ -126,7 +126,7 @@ JMP2r
 @do-lithex ( t* -- ) INC2 ;write-lithex JMP2
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
 @do-rawhex ( t* -- ) ;write-rawhex JMP2
-@do-errors ( t* -- ) ;errors/unknown ;perr JMP2
+@do-errors ( t* -- ) ;errors/unknown ;crash JMP2
 @do-neuzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neurel ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neuabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
@@ -146,7 +146,7 @@ JMP2r
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 INC2 INC2 INC2 ;errors/far ;perr JMP2
+	&fail POP2 INC2 INC2 INC2 ;errors/far ;crash JMP2
 
 @get-ref ( token* -- label*|ffff )
 
@@ -159,13 +159,13 @@ JMP2r
 	( count ) INC2k INC2 LDAk INC ROT ROT STA
 
 JMP2r
-	&fail POP2 ;errors/label ;perr JMP2
+	&fail POP2 ;errors/label ;crash JMP2
 
 @create-label ( name* -- )
 
 	( check duplicate )
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
-		;errors/duplicate ;perr JMP2
+		;errors/duplicate ;crash JMP2
 		&unique
 	( save ptr ) .prg-ptr LDZ2 .sym-ptr LDZ2 STA2
 	( move ) .sym-ptr LDZ2k INC2 INC2 INC2 ROT STZ2
@@ -209,7 +209,7 @@ JMP2r
 		;shex JSR2 NIP ,write-litbyte JMP
 		&no-byte
 	&invalid
-	;errors/number ;perr ( .. )
+	;errors/number ;crash ( .. )
 
 JMP2
 
@@ -223,7 +223,7 @@ JMP2
 		;shex JSR2 NIP ,write-byte JMP
 		&no-byte
 	&invalid
-	;errors/number ;perr ( .. )
+	;errors/number ;crash ( .. )
 
 JMP2
 
@@ -379,7 +379,7 @@ JMP2r
 	&label "Unknown 20 "Label $1
 	&far "Too 20 "Far $1
 
-@error ( id* name* -- )
+@crash ( id* name* -- )
 
 	;&err-txt ;perr JSR2
 	;perr JSR2
@@ -387,7 +387,6 @@ JMP2r
 	#2019 DEO
 	;perr JSR2
 	#0a19 DEO
-	#010e DEO
 	#010f DEO
 
 BRK
