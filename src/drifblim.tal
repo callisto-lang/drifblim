@@ -18,23 +18,26 @@
 
 |0100
 
-	;on-console .Console/vector DEO2
+	;await-src .Console/vector DEO2
+	;&usage-txt ;pstr JSR2
+
+BRK
+	&usage-txt "usage: 20 "drifblim.rom 20 "src.tal 20 "dst.rom 0a $1
+
+@await-src ( -> )
+
+	.Console/read DEI .src ;skey JSR2 ,&next JCN
+
+BRK
+	&next ;await-dst .Console/vector DEO2 BRK
+
+@await-dst ( -> )
+
+	.Console/read DEI .dst ;skey JSR2 ,on-ready JCN
 
 BRK
 
-@on-console ( -> )
-
-	;src STH2
-	( filepath )
-	.Console/read DEI
-	DUP #20 LTH OVR #7f GTH ORA ,&end JCN
-	STH2kr ;slen JSR2 #002f GTH2 ,&end JCN
-		STH2r ;sput JSR2 BRK
-		&end
-	POP
-
-	STH2r ;dst #0030 ;mcpy JSR2
-	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
+@on-ready ( -> )
 
 	( pass1 )
 	;assemble JSR2
@@ -42,7 +45,7 @@ BRK
 	( pass2 )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
-	 ,assemble JSR
+	,assemble JSR
 
 	( print symbols )
 	;print-summary JSR2
@@ -51,7 +54,6 @@ BRK
 	#0101 #0e DEO2
 
 BRK
-	&rom-ext ".rom $1
 
 @assemble ( file* -- )
 
@@ -314,7 +316,11 @@ JMP2r
 
 	( result )
 	;&assembled-txt ;pstr JSR2
+
+	;src ;pstr JSR2
+	;&spacer-txt ;pstr JSR2
 	;dst ;pstr JSR2
+
 	;&in-txt ;pstr JSR2
 	.size LDZ2 ;pdec JSR2
 	;&bytes-txt ;pstr JSR2
@@ -326,6 +332,7 @@ JMP2r
 
 JMP2r
 	&assembled-txt "Assembled 20 $1
+	&spacer-txt 20 "-> 20 $1
 	&in-txt 20 "in 20 $1
 	&bytes-txt 20 "bytes $1
 	&labels-txt 20 "labels $1
@@ -394,7 +401,6 @@ BRK
 @scat ( src* dst* -- ) ,scap JSR
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &l LDAk STH2kr STA INC2r INC2 GTH2k ,&l JCN POP2 POP2 POP2r JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 
 @shex ( str* -- val* )
@@ -445,5 +451,14 @@ JMP2r
 		DUP #30 ADD #18 DEO #ff ,&z STR
 		&skip POP MUL2 SUB2
 	JMP2r
+
+@skey ( key buf -- validation )
+
+	OVR #21 LTH ,&eval JCN
+	#00 SWP ;sput JSR2
+	#00
+
+JMP2r
+	&eval POP2 #01 JMP2r
 
 @syms ( addr*, refs, text, 00 )

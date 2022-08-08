@@ -20,17 +20,18 @@ This assembler is written in the language it is assembling, creating a chicken-a
 
 ```sh
 # start with uxnasm
-uxnasm src/drifblim.tal bin/drifblim.rom
+uxnasm src/drifblim.tal bin/drifblim-seed.rom
 # from drifblim.rom
-uxncli bin/drifblim.rom src/drifblim.tal
-# Pre-processor for macros
-uxncli bin/procblim.rom etc/hello.tal
+uxncli bin/drifblim-seed.rom src/drifblim.tal bin/drifblim.rom
 # Assembling hello.tal
-uxncli bin/drifblim.rom etc/hello.pro.tal
-mv etc/hello.pro.rom bin/hello.rom
+uxncli bin/drifblim.rom etc/hello.tal bin/hello.rom
 uxncli bin/hello.rom
 ```
 
 If do not wish to assemble it yourself, you can download [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom).
 
 _Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
+
+## Support
+
+- Linted with [uxnlin.rom](https://git.sr.ht/~rabbits/uxnlin)
