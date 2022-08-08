@@ -7,8 +7,8 @@
 |0000
 
 	@src $30
+	@dst $30
 	@res
-		@dst $30
 		@buf $30
 		@scope $30
 		@token $30
@@ -32,13 +32,17 @@ BRK
 		STH2r ;sput JSR2 BRK
 		&end
 	POP
+
+	STH2r ;dst #0030 ;mcpy JSR2
+	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
+
 	( pass1 )
-	STH2kr ;assemble JSR2
+	;assemble JSR2
 
 	( pass2 )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
-	STH2r ,assemble JSR
+	 ,assemble JSR
 
 	( print symbols )
 	;print-summary JSR2
@@ -47,18 +51,16 @@ BRK
 	#0101 #0e DEO2
 
 BRK
+	&rom-ext ".rom $1
 
 @assemble ( file* -- )
 
-	;res #00d0 ;mclr JSR2
+	;res #00a0 ;mclr JSR2
 	;syms .sym-ptr STZ2
-	( prepare output )
-	DUP2 ;dst #0030 ;mcpy JSR2
-	;&rom-ext ;dst ;scap JSR2 #0004 SUB2 ;scpy JSR2
+	( stream )
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
-	( stream )
-	.File1/name DEO2
+	;src .File1/name DEO2
 	#0001 .File1/length DEO2
 	&s
 		;&c .File1/read DEO2
@@ -67,7 +69,6 @@ BRK
 		,&s JMP &eof
 
 JMP2r
-	&rom-ext ".rom $1
 
 @walk ( char -- )
 
