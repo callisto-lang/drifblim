@@ -58,7 +58,11 @@ BRK
 		[ LIT &c $1 ] ,walk JSR
 		,&s JMP &eof
 
+	( check if file exists )
+	,&c LDR #00 EQU ,&empty JCN
+
 JMP2r
+	&empty ;src ;dict/source ;crash JMP2
 
 @walk ( char -- )
 
@@ -114,7 +118,7 @@ JMP2r
 @do-lithex ( t* -- ) INC2 ;write-lithex JMP2
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
 @do-rawhex ( t* -- ) ;write-rawhex JMP2
-@do-errors ( t* -- ) ;dict/unknown ;crash JMP2
+@do-errors ( t* -- ) ;dict/token ;crash JMP2
 @do-neuzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neuabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
 @do-neuraw ( t* -- ) POP2 #ffff ;write-short JMP2
@@ -441,9 +445,10 @@ JMP2r
 	( errors )
 	&err "!! 20 "Error 20 $1
 	&duplicate "Duplicate 20 "Label $1
-	&unknown "Unknown 20 "Token $1
-	&number "Invalid 20 "Number $1
-	&label "Unknown 20 "Label $1
+	&token "Token $1
+	&number "Number $1
+	&label "Label $1
+	&source "Source $1
 	&far "Too 20 "Far $1
 
 @symbols ( addr*, refs, text, 00 )
