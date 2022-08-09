@@ -12,9 +12,9 @@ fi
 
 uxnasm src/drifblim.tal bin/drifblim-seed.rom
 
-if [ -d "$HOME/roms" ] && [ -e ./bin/drifblim.rom ]
+if [ -d "$HOME/roms" ] && [ -e bin/drifblim-seed.rom ]
 then
-	cp bin/drifblim.rom $HOME/roms
+	cp bin/drifblim-seed.rom $HOME/roms/drifblim.rom
     echo "Installed in $HOME/roms" 
 fi
 

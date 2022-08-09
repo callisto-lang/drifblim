@@ -16,28 +16,14 @@
 		@prg-ptr $2
 		@sym-ptr $2
 
-|0100
-
-	;await-src .Console/vector DEO2
-	;&usage-txt ;pstr JSR2
-
-BRK
-	&usage-txt "usage: 20 "drifblim.rom 20 "src.tal 20 "dst.rom 0a $1
-
-@await-src ( -> )
-
-	.Console/read DEI .src ;skey JSR2 ,&next JCN
-
-BRK
-	&next ;await-dst .Console/vector DEO2 BRK
-
-@await-dst ( -> )
-
-	.Console/read DEI .dst ;skey JSR2 ,on-ready JCN
-
-BRK
+|0100 ( -> ) ;await-src .Console/vector DEO2 ;dict/input ;pstr JSR2 BRK
+@await-src ( -> ) .Console/read DEI .src ;skey JSR2 ,ready-dst JCN BRK
+@ready-dst ( -> ) ;await-dst .Console/vector DEO2 ;dict/output ;pstr JSR2 BRK
+@await-dst ( -> ) .Console/read DEI .dst ;skey JSR2 ,on-ready JCN BRK
 
 @on-ready ( -> )
+
+	#0a18 DEO
 
 	( pass1 )
 	;assemble JSR2
@@ -378,6 +364,10 @@ JMP2r
 	&number "Invalid 20 "Number $1
 	&label "Unknown 20 "Label $1
 	&far "Too 20 "Far $1
+
+@dict
+	&input "Input(.tal): 20 $1
+	&output "Output(.rom): 20 $1
 
 @crash ( id* name* -- )
 
