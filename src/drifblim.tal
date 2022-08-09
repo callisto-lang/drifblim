@@ -25,12 +25,15 @@
 
 	#0a18 DEO
 
-	( pass1 )
+	( mock-pass )
 	;assemble JSR2
 
-	( pass2 )
+	( real-pass )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
+	#00 ;write-byte/mock STA
+	;dst .File2/name DEO2
+	#0001 .File2/length DEO2
 	,assemble JSR
 
 	( print symbols )
@@ -46,8 +49,6 @@ BRK
 	;res #00a0 ;mclr JSR2
 	;syms .sym-ptr STZ2
 	( stream )
-	;dst .File2/name DEO2
-	#0001 .File2/length DEO2
 	;src .File1/name DEO2
 	#0001 .File1/length DEO2
 	&s
@@ -228,10 +229,11 @@ JMP2
 @write-byte ( byte -- )
 
 	,&b STR
-	.prg-ptr LDZ2 #0100 LTH2 ,&zp JCN
+	.prg-ptr LDZ2 #0100 LTH2 ,&no-w JCN
+	[ LIT &mock 01 ] ,&no-w JCN
 		;&b .File2/write DEO2
 		.size LDZ2k INC2 ROT STZ2
-		&zp
+		&no-w
 	.prg-ptr LDZ2k INC2 ROT STZ2
 
 JMP2r
