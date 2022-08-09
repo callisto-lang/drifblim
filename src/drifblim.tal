@@ -14,7 +14,6 @@
 		@token $30
 		@size $2
 		@prg-ptr $2
-		@sym-ptr $2
 
 |0100 ( -> ) ;await-src .Console/vector DEO2 ;dict/input ;pstr JSR2 BRK
 @await-src ( -> ) .Console/read DEI .src ;skey JSR2 ,ready-dst JCN BRK
@@ -47,7 +46,6 @@ BRK
 @assemble ( file* -- )
 
 	;res #00a0 ;mclr JSR2
-	;symbols .sym-ptr STZ2
 
 	( stream )
 	;src .File1/name DEO2
@@ -158,10 +156,10 @@ JMP2r
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
 		;dict/duplicate ;crash JMP2
 		&unique
-	( save ptr ) .prg-ptr LDZ2 .sym-ptr LDZ2 STA2
-	( move ) .sym-ptr LDZ2k INC2 INC2 INC2 ROT STZ2
-	( save str ) STH2k .sym-ptr LDZ2 ;scpy JSR2
-	( move ) .sym-ptr LDZ2k STH2r ;slen JSR2 ADD2 INC2 ROT STZ2
+	( save addr ) .prg-ptr LDZ2 [ LIT2 &ptr :symbols ] STH2k STA2
+	( move ) INC2r INC2r INC2r
+	( save name ) DUP2 STH2kr ;scpy JSR2
+	( move ) ;slen JSR2 STH2r ADD2 INC2 ,&ptr STR2
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
