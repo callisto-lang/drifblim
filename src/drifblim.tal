@@ -233,8 +233,8 @@ JMP2
 @write-byte ( byte -- )
 
 	,&b STR
-	.prg-ptr LDZ2 #0100 LTH2 ,&no-w JCN
 	[ LIT &mock 01 ] ,&no-w JCN
+	.prg-ptr LDZ2 #0100 LTH2 ,&no-w JCN
 		;&b .File2/write DEO2
 		.size LDZ2k INC2 ROT STZ2
 		&no-w
@@ -346,7 +346,7 @@ BRK
 @scat ( src* dst* -- ) ,scap JSR
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
-@mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
+@mclr ( src* len2* -- ) OVR2 ADD2 SWP2 &l STH2k #0000 STH2r STA2 INC2 INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 
 @shex ( str* -- val* )
