@@ -31,6 +31,7 @@
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
 	#00 ;write-byte/mock STA
+	.size LDZ2 ;write-byte/bound STA2
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
 	,assemble JSR
@@ -230,15 +231,17 @@ JMP2
 
 @write-byte ( byte -- )
 
-	,&b STR
+	DUP ,&b STR
 	[ LIT &mock 01 ] ,&no-w JCN
 	.prg-ptr LDZ2 #0100 LTH2 ,&no-w JCN
+	.prg-ptr LDZ2 [ LIT2 &bound $2 ] GTH2 ,&no-w JCN
 		;&b .File2/write DEO2
-		.size LDZ2k INC2 ROT STZ2
 		&no-w
 	.prg-ptr LDZ2k INC2 ROT STZ2
+	,&no-null JCN
 
 JMP2r
+	&no-null .prg-ptr LDZ2 .size STZ2 JMP2r
 	&b $1
 
 @fill ( length* -- )
@@ -312,7 +315,7 @@ JMP2r
 	;dst ;pstr JSR2
 
 	;dict/in ;pstr JSR2
-	.size LDZ2 ;pdec JSR2
+	.size LDZ2 #0100 SUB2 ;pdec JSR2
 	;dict/bytes ;pstr JSR2
 	LIT '( #18 DEO
 	;create-label/count LDA2 ;pdec JSR2
