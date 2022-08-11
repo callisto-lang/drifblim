@@ -44,6 +44,9 @@
 
 BRK
 
+(
+@|main )
+
 @assemble ( file* -- )
 
 	;res #00a0 ;mclr JSR2
@@ -105,7 +108,8 @@ JMP2r
 	&on-opcode POP2 ;pass1/opcode JMP2r
 	&on-rawhex POP2 ;pass1/rawhex JMP2r
 
-( operations )
+(
+@|operations )
 
 @do-ignore ( t* -- ) POP2 JMP2r
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .prg-ptr LDZ2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 .prg-ptr STZ2 JMP2r
@@ -126,6 +130,9 @@ JMP2r
 @do-refrel ( t* -- ) INC2 ,get-ref JSR ,get-rel JSR ;write-litbyte JMP2
 @do-refabs ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-litshort JMP2
 @do-refraw ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-short JMP2
+
+(
+@|helpers )
 
 @set-scope ( t* -- name* ) ;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy ( .. ) JMP2
 
@@ -338,7 +345,8 @@ JMP2r
 
 BRK
 
-( stdlib )
+(
+@|stdlib )
 
 @pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
@@ -399,7 +407,8 @@ JMP2r
 		&skip POP MUL2 SUB2
 	JMP2r
 
-( assets )
+(
+@|assets )
 
 @pass1
 	'| :do-padabs '$ :do-padrel
