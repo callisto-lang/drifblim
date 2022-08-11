@@ -232,12 +232,13 @@ JMP2
 @write-byte ( byte -- )
 
 	DUP ,&b STR
+	.prg-ptr LDZ2
 	[ LIT &mock 01 ] ,&no-w JCN
-	.prg-ptr LDZ2 #0100 LTH2 ,&no-w JCN
-	.prg-ptr LDZ2 [ LIT2 &bound $2 ] GTH2 ,&no-w JCN
+	DUP2 #0100 LTH2 ,&no-w JCN
+	DUP2 [ LIT2 &bound $2 ] GTH2 ,&no-w JCN
 		;&b .File2/write DEO2
 		&no-w
-	.prg-ptr LDZ2k INC2 ROT STZ2
+	INC2 .prg-ptr STZ2
 	,&no-null JCN
 
 JMP2r
