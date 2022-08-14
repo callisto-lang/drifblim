@@ -78,8 +78,8 @@ JMP2r
 
 @walk-token ( token* -- )
 
-	LDAk LIT '( EQU ,&on-parens JCN
-	LDAk LIT ') EQU ,&on-parens JCN
+	LDAk LIT "( EQU ,&on-parens JCN
+	LDAk LIT ") EQU ,&on-parens JCN
 	[ LIT &sleep $1 ] ,&on-sleep JCN
 	( parse ) DUP2 ,tokenize JSR INC2 LDA2 ( .. )
 
@@ -116,7 +116,6 @@ JMP2r
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ;fill JMP2
 @do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JMP2
 @do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JMP2
-@do-rawchr ( t* -- ) INC2 LDA ;write-byte JMP2
 @do-rawtxt ( t* -- ) INC2 &w LDAk ;write-byte JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
 @do-lithex ( t* -- ) INC2 ;write-lithex JMP2
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
@@ -147,7 +146,7 @@ JMP2r
 
 @get-ref ( token* -- <label*> )
 
-	LDAk LIT '& NEQ ,&no-sub JCN
+	LDAk LIT "& NEQ ,&no-sub JCN
 		INC2 ;make-sublabel JSR2
 		&no-sub
 	;find-label JSR2
@@ -176,7 +175,7 @@ JMP2r
 
 	;buf STH2k #0030 ;mclr JSR2
 	;scope STH2kr ;scpy JSR2
-	LIT '/ STH2kr ;sput JSR2
+	LIT "/ STH2kr ;sput JSR2
 	STH2kr ;scat JSR2
 	STH2r
 
@@ -286,9 +285,9 @@ JMP2r
 
 	LITr 00
 	&w
-		LDAk LIT '2 EQU #50 SFT STH ADDr
-		LDAk LIT 'r EQU #60 SFT STH ADDr
-		LDAk LIT 'k EQU #70 SFT STH ADDr
+		LDAk LIT "2 EQU #50 SFT STH ADDr
+		LDAk LIT "r EQU #60 SFT STH ADDr
+		LDAk LIT "k EQU #70 SFT STH ADDr
 		INC2 LDAk ,&w JCN
 	POP2 STHr
 
@@ -325,10 +324,10 @@ JMP2r
 	;dict/in ;pstr JSR2
 	.size LDZ2 #0100 SUB2 ;pdec JSR2
 	;dict/bytes ;pstr JSR2
-	LIT '( #18 DEO
+	LIT "( #18 DEO
 	;create-label/count LDA2 ;pdec JSR2
 	;dict/labels ;pstr JSR2
-	LIT ') #18 DEO
+	LIT ") #18 DEO
 	#0a18 DEO
 
 JMP2r
@@ -337,7 +336,7 @@ JMP2r
 
 	;dict/err ;perr JSR2
 	;perr JSR2
-	LIT ': #19 DEO
+	LIT ": #19 DEO
 	#2019 DEO
 	;perr JSR2
 	#0a19 DEO
@@ -411,13 +410,12 @@ JMP2r
 @|assets )
 
 @pass1
-	'| :do-padabs '$ :do-padrel
-	'@ :do-labtop '& :do-labsub
-	'" :do-rawtxt '' :do-rawchr
-	'. :do-neuzep ', :do-neuzep
-	'; :do-neuabs ': :do-neuraw
-	'[ :do-ignore '] :do-ignore
-	'# :do-lithex
+	"| :do-padabs "$ :do-padrel
+	"@ :do-labtop "& :do-labsub
+	". :do-neuzep ", :do-neuzep
+	"; :do-neuabs ": :do-neuraw
+	"[ :do-ignore "] :do-ignore
+	"# :do-lithex "" :do-rawtxt
 	&err
 	00 :do-errors
 	&opcode
@@ -426,13 +424,12 @@ JMP2r
 	00 :do-rawhex
 
 @pass2
-	'| :do-padabs '$ :do-padrel
-	'@ :do-neutop '& :do-ignore
-	'" :do-rawtxt '' :do-rawchr
-	'. :do-refzep ', :do-refrel
-	'; :do-refabs ': :do-refraw
-	'[ :do-ignore '] :do-ignore
-	'# :do-lithex
+	"| :do-padabs "$ :do-padrel
+	"@ :do-neutop "& :do-ignore
+	". :do-refzep ", :do-refrel
+	"; :do-refabs ": :do-refraw
+	"[ :do-ignore "] :do-ignore
+	"# :do-lithex "" :do-rawtxt
 	&err
 
 @opcodes
