@@ -311,7 +311,8 @@ JMP2r
 
 	;symbols
 	&w
-		LDA2k #0100 LTH2 ,&used JCN
+		( ignore uppercased device labels )
+		INC2k INC2 INC2 LDA DUP #40 GTH SWP #5b LTH AND ,&used JCN
 		INC2k INC2 LDA ,&used JCN
 			;dict/unused ;pstr JSR2
 			INC2 INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
