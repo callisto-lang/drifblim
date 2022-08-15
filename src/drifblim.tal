@@ -1,4 +1,4 @@
-( Usage: uxncli driflim.rom src/source.tal -> src/source.rom )
+( Usage: uxncli driflim.rom src.tal dst.rom )
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -24,17 +24,17 @@
 
 	#0a18 DEO
 
-	( mock-pass )
-	;assemble JSR2
+	( pass1 ) ,assemble JSR
 
-	( real-pass )
+	( setup )
 	;pass2/err ;tokenize/to STA2
 	;pass2 ;tokenize/from STA2
 	#00 ;write-byte/mock STA
 	.size LDZ2 ;write-byte/bound STA2
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
-	,assemble JSR
+
+	( pass2 ) ,assemble JSR
 
 	( print symbols )
 	;print-summary JSR2
@@ -133,7 +133,12 @@ JMP2r
 (
 @|helpers )
 
-@set-scope ( t* -- name* ) ;scope STH2k #0030 ;mclr JSR2 DUP2 STH2r ;scpy ( .. ) JMP2
+@set-scope ( t* -- name* )
+
+	;scope STH2k #0030 ;mclr JSR2
+		DUP2 STH2r ;scpy ( .. )
+
+JMP2
 
 @get-rel ( label* -- distance )
 
