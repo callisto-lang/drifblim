@@ -24,7 +24,7 @@
 
 	#0a18 DEO
 
-	( pass1 ) ;src ,assemble JSR
+	( pass1 ) ;src ,assemble-top JSR
 
 	( setup )
 	;pass2/err ;tokenize/to STA2
@@ -34,7 +34,7 @@
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
 
-	( pass2 ) ;src ,assemble JSR
+	( pass2 ) ;src ,assemble-top JSR
 
 	( print symbols )
 	;print-summary JSR2
@@ -47,9 +47,11 @@ BRK
 (
 @|main )
 
-@assemble ( file* -- )
+@assemble-top ( file* -- )
 
 	;res #00a0 ;mclr JSR2
+
+@assemble ( file* -- )
 
 	( stream )
 	DUP2 .File1/name DEO2
@@ -112,6 +114,7 @@ JMP2r
 (
 @|operations )
 
+@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 #0030 ;mclr JSR2 STH2r ;assemble JMP2
 @do-ignore ( t* -- ) POP2 JMP2r
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .prg-ptr LDZ2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 .prg-ptr STZ2 JMP2r
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ;fill JMP2
@@ -423,6 +426,7 @@ JMP2r
 	"; :do-neuabs ": :do-neuraw
 	"[ :do-ignore "] :do-ignore
 	"# :do-lithex "" :do-rawtxt
+	"~ :do-inc
 	&err
 	00 :do-errors
 	&opcode
@@ -437,6 +441,7 @@ JMP2r
 	"; :do-refabs ": :do-refraw
 	"[ :do-ignore "] :do-ignore
 	"# :do-lithex "" :do-rawtxt
+	"~ :do-inc
 	&err
 
 @opcodes
@@ -465,5 +470,7 @@ JMP2r
 	&label "Label $1
 	&source "Source $1
 	&far "Too 20 "Far $1
+
+@incsrc $30
 
 @symbols ( addr*, refs, text, 00 )
