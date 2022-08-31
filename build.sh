@@ -8,6 +8,7 @@ if [ -e "$HOME/roms/uxnlin.rom" ]
 then
 	echo "Linting.."
 	uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
+	uxncli $HOME/roms/uxnlin.rom etc/bh.tal
 fi
 
 uxnasm src/drifblim.tal bin/drifblim-seed.rom
@@ -21,5 +22,10 @@ fi
 # Running hello.tal
 
 uxncli bin/drifblim-seed.rom src/drifblim.tal bin/drifblim.rom
-uxncli bin/drifblim.rom etc/hello.tal bin/hello.rom
+uxncli bin/drifblim.rom examples/hello.tal bin/hello.rom
 uxncli bin/hello.rom
+
+# Pack
+
+uxncli bin/drifblim.rom etc/bh.tal bin/bh.rom
+uxncli bin/bh.rom bin/drifblim.rom > bin/bh.log

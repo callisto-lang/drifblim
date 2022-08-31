@@ -24,7 +24,7 @@
 
 	#0a18 DEO
 
-	( pass1 ) ,assemble JSR
+	( pass1 ) ;src ,assemble JSR
 
 	( setup )
 	;pass2/err ;tokenize/to STA2
@@ -34,7 +34,7 @@
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
 
-	( pass2 ) ,assemble JSR
+	( pass2 ) ;src ,assemble JSR
 
 	( print symbols )
 	;print-summary JSR2
@@ -52,7 +52,7 @@ BRK
 	;res #00a0 ;mclr JSR2
 
 	( stream )
-	;src .File1/name DEO2
+	DUP2 .File1/name DEO2
 	#0001 .File1/length DEO2
 	&s
 		;&c .File1/read DEO2
@@ -62,9 +62,10 @@ BRK
 
 	( check if file exists )
 	,&c LDR #00 EQU ,&empty JCN
+	POP2
 
 JMP2r
-	&empty ;src ;dict/source ;crash JMP2
+	&empty ;dict/source ;crash JMP2
 
 @walk ( char -- )
 
