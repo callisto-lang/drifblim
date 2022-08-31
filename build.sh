@@ -27,5 +27,5 @@ uxncli bin/hello.rom
 
 # Pack
 
-uxncli bin/drifblim.rom etc/bh.tal bin/bh.rom
-uxncli bin/bh.rom bin/drifblim.rom > bin/bh.log
+# uxncli bin/drifblim.rom etc/bh.tal bin/bh.rom
+# uxncli bin/bh.rom bin/drifblim.rom > bin/bh.log

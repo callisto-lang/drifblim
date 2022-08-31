@@ -8,6 +8,7 @@
 
 	@src $30
 	@dst $30
+	@run $1
 	@res
 		@buf $30
 		@scope $30
@@ -15,7 +16,18 @@
 		@size $2
 		@prg-ptr $2
 
-|0100 ( -> ) ;await-src .Console/vector DEO2 ;dict/input ;pstr JSR2 BRK
+|0100 ( -> )
+
+	( project )
+	;dict/drifblim .File1/name DEO2
+	#0061 .File1/length DEO2
+	#0000 .File1/read DEO2
+	.File1/success DEI2 ORA ,on-ready JCN
+
+	;await-src .Console/vector DEO2 ;dict/input ;pstr JSR2
+
+BRK
+
 @await-src ( -> ) .Console/read DEI .src ;skey JSR2 ,ready-dst JCN BRK
 @ready-dst ( -> ) ;await-dst .Console/vector DEO2 ;dict/output ;pstr JSR2 BRK
 @await-dst ( -> ) .Console/read DEI .dst ;skey JSR2 ,on-ready JCN BRK
@@ -39,10 +51,19 @@
 	( print symbols )
 	;print-summary JSR2
 
+	.run LDZ ,&run JCN
+
 	( halt )
 	#0101 #0e DEO2
 
 BRK
+
+&run
+	;dst .File1/name DEO2
+	#fe00 .File1/length DEO2
+	;loader-rom #ffd5 #002a ;mcpy JSR2
+	#ffd5
+JMP2
 
 (
 @|main )
@@ -367,6 +388,7 @@ BRK
 @skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
 @mclr ( src* len2* -- ) OVR2 ADD2 SWP2 &l STH2k #0000 STH2r STA2 INC2 INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
 
 @shex ( str* -- val* )
 
@@ -470,6 +492,12 @@ JMP2r
 	&label "Label $1
 	&source "Source $1
 	&far "Too 20 "Far $1
+	&drifblim ".drifblim $1
+
+@loader-rom
+	8000 8000 0711 0106 80f7 0d02 a001 00af
+	80ac 37a0 ffd5 80a2 36ef 3826 8000 0505
+	1521 aa80 f50d 2222 6f2c
 
 @incsrc $30
 
