@@ -24,6 +24,7 @@
 	#0000 .File1/read DEO2
 	.File1/success DEI2 ORA ,on-ready JCN
 
+	( interactive )
 	;await-src .Console/vector DEO2 ;dict/input ;pstr JSR2
 
 BRK
@@ -36,7 +37,7 @@ BRK
 
 	#0a18 DEO
 
-	( pass1 ) ;src ,assemble-top JSR
+	( pass1 ) ,assemble-top JSR
 
 	( setup )
 	;pass2/err ;tokenize/to STA2
@@ -46,23 +47,20 @@ BRK
 	;dst .File2/name DEO2
 	#0001 .File2/length DEO2
 
-	( pass2 ) ;src ,assemble-top JSR
-
-	( print symbols )
-	;print-summary JSR2
-
-	.run LDZ ,&run JCN
-
-	( halt )
-	#0101 #0e DEO2
+	( pass2 ) ,assemble-top JSR
+	( symbols ) ;summary JSR2
+	( auto ) .run LDZ ,&run JCN
+	( halt ) #010f DEO
 
 BRK
 
-&run
+&run ( -> )
+
 	;dst .File1/name DEO2
 	#fe00 .File1/length DEO2
 	;loader-rom #ffd5 #002a ;mcpy JSR2
-	#ffd5
+	#ffd5 ( .. )
+
 JMP2
 
 (
@@ -71,6 +69,7 @@ JMP2
 @assemble-top ( file* -- )
 
 	;res #00a0 ;mclr JSR2
+	;src
 
 @assemble ( file* -- )
 
@@ -332,7 +331,10 @@ JMP2r
 
 JMP2r
 
-@print-summary ( -- )
+(
+@|extras )
+
+@summary ( -- )
 
 	;symbols
 	&w
@@ -439,7 +441,7 @@ JMP2r
 	JMP2r
 
 (
-@|assets )
+@|tables )
 
 @pass1
 	"| :do-padabs "$ :do-padrel
@@ -477,6 +479,7 @@ JMP2r
 	( io )
 	&input "Input(.tal): 20 $1
 	&output "Output(.rom): 20 $1
+	&drifblim ".drifblim $1
 	( debug )
 	&assembled "Assembled 20 $1
 	&spacer 20 "-> 20 $1
@@ -492,7 +495,6 @@ JMP2r
 	&label "Label $1
 	&source "Source $1
 	&far "Too 20 "Far $1
-	&drifblim ".drifblim $1
 
 @loader-rom
 	8000 8000 0711 0106 80f7 0d02 a001 00af
