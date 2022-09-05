@@ -11,8 +11,8 @@
 	@run $1
 	@res
 		@buf $30
-		@scope $30
-		@token $30
+		@scope $20
+		@token $20
 		@size $2
 		@prg-ptr $2
 
@@ -79,9 +79,8 @@ JMP2
 	&s
 		;&c .File1/read DEO2
 		.File1/success DEI2 #0000 EQU2 ,&eof JCN
-		[ LIT &c $1 ] ,walk JSR
+		[ LIT &c $1 ] ,read-char JSR
 		,&s JMP &eof
-
 	( check if file exists )
 	,&c LDR #00 EQU ,&empty JCN
 	POP2
@@ -89,7 +88,7 @@ JMP2
 JMP2r
 	&empty ;dict/source ;crash JMP2
 
-@walk ( char -- )
+@read-char ( char -- )
 
 	#20 GTHk NIP ,&append JCN POP
 	;token DUP2 ;slen JSR2 ORA ,&run JCN
@@ -97,13 +96,13 @@ JMP2r
 
 JMP2r
 	&run ( token* -- )
-		DUP2 ,walk-token JSR #0030 ;mclr JMP2
+		DUP2 ,walk-token JSR #0020 ;mclr JMP2
 	&append ( char -- )
 		;token
-			DUP2 ;slen JSR2 #0030 EQU2 ,&overflow JCN
+			DUP2 ;slen JSR2 #0020 EQU2 ,&overflow JCN
 		;sput JMP2
 	&overflow ( char token* -- )
-		;dict/token ;crash JMP2
+		ROT POP ;dict/token ;crash JMP2
 
 @walk-token ( token* -- )
 
@@ -140,7 +139,7 @@ JMP2r
 (
 @|operations )
 
-@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 #0030 ;mclr JSR2 STH2r ;assemble JMP2
+@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 #0020 ;mclr JSR2 STH2r ;assemble JMP2
 @do-ignore ( t* -- ) POP2 JMP2r
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .prg-ptr LDZ2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 .prg-ptr STZ2 JMP2r
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ;fill JMP2
@@ -165,8 +164,7 @@ JMP2r
 
 @set-scope ( t* -- name* )
 
-	;scope STH2k #0030 ;mclr JSR2
-		DUP2 STH2r ;scpy ( .. )
+	;scope OVR2 SWP2 ;scpy ( .. )
 
 JMP2
 
@@ -385,11 +383,6 @@ BRK
 
 (
 @|stdlib )
-
-@zstr ( zero-page length-prefixed string )
-	&push ( zstr c -- zstr ) OVR LDZk INC SWP STZk ADD STZ JMP2r
-	&pop ( zstr -- zstr ) DUP LDZk #01 SUB SWP STZ JMP2r
-	&print ( zstr -- zstr ) LDZk ADDk NIP SWP &l INC LDZk #18 DEO NEQk ,&l JCN NIP JMP2r
 
 @pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
