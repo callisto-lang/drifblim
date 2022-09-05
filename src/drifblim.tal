@@ -97,7 +97,12 @@ JMP2r
 
 JMP2r
 	&run DUP2 ,walk-token JSR #0030 ;mclr JMP2
-	&append ;token ;sput JMP2
+	&append
+		;token
+			DUP2 ;slen JSR2 #0030 EQU2 ,&overflow JCN
+		;sput JMP2
+	&overflow
+		;dict/token ;crash JMP2
 
 @walk-token ( token* -- )
 
