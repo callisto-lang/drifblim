@@ -96,12 +96,13 @@ JMP2r
 	( skip empty ) POP2
 
 JMP2r
-	&run DUP2 ,walk-token JSR #0030 ;mclr JMP2
-	&append
+	&run ( token* -- )
+		DUP2 ,walk-token JSR #0030 ;mclr JMP2
+	&append ( char -- )
 		;token
 			DUP2 ;slen JSR2 #0030 EQU2 ,&overflow JCN
 		;sput JMP2
-	&overflow
+	&overflow ( char token* -- )
 		;dict/token ;crash JMP2
 
 @walk-token ( token* -- )
@@ -384,6 +385,11 @@ BRK
 
 (
 @|stdlib )
+
+@zstr ( zero-page length-prefixed string )
+	&push ( zstr c -- zstr ) OVR LDZk INC SWP STZk ADD STZ JMP2r
+	&pop ( zstr -- zstr ) DUP LDZk #01 SUB SWP STZ JMP2r
+	&print ( zstr -- zstr ) LDZk ADDk NIP SWP &l INC LDZk #18 DEO NEQk ,&l JCN NIP JMP2r
 
 @pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
