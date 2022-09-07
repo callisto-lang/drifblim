@@ -206,8 +206,7 @@ JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
-	;buf STH2k #0030 ;mclr JSR2
-	;scope STH2kr ;scpy JSR2
+	;scope ;buf STH2k ;scpy JSR2
 	LIT "/ STH2kr ;sput JSR2
 	STH2kr ;scat JSR2
 	STH2r
