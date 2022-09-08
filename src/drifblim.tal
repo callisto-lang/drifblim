@@ -68,7 +68,7 @@ JMP2
 
 @assemble-top ( file* -- )
 
-	;res #00a0 ;mclr JSR2
+	;res #0074 ;mclr JSR2
 	;src
 
 @assemble ( file* -- )
@@ -96,7 +96,7 @@ JMP2r
 
 JMP2r
 	&run ( token* -- )
-		DUP2 ,walk-token JSR #0020 ;mclr JMP2
+		DUP2 ,walk-token JSR ;sclr JMP2
 	&append ( char -- )
 		;token
 			DUP2 ;slen JSR2 #0020 EQU2 ,&overflow JCN
@@ -139,7 +139,7 @@ JMP2r
 (
 @|operations )
 
-@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 #0020 ;mclr JSR2 STH2r ;assemble JMP2
+@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;assemble JMP2
 @do-ignore ( t* -- ) POP2 JMP2r
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .prg-ptr LDZ2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 .prg-ptr STZ2 JMP2r
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ;fill JMP2
@@ -390,6 +390,7 @@ BRK
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scat ( src* dst* -- ) ,scap JSR
 @scpy ( src* dst* -- ) OVR2 LDA ,&e JCN POP2 POP2 JMP2r &e STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
 @skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
 @mclr ( src* len2* -- ) OVR2 ADD2 SWP2 &l STH2k #0000 STH2r STA2 INC2 INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
