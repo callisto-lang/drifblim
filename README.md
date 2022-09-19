@@ -30,11 +30,6 @@ Drifblim allows for live-reloading when used as a `launcher.rom`(f4). To use thi
 - `30-5f`, destination path.
 - `60`, non-zero values will also run the run on assembly.
 
-#### Extras
-
-- `unicycle.tal` Console REPL.
-- `bicycle.tal` [Graphical REPL](https://wiki.xxiivv.com/bicycle).
-
 ## Support
 
 - Linted with [uxnlin.rom](https://git.sr.ht/~rabbits/uxnlin)

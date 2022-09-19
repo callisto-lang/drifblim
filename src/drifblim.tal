@@ -11,8 +11,8 @@
 	@run $1
 	@res
 		@buf $30
-		@scope $30
-		@token $30
+		@scope $20
+		@token $20
 		@size $2
 		@prg-ptr $2
 
@@ -68,7 +68,7 @@ JMP2
 
 @assemble-top ( file* -- )
 
-	;res #00a0 ;mclr JSR2
+	;res #0074 ;mclr JSR2
 	;src
 
 @assemble ( file* -- )
@@ -79,9 +79,8 @@ JMP2
 	&s
 		;&c .File1/read DEO2
 		.File1/success DEI2 #0000 EQU2 ,&eof JCN
-		[ LIT &c $1 ] ,walk JSR
+		[ LIT &c $1 ] ,read-char JSR
 		,&s JMP &eof
-
 	( check if file exists )
 	,&c LDR #00 EQU ,&empty JCN
 	POP2
@@ -89,15 +88,21 @@ JMP2
 JMP2r
 	&empty ;dict/source ;crash JMP2
 
-@walk ( char -- )
+@read-char ( char -- )
 
 	#20 GTHk NIP ,&append JCN POP
 	;token DUP2 ;slen JSR2 ORA ,&run JCN
 	( skip empty ) POP2
 
 JMP2r
-	&run DUP2 ,walk-token JSR #0030 ;mclr JMP2
-	&append ;token ;sput JMP2
+	&run ( token* -- )
+		DUP2 ,walk-token JSR ;sclr JMP2
+	&append ( char -- )
+		;token
+			DUP2 ;slen JSR2 #0020 EQU2 ,&overflow JCN
+		;sput JMP2
+	&overflow ( char token* -- )
+		ROT POP ;dict/token ;crash JMP2
 
 @walk-token ( token* -- )
 
@@ -134,7 +139,7 @@ JMP2r
 (
 @|operations )
 
-@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 #0030 ;mclr JSR2 STH2r ;assemble JMP2
+@do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;assemble JMP2
 @do-ignore ( t* -- ) POP2 JMP2r
 @do-padabs ( t* -- ) INC2 ;shex JSR2 .prg-ptr LDZ2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 .prg-ptr STZ2 JMP2r
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ;fill JMP2
@@ -159,8 +164,7 @@ JMP2r
 
 @set-scope ( t* -- name* )
 
-	;scope STH2k #0030 ;mclr JSR2
-		DUP2 STH2r ;scpy ( .. )
+	;scope OVR2 SWP2 ;scpy ( .. )
 
 JMP2
 
@@ -202,8 +206,7 @@ JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
-	;buf STH2k #0030 ;mclr JSR2
-	;scope STH2kr ;scpy JSR2
+	;scope ;buf STH2k ;scpy JSR2
 	LIT "/ STH2kr ;sput JSR2
 	STH2kr ;scat JSR2
 	STH2r
@@ -379,13 +382,14 @@ BRK
 (
 @|stdlib )
 
-@pstr ( str* -- ) &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
+@pstr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
-@scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@scap ( str* -- end* ) LDAk ,&w JCN JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
 @scat ( src* dst* -- ) ,scap JSR
-@scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@scpy ( src* dst* -- ) OVR2 LDA ,&e JCN POP2 POP2 JMP2r &e STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
 @skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
 @mclr ( src* len2* -- ) OVR2 ADD2 SWP2 &l STH2k #0000 STH2r STA2 INC2 INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
