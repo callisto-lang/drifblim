@@ -9,12 +9,9 @@
 	@src $30
 	@dst $30
 	@run $1
-	@res
-		@buf $30
-		@scope $20
-		@token $20
-		@size $2
-		@prg-ptr $2
+	( TODO )
+	@size $2
+	@prg-ptr $2
 
 |0100 ( -> )
 
@@ -505,6 +502,15 @@ JMP2r
 	80ac 37a0 ffd5 80a2 36ef 3826 8000 0505
 	1521 aa80 f50d 2222 6f2c
 
+(
+@|buffers )
+
 @incsrc $30
+@buf $30
+@scope $20
+@token $20
+
+(
+@|memory )
 
 @symbols ( addr*, refs, text, 00 )
