@@ -266,19 +266,18 @@ JMP2
 
 @write-byte ( byte -- )
 
-	DUP ,&b STR
+	,&byte STR
 	.prg-ptr LDZ2
 	[ LIT &mock 01 ] ,&no-w JCN
 	DUP2 #0100 LTH2 ,&no-w JCN
 	DUP2 [ LIT2 &bound $2 ] GTH2 ,&no-w JCN
-		;&b .File2/write DEO2
+		;&byte .File2/write DEO2
 		&no-w
 	INC2 .prg-ptr STZ2
-	,&no-null JCN
+	[ LIT &byte $1 ] ,&no-null JCN
 
 JMP2r
 	&no-null .prg-ptr LDZ2 .size STZ2 JMP2r
-	&b $1
 
 @fill ( length* -- )
 
