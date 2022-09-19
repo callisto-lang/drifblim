@@ -11,7 +11,6 @@
 	@run $1
 	( TODO )
 	@size $2
-	@prg-ptr $2
 
 |0100 ( -> )
 
@@ -67,7 +66,7 @@ JMP2
 
 	#0000
 		DUP2 .size STZ2
-		.prg-ptr STZ2
+		;write-byte/ptr STA2
 	;src
 
 @assemble ( file* -- )
@@ -140,7 +139,7 @@ JMP2r
 
 @do-inc ( t* -- ) INC2k ;incsrc STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;assemble JMP2
 @do-ignore ( t* -- ) POP2 JMP2r
-@do-padabs ( t* -- ) INC2 ;shex JSR2 .prg-ptr LDZ2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 .prg-ptr STZ2 JMP2r
+@do-padabs ( t* -- ) INC2 ;shex JSR2 ;write-byte/ptr LDA2 LTH2k ,&rev JCN SUB2 ;fill JMP2 &rev POP2 ;write-byte/ptr STA2 JMP2r
 @do-padrel ( t* -- ) INC2 ;shex JSR2 ;fill JMP2
 @do-labtop ( t* -- ) INC2 ;set-scope JSR2 ;create-label JMP2
 @do-labsub ( t* -- ) INC2 ;make-sublabel JSR2 ;create-label JMP2
@@ -169,7 +168,7 @@ JMP2
 
 @get-rel ( label* -- distance )
 
-	LDA2k .prg-ptr LDZ2 SUB2 #0003 SUB2
+	LDA2k ;write-byte/ptr LDA2 SUB2 #0003 SUB2
 	DUP2 #0080 ADD2 POP ,&fail JCN
 	NIP2 NIP
 
@@ -195,7 +194,7 @@ JMP2r
 	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
 		;dict/duplicate ;crash JMP2
 		&unique
-	( save addr ) .prg-ptr LDZ2 [ LIT2 &ptr :symbols ] STH2k STA2
+	( save addr ) ;write-byte/ptr LDA2 [ LIT2 &ptr :symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr ;scpy JSR2
 	( move ) ;slen JSR2 STH2r ADD2 INC2 ,&ptr STR2
@@ -269,17 +268,19 @@ JMP2
 @write-byte ( byte -- )
 
 	,&byte STR
-	.prg-ptr LDZ2
+	[ LIT2 &ptr $2 ]
 	[ LIT &mock 01 ] ,&no-w JCN
 	DUP2 #0100 LTH2 ,&no-w JCN
 	DUP2 [ LIT2 &bound $2 ] GTH2 ,&no-w JCN
 		;&byte .File2/write DEO2
 		&no-w
-	INC2 .prg-ptr STZ2
-	[ LIT &byte $1 ] ,&no-null JCN
+	INC2 
+		DUP2 ,&ptr STR2
+		[ LIT &byte $1 ] ,&no-null JCN
+	POP2
 
 JMP2r
-	&no-null .prg-ptr LDZ2 .size STZ2 JMP2r
+	&no-null .size STZ2 JMP2r
 
 @fill ( length* -- )
 
