@@ -40,7 +40,10 @@ BRK
 	;pass2 ;tokenize/from STA2
 	#00 ;write-byte/mock STA
 	.size LDZ2 ;write-byte/bound STA2
+
+	( prepare output )
 	;dst .File2/name DEO2
+	#01 .File2/delete DEO
 	#0001 .File2/length DEO2
 
 	( pass2 ) ,assemble-top JSR
