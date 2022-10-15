@@ -385,6 +385,7 @@ BRK
 (
 @|stdlib )
 
+@chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @pstr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @scap ( str* -- end* ) LDAk ,&w JCN JMP2r &w INC2 LDAk ,&w JCN JMP2r
@@ -416,14 +417,6 @@ JMP2r
 		INC2 LDAk ,&w JCN
 	POP2
 	#01
-
-JMP2r
-
-@chex ( c --  )
-
-	LIT "0 SUB DUP #09 GTH JMP JMP2r
-	#27 SUB DUP #0f GTH JMP JMP2r
-	POP #ff
 
 JMP2r
 
