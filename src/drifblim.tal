@@ -121,7 +121,7 @@ JMP2
 	( runes )
 	[ LIT2 &to :pass1/err ] [ LIT2 &from :pass1 ]
 	&l
-		LDAk STH2kr LDA EQU ,&on-runic JCN
+		LDAk LDAkr STHr EQU ,&on-runic JCN
 		INC2 INC2 INC2 GTH2k ,&l JCN
 	POP2 POP2
 	( variable )
@@ -183,19 +183,17 @@ JMP2r
 		INC2 ;make-sublabel JSR2
 		&no-sub
 	;find-label JSR2
-	DUP2 #ffff EQU2 ,&fail JCN
+		INC2k ORA ,&found JCN
+			POP2 ;dict/label ;crash JMP2
+			&found
 
 	( count ) INC2k INC2 LDAk INC ROT ROT STA
 
 JMP2r
-	&fail POP2 ;dict/label ;crash JMP2
 
 @create-label ( name* -- )
 
-	( check duplicate )
-	DUP2 ;find-label JSR2 #ffff EQU2 ,&unique JCN
-		;dict/duplicate ;crash JMP2
-		&unique
+	( check duplicate ) DUP2 ;find-label JSR2 INC2 ORA ,&not-unique JCN
 	( save addr ) ;write-byte/ptr LDA2 [ LIT2 &ptr :symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr ;scpy JSR2
@@ -203,6 +201,7 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
+	&not-unique ;dict/duplicate ;crash JMP2
 
 @make-sublabel ( name* -- sublabel* )
 
