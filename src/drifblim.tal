@@ -9,7 +9,6 @@
 	@src $30
 	@dst $30
 	@run $1
-	( TODO )
 	@size $2
 
 |0100 ( -> )
@@ -92,7 +91,7 @@ JMP2r
 @read-char ( char -- )
 
 	#20 GTHk NIP ,&append JCN POP
-	;token DUP2 ;slen JSR2 ORA ,&run JCN
+	;token LDAk ,&run JCN
 	( skip empty ) POP2
 
 JMP2r
