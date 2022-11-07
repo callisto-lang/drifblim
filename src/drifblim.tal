@@ -410,7 +410,7 @@ JMP2r
 @sihx ( str* -- flag )
 
 	&w
-		LDAk ,chex JSR #ff NEQ ,&valid JCN
+		LDAk ,chex JSR INC ,&valid JCN
 			POP2 #00 JMP2r &valid
 		INC2 LDAk ,&w JCN
 	POP2
