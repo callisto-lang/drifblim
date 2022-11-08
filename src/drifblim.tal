@@ -99,8 +99,8 @@ JMP2r
 		DUP2 ,walk-token JSR ;sclr JMP2
 	&append ( char -- )
 		;token
-			DUP2 ;slen JSR2 #0020 EQU2 ,&overflow JCN
-		;sput JMP2
+			DUP2 ;slen JSR2 #0018 EQU2 ,&overflow JCN
+			;sput JMP2
 	&overflow ( char token* -- )
 		ROT POP ;dict/token ;crash JMP2
 
