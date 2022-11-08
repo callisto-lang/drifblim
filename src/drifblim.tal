@@ -153,7 +153,7 @@ JMP2r
 @do-neuzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neuabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
 @do-neuraw ( t* -- ) POP2 #ffff ;write-short JMP2
-@do-neutop ( t* -- ) INC2 ;set-scope JSR2 POP2 JMP2r
+@do-neutop ( t* -- ) INC2 ,set-scope JSR POP2 JMP2r
 @do-refzep ( t* -- ) INC2 ,get-ref JSR LDA2 NIP ;write-litbyte JMP2
 @do-refrel ( t* -- ) INC2 ,get-ref JSR ,get-rel JSR ;write-litbyte JMP2
 @do-refabs ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-litshort JMP2
@@ -289,10 +289,10 @@ JMP2r
 	&l
 		#00 ,write-byte JSR
 		INC2 GTH2k ,&l JCN
+		&skip
 	POP2 POP2
 
 JMP2r
-	&skip POP2 POP2 JMP2r
 
 @is-opcode ( string* -- flag )
 
