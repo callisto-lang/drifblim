@@ -177,7 +177,7 @@ JMP2
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 INC2 INC2 INC2 ;err/far ;crash JMP2
+	&fail POP2 INC2 INC2 INC2 ;err/distance ;crash JMP2
 
 @get-ref ( token* -- <label*> )
 
@@ -186,7 +186,7 @@ JMP2r
 		&no-sub
 	;find-label JSR2
 		INC2k ORA ,&found JCN
-			POP2 ;err/label ;crash JMP2
+			POP2 ;err/reference ;crash JMP2
 			&found
 
 	( count ) INC2k INC2 LDAk INC ROT ROT STA
@@ -491,13 +491,13 @@ JMP2r
 
 @err
 	"!! 20 "Error 20 $1
-	&duplicate "Duplicate 20 "Label $1
+	&duplicate "Duplicate  $1
 	&token "Token $1
 	&number "Number $1
-	&label "Label $1
+	&reference "Reference $1
 	&source "Source $1
-	&far "Too 20 "Far $1
-	&mode "Unknown 20 "Mode $1
+	&mode "Mode $1
+	&distance "Distance $1
 
 @loader-rom
 	8000 8000 0711 0106 80f7 0d02 a001 00af
