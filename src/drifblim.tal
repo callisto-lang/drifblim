@@ -458,7 +458,7 @@ JMP2r
 	"| =do-padabs "$ =do-padrel
 	"@ =do-neutop "& =do-ignore
 	", =do-reflrel
-	". =do-reflzep ". =do-refrzep
+	". =do-reflzep "- =do-refrzep
 	"; =do-reflabs "= =do-refrabs
 	"[ =do-ignore "] =do-ignore
 	"# =do-lithex "" =do-rawtxt
