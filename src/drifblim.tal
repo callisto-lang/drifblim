@@ -119,7 +119,7 @@ JMP2
 
 	STH2
 	( runes )
-	[ LIT2 &to :pass1/err ] [ LIT2 &from :pass1 ]
+	[ LIT2 &to =pass1/err ] [ LIT2 &from =pass1 ]
 	&l
 		LDAk LDAkr STHr EQU ,&on-runic JCN
 		INC2 INC2 INC2 GTH2k ,&l JCN
@@ -194,7 +194,7 @@ JMP2r
 @create-label ( name* -- )
 
 	( check duplicate ) DUP2 ;find-label JSR2 INC2 ORA ,&not-unique JCN
-	( save addr ) ;write-byte/ptr LDA2 [ LIT2 &ptr :symbols ] STH2k STA2
+	( save addr ) ;write-byte/ptr LDA2 [ LIT2 &ptr =symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr ;scpy JSR2
 	( move ) ;slen JSR2 STH2r ADD2 INC2 ,&ptr STR2
@@ -437,28 +437,28 @@ JMP2r
 @|tables )
 
 @pass1
-	"| :do-padabs "$ :do-padrel
-	"@ :do-labtop "& :do-labsub
-	". :do-neuzep ", :do-neuzep
-	"; :do-neuabs ": :do-neuraw
-	"[ :do-ignore "] :do-ignore
-	"# :do-lithex "" :do-rawtxt
-	"~ :do-inc
+	"| =do-padabs "$ =do-padrel
+	"@ =do-labtop "& =do-labsub
+	". =do-neuzep ", =do-neuzep
+	"; =do-neuabs "= =do-neuraw
+	"[ =do-ignore "] =do-ignore
+	"# =do-lithex "" =do-rawtxt
+	"~ =do-inc
 	&err
-	00 :do-errors
+	00 =do-errors
 	&opcode
-	00 :do-opcode
+	00 =do-opcode
 	&rawhex
-	00 :do-rawhex
+	00 =do-rawhex
 
 @pass2
-	"| :do-padabs "$ :do-padrel
-	"@ :do-neutop "& :do-ignore
-	". :do-refzep ", :do-refrel
-	"; :do-refabs ": :do-refraw
-	"[ :do-ignore "] :do-ignore
-	"# :do-lithex "" :do-rawtxt
-	"~ :do-inc
+	"| =do-padabs "$ =do-padrel
+	"@ =do-neutop "& =do-ignore
+	". =do-refzep ", =do-refrel
+	"; =do-refabs "= =do-refraw
+	"[ =do-ignore "] =do-ignore
+	"# =do-lithex "" =do-rawtxt
+	"~ =do-inc
 	&err
 
 @opcodes
