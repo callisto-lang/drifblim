@@ -86,7 +86,7 @@ JMP2
 	POP2
 
 JMP2r
-	&empty ;dict/source ;crash JMP2
+	&empty ;err/source ;crash JMP2
 
 @read-char ( char -- )
 
@@ -102,7 +102,7 @@ JMP2r
 			DUP2 ;slen JSR2 #0018 EQU2 ,&overflow JCN
 			;sput JMP2
 	&overflow ( char token* -- )
-		ROT POP ;dict/token ;crash JMP2
+		ROT POP ;err/token ;crash JMP2
 
 @walk-token ( token* -- )
 
@@ -149,7 +149,7 @@ JMP2r
 @do-lithex ( t* -- ) INC2 ;write-lithex JMP2
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
 @do-rawhex ( t* -- ) ;write-rawhex JMP2
-@do-errors ( t* -- ) ;dict/token ;crash JMP2
+@do-errors ( t* -- ) ;err/token ;crash JMP2
 @do-neulzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
 @do-neurzep ( t* -- ) POP2 #ff ;write-byte JMP2
 @do-neulabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
@@ -177,7 +177,7 @@ JMP2
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 INC2 INC2 INC2 ;dict/far ;crash JMP2
+	&fail POP2 INC2 INC2 INC2 ;err/far ;crash JMP2
 
 @get-ref ( token* -- <label*> )
 
@@ -186,7 +186,7 @@ JMP2r
 		&no-sub
 	;find-label JSR2
 		INC2k ORA ,&found JCN
-			POP2 ;dict/label ;crash JMP2
+			POP2 ;err/label ;crash JMP2
 			&found
 
 	( count ) INC2k INC2 LDAk INC ROT ROT STA
@@ -203,7 +203,7 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
-	&not-unique ;dict/duplicate ;crash JMP2
+	&not-unique ;err/duplicate ;crash JMP2
 
 @make-sublabel ( name* -- sublabel* )
 
@@ -238,7 +238,7 @@ JMP2r
 		;shex JSR2 NIP ,write-litbyte JMP
 		&no-byte
 	&invalid
-	;dict/number ;crash ( .. )
+	;err/number ;crash ( .. )
 
 JMP2
 
@@ -252,7 +252,7 @@ JMP2
 		;shex JSR2 NIP ,write-byte JMP
 		&no-byte
 	&invalid
-	;dict/number ;crash ( .. )
+	;err/number ;crash ( .. )
 
 JMP2
 
@@ -298,32 +298,43 @@ JMP2r
 
 @is-opcode ( string* -- flag )
 
-	DUP2 ;opcodes/brk ,scmp3 JSR ,find-opcode/on-brk JCN
+	DUP2 ;opcodes/brk ;scmp3 JSR2 ,find-opcode/on-brk JCN
 
 @find-opcode ( name* -- byte )
 
 	STH2
 	#2000
 	&l
-		#00 OVR #03 MUL ;opcodes ADD2 STH2kr ,scmp3 JSR ,&on-found JCN
+		#00 OVR #03 MUL ;opcodes ADD2 STH2kr ;scmp3 JSR2 ,&on-found JCN
 		INC GTHk ,&l JCN
 	POP2 POP2r #00
 
 JMP2r
 	&on-found
 		NIP ( LITk ) DUP #00 EQU #70 SFT ADD
-		STH2r INC2 INC2 INC2 ,find-mode JSR ADD JMP2r
+		STH2r INC2 INC2 INC2 ,find-modes JSR ADD JMP2r
 	&on-brk POP2 #01 JMP2r
 
-@find-mode ( mode* -- byte )
+@find-modes ( mode* -- byte )
 
 	LITr 00
 	&w
-		LDAk LIT "2 EQU #50 SFT STH ADDr
-		LDAk LIT "r EQU #60 SFT STH ADDr
-		LDAk LIT "k EQU #70 SFT STH ADDr
+		LDAk ,find-mode JSR STH ORAr
 		INC2 LDAk ,&w JCN
 	POP2 STHr
+
+JMP2r
+
+@find-mode ( char -- byte )
+
+	#20
+	OVR LIT "2 EQU ,&end JCN DUP ADD
+	OVR LIT "r EQU ,&end JCN DUP ADD
+	OVR LIT "k EQU ,&end JCN DUP ADD
+	OVR #21 LTH ,&end JCN
+		;token ;err/mode ;crash JMP2
+	&end
+	NIP
 
 JMP2r
 
@@ -371,7 +382,7 @@ JMP2r
 
 @crash ( id* name* -- )
 
-	;dict/err ;perr JSR2
+	;err ;perr JSR2
 	;perr JSR2
 	LIT ": #19 DEO
 	#2019 DEO
@@ -484,14 +495,16 @@ JMP2r
 	&bytes 20 "bytes $1
 	&labels 20 "labels $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
-	( errors )
-	&err "!! 20 "Error 20 $1
+
+@err
+	"!! 20 "Error 20 $1
 	&duplicate "Duplicate 20 "Label $1
 	&token "Token $1
 	&number "Number $1
 	&label "Label $1
 	&source "Source $1
 	&far "Too 20 "Far $1
+	&mode "Unknown 20 "Mode $1
 
 @loader-rom
 	8000 8000 0711 0106 80f7 0d02 a001 00af
