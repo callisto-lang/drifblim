@@ -319,22 +319,15 @@ JMP2r
 
 	LITr 00
 	&w
-		LDAk ,find-mode JSR STH ORAr
+		LDAk #20
+		OVR LIT "2 EQU ,&end JCN DUP ADD
+		OVR LIT "r EQU ,&end JCN DUP ADD
+		OVR LIT "k EQU ,&end JCN DUP ADD
+		OVR #21 LTH ,&end JCN
+			;token ;err/mode ;crash JMP2
+		&end NIP STH ORAr
 		INC2 LDAk ,&w JCN
 	POP2 STHr
-
-JMP2r
-
-@find-mode ( char -- byte )
-
-	#20
-	OVR LIT "2 EQU ,&end JCN DUP ADD
-	OVR LIT "r EQU ,&end JCN DUP ADD
-	OVR LIT "k EQU ,&end JCN DUP ADD
-	OVR #21 LTH ,&end JCN
-		;token ;err/mode ;crash JMP2
-	&end
-	NIP
 
 JMP2r
 
