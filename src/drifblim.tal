@@ -150,14 +150,16 @@ JMP2r
 @do-opcode ( t* -- ) ;find-opcode JSR2 ;write-byte JMP2
 @do-rawhex ( t* -- ) ;write-rawhex JMP2
 @do-errors ( t* -- ) ;dict/token ;crash JMP2
-@do-neuzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
-@do-neuabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
-@do-neuraw ( t* -- ) POP2 #ffff ;write-short JMP2
+@do-neulzep ( t* -- ) POP2 #ff ;write-litbyte JMP2
+@do-neurzep ( t* -- ) POP2 #ff ;write-byte JMP2
+@do-neulabs ( t* -- ) POP2 #ffff ;write-litshort JMP2
+@do-neurabs ( t* -- ) POP2 #ffff ;write-short JMP2
 @do-neutop ( t* -- ) INC2 ,set-scope JSR POP2 JMP2r
-@do-refzep ( t* -- ) INC2 ,get-ref JSR LDA2 NIP ;write-litbyte JMP2
-@do-refrel ( t* -- ) INC2 ,get-ref JSR ,get-rel JSR ;write-litbyte JMP2
-@do-refabs ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-litshort JMP2
-@do-refraw ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-short JMP2
+@do-reflrel ( t* -- ) INC2 ,get-ref JSR ,get-rel JSR ;write-litbyte JMP2
+@do-reflzep ( t* -- ) INC2 ,get-ref JSR LDA2 NIP ;write-litbyte JMP2
+@do-refrzep ( t* -- ) INC2 ,get-ref JSR LDA2 NIP ;write-byte JMP2
+@do-reflabs ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-litshort JMP2
+@do-refrabs ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-short JMP2
 
 (
 @|helpers )
@@ -439,8 +441,9 @@ JMP2r
 @pass1
 	"| =do-padabs "$ =do-padrel
 	"@ =do-labtop "& =do-labsub
-	". =do-neuzep ", =do-neuzep
-	"; =do-neuabs "= =do-neuraw
+	", =do-neulzep
+	". =do-neulzep "- =do-neurzep
+	"; =do-neulabs "= =do-neurabs
 	"[ =do-ignore "] =do-ignore
 	"# =do-lithex "" =do-rawtxt
 	"~ =do-inc
@@ -454,8 +457,9 @@ JMP2r
 @pass2
 	"| =do-padabs "$ =do-padrel
 	"@ =do-neutop "& =do-ignore
-	". =do-refzep ", =do-refrel
-	"; =do-refabs "= =do-refraw
+	", =do-reflrel
+	". =do-reflzep ". =do-refrzep
+	"; =do-reflabs "= =do-refrabs
 	"[ =do-ignore "] =do-ignore
 	"# =do-lithex "" =do-rawtxt
 	"~ =do-inc
