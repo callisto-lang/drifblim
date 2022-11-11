@@ -20,7 +20,7 @@ uxncli bin/hello.rom
 
 If do not wish to assemble it yourself, you can download [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom).
 
-_Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
+[![builds.sr.ht status](https://builds.sr.ht/~rabbits/drifblim.svg)](https://builds.sr.ht/~rabbits/drifblim?)
 
 ## Project Mode
 
@@ -29,6 +29,8 @@ Drifblim allows for live-reloading when used as a `launcher.rom`(f4). To use thi
 - `00-2f`, source path.
 - `30-5f`, destination path.
 - `60`, non-zero values will also run the run on assembly.
+
+_Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
 
 ## Support
 
