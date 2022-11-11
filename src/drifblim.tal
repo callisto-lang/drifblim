@@ -156,6 +156,7 @@ JMP2r
 @do-neurabs ( t* -- ) POP2 #ffff ;write-short JMP2
 @do-neutop ( t* -- ) INC2 ,set-scope JSR POP2 JMP2r
 @do-reflrel ( t* -- ) INC2 ,get-ref JSR ,get-rel JSR ;write-litbyte JMP2
+@do-refrrel ( t* -- ) INC2 ,get-ref JSR ,get-rel JSR INC ;write-byte JMP2
 @do-reflzep ( t* -- ) INC2 ,get-ref JSR LDA2 NIP ;write-litbyte JMP2
 @do-refrzep ( t* -- ) INC2 ,get-ref JSR LDA2 NIP ;write-byte JMP2
 @do-reflabs ( t* -- ) INC2 ,get-ref JSR LDA2 ;write-litshort JMP2
@@ -445,7 +446,7 @@ JMP2r
 @pass1
 	"| =do-padabs "$ =do-padrel
 	"@ =do-labtop "& =do-labsub
-	", =do-neulzep
+	", =do-neulzep "_ =do-neulzep
 	". =do-neulzep "- =do-neurzep
 	"; =do-neulabs "= =do-neurabs
 	"[ =do-ignore "] =do-ignore
@@ -461,7 +462,7 @@ JMP2r
 @pass2
 	"| =do-padabs "$ =do-padrel
 	"@ =do-neutop "& =do-ignore
-	", =do-reflrel
+	", =do-reflrel "_ =do-refrrel
 	". =do-reflzep "- =do-refrzep
 	"; =do-reflabs "= =do-refrabs
 	"[ =do-ignore "] =do-ignore
