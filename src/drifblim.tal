@@ -62,7 +62,7 @@ BRK
 JMP2
 
 (
-@|main )
+@|stream )
 
 @assemble-top ( file* -- )
 
@@ -79,7 +79,7 @@ JMP2
 	&s
 		;&c .File1/read DEO2
 		.File1/success DEI2 #0000 EQU2 ,&eof JCN
-		[ LIT &c $1 ] ,read-char JSR
+		[ LIT &c $1 ] ,stream JSR
 		,&s JMP &eof
 	( check if file exists )
 	,&c LDR #00 EQU ,&empty JCN
@@ -88,7 +88,7 @@ JMP2
 JMP2r
 	&empty ;err/source ;crash JMP2
 
-@read-char ( char -- )
+@stream ( char -- )
 
 	#20 GTHk NIP ,&append JCN POP
 	;token LDAk ,&run JCN
@@ -96,7 +96,8 @@ JMP2r
 
 JMP2r
 	&run ( token* -- )
-		DUP2 ,walk-token JSR ;sclr JMP2
+		DUP2 ,read-token JSR
+		;sclr JMP2
 	&append ( char -- )
 		;token
 			DUP2 ;slen JSR2 #0018 EQU2 ,&overflow JCN
@@ -104,15 +105,19 @@ JMP2r
 	&overflow ( char token* -- )
 		ROT POP ;err/token ;crash JMP2
 
-@walk-token ( token* -- )
+(
+@|token )
+
+@read-token ( token* -- )
 
 	LDAk LIT "( EQU ,&on-parens JCN
 	LDAk LIT ") EQU ,&on-parens JCN
 	[ LIT &sleep $1 ] ,&on-sleep JCN
-	( parse ) DUP2 ,tokenize JSR INC2 LDA2 ( .. )
+	DUP2 ,tokenize JSR
+		INC2 LDA2 ( .. )
 
 JMP2
-	&on-parens LDA #29 SUB ,&sleep STR JMP2r
+	&on-parens LDA LIT "( EQU ,&sleep STR JMP2r
 	&on-sleep POP2 JMP2r
 
 @tokenize ( token* -- type* )
@@ -127,7 +132,7 @@ JMP2
 	( variable )
 	STH2r
 		DUP2 ;is-opcode JSR2 ,&on-opcode JCN
-		DUP2 ;sihx JSR2 ,&on-rawhex JCN
+		DUP2 ;is-hex JSR2 ,&on-rawhex JCN
 	( error )
 	POP2 ;pass1/err
 
@@ -231,7 +236,7 @@ JMP2r
 
 @write-lithex ( str* -- )
 
-	DUP2 ;sihx JSR2 #00 EQU ,&invalid JCN
+	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
 	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
 		;shex JSR2 ,write-litshort JMP
 		&no-short
@@ -245,7 +250,7 @@ JMP2
 
 @write-rawhex ( str* -- )
 
-	DUP2 ;sihx JSR2 #00 EQU ,&invalid JCN
+	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
 	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
 		;shex JSR2 ,write-short JMP
 		&no-short
@@ -413,7 +418,7 @@ BRK
 
 JMP2r
 
-@sihx ( str* -- flag )
+@is-hex ( str* -- flag )
 
 	&w
 		LDAk ,chex JSR INC ,&valid JCN
