@@ -32,7 +32,8 @@ BRK
 
 	#0a18 DEO
 
-	( pass1 ) ,assemble-top JSR
+	( pass1 )
+	,assemble-top JSR
 
 	( setup )
 	;pass2/err ;tokenize/to STA2
@@ -45,8 +46,11 @@ BRK
 	#01 .File2/delete DEO
 	#0001 .File2/length DEO2
 
-	( pass2 ) ,assemble-top JSR
-	( symbols ) ;summary JSR2
+	( pass2 )
+	,assemble-top JSR
+	;save-symbols JSR2
+	;print-summary JSR2
+
 	( auto ) .run LDZ ,&run JCN
 	( halt ) #010f DEO
 
@@ -348,7 +352,25 @@ JMP2r
 (
 @|extras )
 
-@summary ( -- )
+@save-symbols ( -- )
+
+	;dst ;scap JSR2 ;&ext OVR2 ;scpy JSR2
+	;dst .File2/name DEO2
+	;symbols
+	&l
+		#0002 .File2/length DEO2
+		DUP2 .File2/write DEO2
+		#0003 ADD2
+			DUP2 ;slen JSR2 INC2 .File2/length DEO2
+			DUP2 .File2/write DEO2
+		;scap JSR2 INC2 DUP2 #0003 ADD2 LDA ,&l JCN
+	POP2
+	#00 ROT ROT STA
+
+JMP2r
+	&ext ".sym $1
+
+@print-summary ( -- )
 
 	;symbols
 	&w
