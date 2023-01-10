@@ -6,11 +6,13 @@
 
 	&while
 		( send ) LDAk #18 DEO
-		( loop ) INC2 LDAk ,&while JCN
+		( loop ) INC2 LDAk ?while
 	POP2
 
 	#010f DEO
 
 BRK
+
+@string "hello! $1
 
 ~examples/include.tal
