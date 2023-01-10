@@ -8,6 +8,7 @@
 
 	@src $30
 	@dst $30
+	@include $30
 	@program &ptr $2
 
 |0100 ( -> )
@@ -57,6 +58,8 @@ JMP2r
 
 @handle-token ( t* -- )
 
+	( DUP2 ;pstr JSR2 #2018 DEO .program/ptr LDZ2 ;phex JSR2 #0a18 DEO )
+
 	LDAk LIT "( EQU ,&on-parens JCN
 	LDAk LIT ") EQU ,&on-parens JCN
 	[ LIT &sleep $1 ] ,&on-sleep JCN
@@ -67,28 +70,102 @@ JMP2r
 	&on-sleep ( t* -- ) POP2 JMP2r
 
 (
-@|symbols )
+@|library )
+
+@library
+&do-padabs JMP2r
+&do-padrel JMP2r
+&do-toplab JMP2r
+&do-sublab JMP2r
+&do-litrel JMP2r
+&do-rawrel JMP2r
+&do-litzep JMP2r
+&do-rawzep JMP2r
+&do-litabs JMP2r
+&do-rawabs JMP2r
+&do-litjmi JMP2r
+&do-litjci JMP2r
+&do-ignore JMP2r
+&do-lithex JMP2r
+&do-rawstr JMP2r
+&do-inc JMP2r
+( non runic )
+&do-hex JMP2r
+&do-opc JMP2r
+&do-jsi JMP2r
+
+(
+@|handler )
+
+@get-type ( token* -- type* )
+
+	LDAk ,&rune STR
+	( runes )
+	;runes/err ;runes
+	&l
+		LDAk [ LIT &rune $1 ] EQU ,&on-runic JCN
+		#0003 ADD2 GTH2k ,&l JCN
+	POP2 POP2
+	( non-runic )
+
+	POP2 #0000
+
+JMP2r
+	&on-runic ( token* -- )
+		POP2 POP2 POP2 #000a
+	JMP2r
 
 @symbolize ( t* -- )
 
-	LDAk LIT "| NEQ ,&no-padabs JCN
-		INC2 ;shex JSR2 .program/ptr STZ2 JMP2r
-		&no-padabs
-	LDAk LIT "$ NEQ ,&no-padrel JCN
-		INC2 ;shex JSR2 .program/ptr STHk LDZ2 ADD2 STHr STZ2 JMP2r
-		&no-padrel
-	LDAk LIT "" EQU ,&str JCN
-	LDAk LIT "@ EQU ,&l0 JCN
-	LDAk LIT "& EQU ,&l0 JCN
+	DUP2 ;pstr JSR2 #2018 DEO
+		;get-type JSR2 ;phex JSR2 #0a18 DEO
+
+JMP2r
+
+
+@write ( byte -- )
+
+	;phex/b JSR2 #0a18 DEO
+
+	( move )
+	.program/ptr LDZ2k INC2 ROT STZ2
+
+JMP2r
+
+@add-toplab ( s* -- )
+
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+
+@add-sublab ( s* -- )
+
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+
+@put-str ( s* -- ) &w LDAk ;write JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
+@mov-ptr ( v* -- ) .program/ptr LDZ2 ADD2
+@set-ptr ( v* -- ) .program/ptr STZ2 JMP2r
+
+@symbolize-old ( t* -- )
+
+	LDAk LIT "~ NEQ ,&no-include JCN INC2k ;include STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;handle-file JMP2 &no-include
+	LDAk LIT "| NEQ ,&no-padabs JCN INC2 ;shex JSR2 ,set-ptr JMP &no-padabs
+	LDAk LIT "$ NEQ ,&no-padrel JCN INC2 ;shex JSR2 ,mov-ptr JMP &no-padrel
+	LDAk LIT "" NEQ ,&no-str JCN INC2 ;put-str JMP2 &no-str
+	LDAk LIT "@ NEQ ,&no-toplab JCN INC2 ;add-toplab JMP2 &no-toplab
+	LDAk LIT "& NEQ ,&no-sublab JCN INC2 ;add-sublab JMP2 &no-sublab
 	LDAk LIT "_ EQU ,&l1 JCN
 	LDAk LIT "- EQU ,&l1 JCN
 	LDAk LIT "= EQU ,&l2 JCN
 	LDAk LIT ", EQU ,&l2 JCN
 	LDAk LIT ". EQU ,&l2 JCN
 	LDAk LIT "; EQU ,&l3 JCN
+	LDAk LIT "? EQU ,&l3 JCN
+	LDAk LIT "! EQU ,&l3 JCN
 	LDAk LIT "# EQU ,&lithex JCN
 	DUP2 ;is-opcode JSR2 ,&l1 JCN
-	
 	;pstr JSR2 #0a18 DEO 
 
 JMP2r
@@ -96,11 +173,14 @@ JMP2r
 		;slen JSR2 DUP2 #0003 EQU2 ,&l2 JCN
 			DUP2 #0005 EQU2 ,&l3 JCN
 			;err/number ;crash JMP2
-	&str INC2 ;slen JSR2 .program/ptr LDZ2 ADD2 .program/ptr STZ2 JMP2r
+	&str INC2 ;slen JSR2 ,&move JMP
 	&l0 POP2 JMP2r
-	&l1 POP2 .program/ptr LDZ2k #0001 ADD2 ROT STZ2 JMP2r
-	&l2 POP2 .program/ptr LDZ2k #0002 ADD2 ROT STZ2 JMP2r
-	&l3 POP2 .program/ptr LDZ2k #0003 ADD2 ROT STZ2 JMP2r
+	&l1 POP2 #0001 ,&move JMP
+	&l2 POP2 #0002 ,&move JMP
+	&l3 POP2 #0003
+		&move .program/ptr LDZ2 ADD2 .program/ptr STZ2 JMP2r
+
+
 
 (
 @helpers )
@@ -163,6 +243,14 @@ JMP2r
 (
 @|stdlib )
 
+@phex ( short* -- )
+
+	SWP ,&b JSR
+	&b ( byte -- ) DUP #04 SFT ,&c JSR
+	&c ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+
+JMP2r
+
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 
 
@@ -200,8 +288,22 @@ JMP2r
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	&brk "BRK
 
+@runes
+	"| =library/do-padabs "$ =library/do-padrel
+	"@ =library/do-toplab "& =library/do-sublab
+	", =library/do-litrel "_ =library/do-rawrel
+	". =library/do-litzep "- =library/do-rawzep
+	"; =library/do-litabs "= =library/do-rawabs
+	"? =library/do-litjmi "! =library/do-litjci
+	"[ =library/do-ignore "] =library/do-ignore
+	"# =library/do-lithex "" =library/do-rawstr
+	"~ =library/do-inc
+	&err
+
 (
 @|buffers )
 
 @token $20
+
+@rom
 
