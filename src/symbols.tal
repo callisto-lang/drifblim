@@ -1,0 +1,91 @@
+( uxnasm src/symbols.tal bin/sym.rom && uxncli bin/sym.rom examples/hello.tal bin/test.rom )
+
+|10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
+|a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+
+|0000
+
+	@src $30
+	@dst $30
+
+|0100 ( -> )
+
+	( interactive )
+	;await-src .Console/vector DEO2
+	;dict/input ;pstr JSR2
+
+BRK
+
+@await-src ( -> ) .Console/read DEI .src ;skey JSR2 ,ready-dst JCN BRK
+@ready-dst ( -> ) ;await-dst .Console/vector DEO2 ;dict/output ;pstr JSR2 BRK
+@await-dst ( -> ) .Console/read DEI .dst ;skey JSR2 ,on-ready JCN BRK
+
+@on-ready ( -> )
+
+	#0a18 DEO
+	;src ;handle-file JSR2
+	( debug ) #010e DEO
+	( halt ) #010f DEO
+
+BRK
+
+(
+@|generics )
+
+@handle-file ( f* -- )
+
+	.File1/name DEO2
+	#0001 .File1/length DEO2
+	&s
+		;&c .File1/read DEO2
+		.File1/success DEI2 #0000 NEQ2 ,&continue JCN JMP2r
+		&continue [ LIT &c $1 ] ,handle-char JSR
+		,&s JMP
+
+JMP2r
+
+@handle-char ( c -- )
+
+	#20 GTHk NIP ,&append JCN POP
+	;token LDAk ,&run JCN POP2
+
+JMP2r
+	&append ( c -- ) ;token DUP2 ;slen JSR2 #001f LTH2 ;sput JCN2 POP JMP2r
+	&run ( t* -- ) DUP2 ,handle-token JSR ;sclr JMP2
+
+@handle-token ( t* -- )
+
+	LDAk LIT "( EQU ,&on-parens JCN
+	LDAk LIT ") EQU ,&on-parens JCN
+	[ LIT &sleep $1 ] ,&on-sleep JCN
+	;pstr JSR2 #0a18 DEO
+
+JMP2r
+	&on-parens ( t* -- ) LDA LIT "( EQU ,&sleep STR JMP2r
+	&on-sleep ( t* -- ) POP2 JMP2r
+
+(
+@|stdlib )
+
+@pstr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
+@scap ( str* -- end* ) LDAk ,&w JCN JMP2r &w INC2 LDAk ,&w JCN JMP2r
+@sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
+@slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
+@scat ( src* dst* -- ) ,scap JSR
+@scpy ( src* dst* -- ) OVR2 LDA ,&e JCN POP2 POP2 JMP2r &e STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
+@sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
+@skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
+@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
+@chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
+
+@dict
+	&input "Input(.tal): 20 $1
+	&output "Output(.rom): 20 $1
+
+(
+@|buffers )
+
+@token $20
+
