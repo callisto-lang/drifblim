@@ -26,9 +26,18 @@ BRK
 @on-ready ( -> )
 
 	#0a18 DEO
+
 	( pass1 )
 	;src ;handle-file JSR2
+
 	( pass2 )
+	#01 .program/write STZ
+	;src ;handle-file JSR2
+
+	( export )
+	;dst .File1/name DEO2
+	.program/head LDZ2 .File1/length DEO2
+	;rom/start .File1/write DEO2
 
 	( debug ) #010e DEO
 	( halt ) #010f DEO
@@ -130,7 +139,10 @@ JMP2r
 
 @write ( byte -- )
 
-	;phex/b JSR2 #0a18 DEO
+	.program/write LDZ #00 EQU ,&no-write JCN
+		DUP ;rom .program/head LDZ2 ADD2 STA
+		&no-write
+	POP
 
 	( move )
 	.program/head LDZ2k INC2 ROT STZ2
@@ -211,6 +223,9 @@ JMP2r
 
 @create-label ( name* -- )
 
+	.program/write LDZ ,&skip JCN
+	DUP2 ;pstr JSR2 #0a18 DEO
+
 	( check duplicate ) DUP2 ;find-label JSR2 INC2 ORA ,&not-unique JCN
 	( save addr ) .program/head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
@@ -220,6 +235,7 @@ JMP2r
 
 JMP2r
 	&not-unique ;err/duplicate ;crash JMP2
+	&skip POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
@@ -244,7 +260,6 @@ JMP2r
 JMP2r
 	&found #0003 SUB2 POP2r JMP2r
 
-@put-str ( s* -- )  JMP2r
 @move-head ( v* -- ) .program/head LDZ2 ADD2
 @set-head ( v* -- ) .program/head STZ2 JMP2r
 
@@ -329,8 +344,6 @@ JMP2r
 JMP2r
 
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
-
-
 @pstr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @scap ( str* -- end* ) LDAk ,&w JCN JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
@@ -387,8 +400,7 @@ JMP2r
 (
 @|memory )
 
-@symbols ( addr*, refs, text, 00 ) $4000
+@symbols ( addr*, refs, text, 00 ) $2000
 
-@rom 
-
+@rom $100 &start
 

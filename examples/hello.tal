@@ -6,7 +6,7 @@
 
 	&while
 		( send ) LDAk #18 DEO
-		( loop ) INC2 LDAk ?while
+		( loop ) INC2 LDAk ?&while
 	POP2
 
 	#010f DEO
