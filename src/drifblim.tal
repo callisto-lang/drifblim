@@ -26,21 +26,16 @@ BRK
 @on-ready ( -> )
 
 	#0a18 DEO
-
 	( pass1 )
 	;src ;handle-file JSR2
-
 	( pass2 )
 	#01 .program/write STZ
 	;src ;handle-file JSR2
-
 	( export )
 	;dst .File1/name DEO2
 	.program/head LDZ2 .File1/length DEO2
 	;rom/start .File1/write DEO2
-
 	;summary JSR2
-
 	( debug ) #010e DEO
 	( halt ) #010f DEO
 
@@ -133,24 +128,6 @@ JMP2r
 (
 @|primitives )
 
-@write-short ( short* -- )
-
-	SWP ,write JSR
-
-@write ( byte -- )
-
-	.program/write LDZ #00 EQU ,&no-write JCN
-		DUP ;rom .program/head LDZ2 ADD2 STA
-		DUP #00 EQU ,&no-write JCN
-			.program/head LDZ2 .program/length STZ2
-		&no-write
-	POP
-
-	( move )
-	.program/head LDZ2k INC2 ROT STZ2
-
-JMP2r
-
 @write-rawstr ( str* -- )
 
 	&w
@@ -190,6 +167,23 @@ JMP2
 
 JMP2
 
+@write-short ( short* -- )
+
+	SWP ,write JSR
+
+@write ( byte -- )
+
+	.program/write LDZ #00 EQU ,&no-write JCN
+		DUP ;rom .program/head LDZ2 ADD2 STA
+		DUP #00 EQU ,&no-write JCN
+			.program/head LDZ2 .program/length STZ2
+		&no-write
+	POP
+	( move )
+	.program/head LDZ2k INC2 ROT STZ2
+
+JMP2r
+
 @set-scope ( t* -- name* )
 
 	;scope OVR2 SWP2 ;scpy ( .. )
@@ -204,7 +198,7 @@ JMP2
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 INC2 INC2 INC2 ;err/distance ;crash JMP2
+	&fail POP2 #0003 ADD2 ;err/distance ;crash JMP2
 	&fill POP2 #00 JMP2r
 
 @get-ref ( token* -- <label*> )
@@ -248,37 +242,6 @@ JMP2r
 
 JMP2r
 
-@find-label ( name* -- <addr*> )
-
-	STH2
-	;symbols
-	&w
-		INC2 INC2 INC2 DUP2 STH2kr ;scmp JSR2 ,&found JCN
-		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
-	POP2
-	POP2r
-	#ffff
-
-JMP2r
-	&found #0003 SUB2 POP2r JMP2r
-
-@move-head ( v* -- ) .program/head LDZ2 ADD2
-@set-head ( v* -- ) .program/head STZ2 JMP2r
-
-(
-@helpers )
-
-@is-hex ( str* -- flag )
-
-	&w
-		LDAk ;chex JSR2 INC ,&valid JCN
-			POP2 #00 JMP2r &valid
-		INC2 LDAk ,&w JCN
-	POP2
-	#01
-
-JMP2r
-
 @is-opcode ( string* -- flag )
 
 	DUP2 ;opcodes/brk ;scmp3 JSR2 ,find-opcode/on-brk JCN
@@ -295,7 +258,7 @@ JMP2r
 JMP2r
 	&on-found
 		NIP ( LITk ) DUP #00 EQU #70 SFT ADD
-		STH2r INC2 INC2 INC2 ,find-modes JSR ADD JMP2r
+		STH2r #0003 ADD2 ,find-modes JSR ADD JMP2r
 	&on-brk POP2 #01 JMP2r
 
 @find-modes ( mode* -- byte )
@@ -311,6 +274,41 @@ JMP2r
 		&end NIP STH ORAr
 		INC2 LDAk ,&w JCN
 	POP2 STHr
+
+JMP2r
+
+@find-label ( name* -- <addr*> )
+
+	STH2
+	;symbols
+	&w
+		#0003 ADD2 DUP2 STH2kr ;scmp JSR2 ,&found JCN
+		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
+	POP2
+	POP2r
+	#ffff
+
+JMP2r
+	&found #0003 SUB2 POP2r JMP2r
+
+@move-head ( v* -- )
+
+	.program/head LDZ2 ADD2
+
+@set-head ( v* -- )
+
+	.program/head STZ2
+
+JMP2r
+
+@is-hex ( str* -- flag )
+
+	&w
+		LDAk ;chex JSR2 INC ,&valid JCN
+			POP2 #00 JMP2r &valid
+		INC2 LDAk ,&w JCN
+	POP2
+	#01
 
 JMP2r
 
@@ -342,18 +340,16 @@ JMP2r
 		INC2k INC2 INC2 LDA DUP #40 GTH SWP #5b LTH AND ,&used JCN
 		INC2k INC2 LDA ,&used JCN
 			;dict/unused ;pstr JSR2
-			INC2 INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
+			#0003 ADD2 DUP2 ;pstr JSR2 #0a18 DEO
 			&used
 		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
 	POP2
-
 	( result )
 	;dict/assembled ;pstr JSR2
-
 	;src ;pstr JSR2
 	;dict/spacer ;pstr JSR2
 	;dst ;pstr JSR2
-
+	( length )
 	;dict/in ;pstr JSR2
 	.program/length LDZ2 #0100 SUB2 ;pdec JSR2
 	;dict/bytes ;pstr JSR2
@@ -415,6 +411,9 @@ JMP2r
 		&skip POP MUL2 SUB2
 	JMP2r
 
+(
+@|assets )
+
 @dict
 	&input "Input(.tal): 20 $1
 	&output "Output(.rom): 20 $1
@@ -454,16 +453,13 @@ JMP2r
 	&err
 
 (
-@|buffers )
+@|memory )
 
 @token $20
 @scope $20
 @sublabel $20
 
-(
-@|memory )
-
-@symbols ( addr*, refs, text, 00 ) $2000
+@symbols ( addr*, refs, name[], 00 ) $2000
 
 @rom $100 &start
 
