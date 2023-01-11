@@ -73,9 +73,8 @@ JMP2r
 	LDAk LIT "( EQU ?&on-parens
 	LDAk LIT ") EQU ?&on-parens
 	[ LIT &sleep $1 ] ?&on-sleep
-	parse
 
-JMP2r
+!parse
 	&on-parens ( t* -- ) LDA LIT "( EQU ,&sleep STR JMP2r
 	&on-sleep ( t* -- ) POP2 JMP2r
 
@@ -197,6 +196,8 @@ JMP2r
 @create-label ( name* -- )
 
 	.program/write LDZ ?&skip
+	( check name ) DUP2 is-hex ?&invalid
+	( check name ) DUP2 is-opcode ?&invalid
 	( check duplicate ) DUP2 find-label INC2 ORA ?&not-unique
 	( check limit ) ,&ptr LDR2 ;symbols/end GTH2 ?&limit
 	( save addr ) .program/head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2
@@ -206,6 +207,7 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
+	&invalid ;err/invalid !crash
 	&not-unique ;err/duplicate !crash
 	&limit ;err/limit !crash
 	&skip POP2 JMP2r
@@ -399,6 +401,7 @@ JMP2r
 	&reference "Reference $1
 	&distance "Distance $1
 	&limit "Labels-limit $1
+	&invalid "Invalid $1
 	&mode "Mode $1
 
 @opcodes
