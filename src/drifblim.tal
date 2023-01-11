@@ -156,9 +156,9 @@ JMP2
 		&no-write
 	POP
 	( move )
-	.program/head LDZ2k INC2 ROT STZ2
+	#0001 ;move-head ( .. )
 
-JMP2r
+JMP2
 
 @set-scope ( t* -- name* )
 
@@ -218,7 +218,7 @@ JMP2r
 
 JMP2r
 
-@is-hex ( str* -- flag )
+@is-hex ( str* -- f )
 
 	&w
 		LDAk ;chex JSR2 INC ,&valid JCN
@@ -229,7 +229,7 @@ JMP2r
 
 JMP2r
 
-@is-opcode ( string* -- flag )
+@is-opcode ( string* -- f )
 
 	DUP2 ;opcodes/brk ;scmp3 JSR2 ,find-opcode/on-brk JCN
 
@@ -300,14 +300,6 @@ JMP2r
 
 BRK
 
-@scmp3 ( a* b* -- flag )
-
-	LDA2k ROT2 LDA2k ROT2 EQU2 STH
-	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr
-	AND
-
-JMP2r
-
 @summary ( -- )
 
 	;symbols
@@ -370,6 +362,7 @@ JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @shex ( str* -- val* ) LIT2r 0000 &w LITr 40 SFT2r LITr 00 LDAk ,chex JSR STH ADD2r INC2 LDAk ,&w JCN POP2 STH2r JMP2r
+@scmp3 ( a* b* -- f ) LDA2k ROT2 LDA2k ROT2 EQU2 STH INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
 @pdec ( short* -- )
 
@@ -393,7 +386,6 @@ JMP2r
 @dict
 	&input "Input(.tal): 20 $1
 	&output "Output(.rom): 20 $1
-	( debug )
 	&assembled "Assembled 20 $1
 	&spacer 20 "-> 20 $1
 	&in 20 "in 20 $1
@@ -401,8 +393,7 @@ JMP2r
 	&labels 20 "labels $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
 
-@err
-	"!! 20 "Error 20 $1
+@err "!! 20 "Error 20 $1
 	&duplicate "Duplicate  $1
 	&number "Number $1
 	&reference "Reference $1
