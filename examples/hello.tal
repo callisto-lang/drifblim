@@ -2,19 +2,18 @@
 
 |0100 @program
 
-	;hello-word
-
-	&while
-		( send ) LDAk #18 DEO
-		( loop ) INC2 LDAk ,&while JCN
-	POP2
-
+	;hello-word print-str
 	#010f DEO
 
 BRK
 
-@string "hello! $1
+@print-str ( str* -- )
 
-123c
+	&while
+		( send ) LDAk #18 DEO
+		( loop ) INC2 LDAk ?&while
+	POP2
+
+JMP2r
 
 ~examples/include.tal

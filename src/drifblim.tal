@@ -115,7 +115,7 @@ JMP2r
 ( calls )
 &do-litjmi #20 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
 &do-litjci #40 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
-&do-litjsi #60 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
+&do-litjsi #60 ;write JSR2 ;get-ref JSR2 LDA2 ;write-short JMP2
 ( hexadecimals )
 &do-rawhex ;write-rawhex JMP2
 &do-lithex INC2 ;write-lithex JMP2
