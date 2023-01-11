@@ -116,8 +116,8 @@ JMP2r
 &do-litjci #40 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
 &do-litjsi #60 ;write JSR2 ;get-ref JSR2 LDA2 ;write-short JMP2
 ( hexadecimals )
-&do-rawhex ;write-rawhex JMP2
-&do-lithex INC2 ;write-lithex JMP2
+&do-lithex INC2 DUP2 ;slen JSR2 NIP #02 SFT #a080 ROT [ JMP SWP POP ] ;write JSR2
+&do-rawhex ;write-hex JMP2
 ( etc )
 &do-rawstr INC2 ;write-rawstr JMP2
 &do-opcode ;find-opcode JSR2 ;write JMP2
@@ -136,33 +136,16 @@ JMP2r
 
 JMP2r
 
-@write-rawhex ( str* -- )
+@write-hex ( str* -- )
 
-	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
-	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		;shex JSR2 ,write-short JMP
-		&no-short
+	DUP2 ;is-hex JSR2 #00 EQU ,&err JCN
 	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
-		;shex JSR2 NIP ,write JMP
-		&no-byte
-	&invalid
-	;err/number ;crash ( .. )
-
-JMP2
-
-@write-lithex ( str* -- )
-
-	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
-	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		#a0 ;write JSR2
-		;shex JSR2 ;write-short JMP2
-		&no-short
-	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
-		#80 ;write JSR2
 		;shex JSR2 NIP ;write JMP2
 		&no-byte
-	&invalid
-	;err/number ;crash ( .. )
+	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		;shex JSR2 ;write-short JMP2
+		&no-short
+	&err ;err/number ;crash ( .. )
 
 JMP2
 
