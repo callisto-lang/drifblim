@@ -142,7 +142,7 @@ JMP2r
 	POP POP2
 	;err/number !crash
 	&byte POP NIP2 NIP !write
-	&short POP NIP2 !write-short
+	&short POP NIP2 ( fall through )
 
 @write-short ( short* -- )
 
@@ -159,16 +159,12 @@ JMP2r
 	( move )
 	#0001 !move-head
 
-( .. )
-
 @get-hex ( str* -- value* )
 
 	DUP2 is-hex ?&valid
 		;err/number !crash
 		&valid
 	!shex
-
-( .. )
 
 @get-rel ( label* -- distance )
 
