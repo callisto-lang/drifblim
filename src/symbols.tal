@@ -39,6 +39,8 @@ BRK
 	.program/head LDZ2 .File1/length DEO2
 	;rom/start .File1/write DEO2
 
+	;summary JSR2
+
 	( debug ) #010e DEO
 	( halt ) #010f DEO
 
@@ -69,8 +71,6 @@ JMP2r
 	&run ( t* -- ) DUP2 ,handle-token JSR ;sclr JMP2
 
 @handle-token ( t* -- )
-
-	( DUP2 ;pstr JSR2 #2018 DEO .program/head LDZ2 ;phex JSR2 #0a18 DEO )
 
 	LDAk LIT "( EQU ,&on-parens JCN
 	LDAk LIT ") EQU ,&on-parens JCN
@@ -332,16 +332,40 @@ BRK
 
 JMP2r
 
-(
-@|stdlib )
+@summary ( -- )
 
-@phex ( short* -- )
+	;symbols
+	&w
+		( ignore uppercased device labels )
+		INC2k INC2 INC2 LDA DUP #40 GTH SWP #5b LTH AND ,&used JCN
+		INC2k INC2 LDA ,&used JCN
+			;dict/unused ;pstr JSR2
+			INC2 INC2 INC2 DUP2 ;pstr JSR2 #0a18 DEO
+			&used
+		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
+	POP2
 
-	SWP ,&b JSR
-	&b ( byte -- ) DUP #04 SFT ,&c JSR
-	&c ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
+	( result )
+	;dict/assembled ;pstr JSR2
+
+	;src ;pstr JSR2
+	;dict/spacer ;pstr JSR2
+	;dst ;pstr JSR2
+
+	;dict/in ;pstr JSR2
+	.program/head LDZ2 #0100 SUB2 ;pdec JSR2
+	;dict/bytes ;pstr JSR2
+	LIT "( #18 DEO
+	;create-label/count LDA2 ;pdec JSR2
+	;dict/labels ;pstr JSR2
+	LIT ") #18 DEO
+	#0a18 DEO
 
 JMP2r
+
+
+(
+@|stdlib )
 
 @perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @pstr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
@@ -353,21 +377,41 @@ JMP2r
 @sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
 @skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
-@mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
 @chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @shex ( str* -- val* ) LIT2r 0000 &w LITr 40 SFT2r LITr 00 LDAk ,chex JSR STH ADD2r INC2 LDAk ,&w JCN POP2 STH2r JMP2r
+
+@pdec ( short* -- )
+
+	#00 ,&z STR
+	#2710 ,&parse JSR
+	#03e8 ,&parse JSR
+	#0064 ,&parse JSR
+	#000a ,&parse JSR
+	NIP #30 ADD #18 DEO
+
+JMP2r
+	&parse
+		DIV2k DUPk [ LIT &z $1 ] EQU ,&skip JCN
+		DUP #30 ADD #18 DEO #ff ,&z STR
+		&skip POP MUL2 SUB2
+	JMP2r
 
 @dict
 	&input "Input(.tal): 20 $1
 	&output "Output(.rom): 20 $1
+	( debug )
+	&assembled "Assembled 20 $1
+	&spacer 20 "-> 20 $1
+	&in 20 "in 20 $1
+	&bytes 20 "bytes $1
+	&labels 20 "labels $1
+	&unused "-- 20 "Unused 20 "label: 20 $1
 
 @err
 	"!! 20 "Error 20 $1
 	&duplicate "Duplicate  $1
-	&token "Token $1
 	&number "Number $1
 	&reference "Reference $1
-	&source "Source $1
 	&mode "Mode $1
 	&distance "Distance $1
 
