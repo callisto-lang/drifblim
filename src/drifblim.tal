@@ -98,8 +98,8 @@ JMP2r
 JMP2r
 
 @library
-&do-padabs INC2 ;shex JSR2 ;set-head JMP2
-&do-padrel INC2 ;shex JSR2 ;move-head JMP2
+&do-padabs INC2 ;get-hex JSR2 ;set-head JMP2
+&do-padrel INC2 ;get-hex JSR2 ;move-head JMP2
 &do-toplab INC2 ;set-scope JSR2 ;create-label JMP2
 &do-sublab INC2 ;make-sublabel JSR2 ;create-label JMP2
 &do-litrel #80 ;write JSR2 
@@ -132,8 +132,7 @@ JMP2r
 
 @write-hex ( str* -- )
 
-	DUP2 ;is-hex JSR2 #00 EQU ,&err JCN
-	DUP2 ;slen JSR2 OVR2 ;shex JSR2 SWP2 NIP
+	DUP2 ;slen JSR2 OVR2 ;get-hex JSR2 SWP2 NIP
 	DUP #02 EQU ,&byte JCN
 	DUP #04 EQU ,&short JCN
 	POP POP2
@@ -163,6 +162,15 @@ JMP2
 @set-scope ( t* -- name* )
 
 	;scope OVR2 SWP2 ;scpy ( .. )
+
+JMP2
+
+@get-hex ( str* -- value* )
+
+	DUP2 ;is-hex JSR2 ,&valid JCN
+		;err/number ;crash JMP2
+		&valid
+	;shex ( .. )
 
 JMP2
 
@@ -360,9 +368,9 @@ JMP2r
 @sclr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w STH2k #00 STH2r STA INC2 LDAk ,&w JCN POP2 JMP2r
 @skey ( key buf -- proc ) OVR #21 LTH ,&eval JCN #00 SWP ;sput JSR2 #00 JMP2r &eval POP2 #01 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
+@scmp3 ( a* b* -- f ) LDA2k ROT2 LDA2k ROT2 EQU2 STH INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 @chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @shex ( str* -- val* ) LIT2r 0000 &w LITr 40 SFT2r LITr 00 LDAk ,chex JSR STH ADD2r INC2 LDAk ,&w JCN POP2 STH2r JMP2r
-@scmp3 ( a* b* -- f ) LDA2k ROT2 LDA2k ROT2 EQU2 STH INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
 @pdec ( short* -- )
 

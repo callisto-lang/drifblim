@@ -19,10 +19,10 @@ then
     echo "Installed in $HOME/roms" 
 fi
 
-# Running hello.tal
+# Running
 
 uxncli bin/drifblim-seed.rom src/drifblim.tal bin/drifblim.rom
-uxncli bin/drifblim.rom examples/hello.tal bin/hello.rom
+uxncli bin/drifblim.rom examples/error.tal bin/hello.rom
 uxncli bin/hello.rom
 
 # Pack
