@@ -36,6 +36,7 @@ BRK
 	;dst .File1/name DEO2
 	.program/length LDZ2 #00ff SUB2 .File1/length DEO2
 	;rom/start .File1/write DEO2
+	save-symbols
 	print-summary
 	( debug ) #010e DEO
 	( halt ) #010f DEO
@@ -51,11 +52,12 @@ BRK
 	#0001 .File1/length DEO2
 	&s
 		;&c .File1/read DEO2
-		.File1/success DEI2 ORA ?&continue JMP2r
-		&continue [ LIT &c $1 ] handle-char
-		!&s
+		.File1/success DEI2 ORA ?&continue
+			,&c LDR #00 EQU ?&err JMP2r
+		&continue [ LIT &c $1 ] handle-char !&s
 
 JMP2r
+	&err .File1/name DEI2 ;err/source !crash
 
 @handle-char ( c -- )
 
@@ -138,7 +140,7 @@ JMP2r
 	DUP #02 EQU ?&byte
 	DUP #04 EQU ?&short
 	POP POP2
-	&err ;err/number !crash
+	;err/number !crash
 	&byte POP NIP2 NIP !write
 	&short POP NIP2 !write-short
 
@@ -394,6 +396,7 @@ JMP2r
 	&unused "-- 20 "Unused 20 "label: 20 $1
 
 @err "!! 20 "Error 20 $1
+	&source "Source $1
 	&duplicate "Duplicate  $1
 	&number "Number $1
 	&reference "Reference $1
