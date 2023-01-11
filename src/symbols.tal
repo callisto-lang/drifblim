@@ -363,6 +363,23 @@ JMP2r
 
 JMP2r
 
+@save-symbols ( -- )
+
+	;dst ;scap JSR2 ;&ext OVR2 ;scpy JSR2
+	;dst .File1/name DEO2
+	;symbols
+	&l
+		#0002 .File1/length DEO2
+		DUP2 .File1/write DEO2
+		#0003 ADD2
+			DUP2 ;slen JSR2 INC2 .File1/length DEO2
+			DUP2 .File1/write DEO2
+		;scap JSR2 INC2 DUP2 #0003 ADD2 LDA ,&l JCN
+	POP2
+	#00 ROT ROT STA
+
+JMP2r
+	&ext ".sym $1
 
 (
 @|stdlib )
