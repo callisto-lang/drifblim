@@ -26,8 +26,10 @@ BRK
 
 	#0a18 DEO
 	( pass1 )
+	;dict/reset ;scope ;scpy JSR2
 	;src ;handle-file JSR2
 	( pass2 )
+	;dict/reset ;scope ;scpy JSR2
 	#01 .program/write STZ
 	;src ;handle-file JSR2
 	( export )
@@ -100,7 +102,7 @@ JMP2r
 @library
 &do-padabs INC2 ;get-hex JSR2 ;set-head JMP2
 &do-padrel INC2 ;get-hex JSR2 ;move-head JMP2
-&do-toplab INC2 ;set-scope JSR2 ;create-label JMP2
+&do-toplab INC2 ;scope OVR2 SWP2 ;scpy JSR2 ;create-label JMP2
 &do-sublab INC2 ;make-sublabel JSR2 ;create-label JMP2
 &do-litrel #80 ;write JSR2 
 &do-rawrel INC2 ;get-ref JSR2 ;get-rel JSR2 INC ;write JMP2
@@ -156,12 +158,6 @@ JMP2
 	POP
 	( move )
 	#0001 ;move-head ( .. )
-
-JMP2
-
-@set-scope ( t* -- name* )
-
-	;scope OVR2 SWP2 ;scpy ( .. )
 
 JMP2
 
@@ -298,12 +294,10 @@ JMP2r
 
 @crash ( id* name* -- )
 
-	;err ;perr JSR2
-	;perr JSR2
-	LIT ": #19 DEO
-	#2019 DEO
-	;perr JSR2
-	#0a19 DEO
+	;err ;pstr JSR2 ;pstr JSR2
+	LIT ": #18 DEO #2018 DEO
+	;pstr JSR2 ;dict/in ;pstr JSR2
+	;scope ;pstr JSR2 LIT ". #18 DEO #0a18 DEO
 	#010f DEO
 
 BRK
@@ -333,7 +327,7 @@ BRK
 	;create-label/count LDA2 ;pdec JSR2
 	;dict/labels ;pstr JSR2
 	LIT ") #18 DEO
-	#0a18 DEO
+	LIT ". #18 DEO #0a18 DEO
 
 JMP2r
 
@@ -358,7 +352,6 @@ JMP2r
 (
 @|stdlib )
 
-@perr ( src* str* -- ) &w LDAk #19 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @pstr ( str* -- ) LDAk ,&w JCN POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ,&w JCN POP2 JMP2r
 @scap ( str* -- end* ) LDAk ,&w JCN JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
@@ -395,8 +388,9 @@ JMP2r
 	&input "Input(.tal): 20 $1
 	&output "Output(.rom): 20 $1
 	&assembled "Assembled 20 $1
+	&reset "[reset] $1
 	&spacer 20 "-> 20 $1
-	&in 20 "in 20 $1
+	&in ", 20 "in 20 $1
 	&bytes 20 "bytes $1
 	&labels 20 "labels $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
