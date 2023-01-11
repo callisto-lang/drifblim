@@ -1,8 +1,7 @@
-( uxnasm src/symbols.tal bin/sym.rom && uxncli bin/sym.rom examples/hello.tal bin/test.rom )
+( uxncli drifblim.rom source.tal application.rom )
 
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
@@ -33,7 +32,7 @@ BRK
 	;src ;handle-file JSR2
 	( export )
 	;dst .File1/name DEO2
-	.program/head LDZ2 .File1/length DEO2
+	.program/length LDZ2 #00ff SUB2 .File1/length DEO2
 	;rom/start .File1/write DEO2
 	;summary JSR2
 	( debug ) #010e DEO
@@ -213,8 +212,8 @@ JMP2r
 		INC2k ORA ,&found JCN
 			POP2 ;err/reference ;crash JMP2
 			&found
-
-	( count ) INC2k INC2 LDAk INC ROT ROT STA
+	( count )
+	INC2k INC2 LDAk INC ROT ROT STA
 
 JMP2r
 	&fill 0000 "[empty] $1
@@ -458,8 +457,6 @@ JMP2r
 @token $20
 @scope $20
 @sublabel $20
-
-@symbols ( addr*, refs, name[], 00 ) $2000
-
+@symbols $2000 ( addr*, refs, name[], 00 )
 @rom $100 &start
 
