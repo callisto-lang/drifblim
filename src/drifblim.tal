@@ -9,7 +9,7 @@
 	@src $30
 	@dst $30
 	@inc $30
-	@program &head $2 &write $1
+	@program &head $2 &length $2 &write $1
 
 |0100 ( -> )
 
@@ -141,6 +141,8 @@ JMP2r
 
 	.program/write LDZ #00 EQU ,&no-write JCN
 		DUP ;rom .program/head LDZ2 ADD2 STA
+		DUP #00 EQU ,&no-write JCN
+			.program/head LDZ2 .program/length STZ2
 		&no-write
 	POP
 
@@ -353,7 +355,7 @@ JMP2r
 	;dst ;pstr JSR2
 
 	;dict/in ;pstr JSR2
-	.program/head LDZ2 #0100 SUB2 ;pdec JSR2
+	.program/length LDZ2 #0100 SUB2 ;pdec JSR2
 	;dict/bytes ;pstr JSR2
 	LIT "( #18 DEO
 	;create-label/count LDA2 ;pdec JSR2
