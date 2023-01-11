@@ -8,7 +8,7 @@
 
 	@src $30
 	@dst $30
-	@include $30
+	@inc $30
 	@program &head $2 &write $1
 
 |0100 ( -> )
@@ -127,7 +127,7 @@ JMP2r
 ( etc )
 &do-rawstr INC2 ;write-rawstr JMP2
 &do-opcode ;find-opcode JSR2 ;write JMP2
-&do-inc INC2k ;include STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;handle-file JMP2
+&do-inc INC2k ;inc STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;handle-file JMP2
 &do-ignore POP2 JMP2r
 
 (
@@ -176,7 +176,7 @@ JMP2
 
 	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
 	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		#0a ;write JSR2
+		#a0 ;write JSR2
 		;shex JSR2 ;write-short JMP2
 		&no-short
 	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
@@ -384,7 +384,7 @@ JMP2r
 	", =library/do-litrel "_ =library/do-rawrel
 	". =library/do-litzep "- =library/do-rawzep
 	"; =library/do-litabs "= =library/do-rawabs
-	"? =library/do-litjmi "! =library/do-litjci
+	"! =library/do-litjmi "? =library/do-litjci
 	"[ =library/do-ignore "] =library/do-ignore
 	"# =library/do-lithex "" =library/do-rawstr
 	"~ =library/do-inc
