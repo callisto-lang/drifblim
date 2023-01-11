@@ -7,8 +7,7 @@ mkdir bin
 if [ -e "$HOME/roms/uxnlin.rom" ]
 then
 	echo "Linting.."
-	# uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
-	# uxncli $HOME/roms/uxnlin.rom etc/bh.tal
+	uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
 fi
 
 uxnasm src/drifblim.tal bin/drifblim-seed.rom
