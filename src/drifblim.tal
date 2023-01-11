@@ -203,6 +203,7 @@ JMP2r
 
 	.program/write LDZ ?&skip
 	( check duplicate ) DUP2 find-label INC2 ORA ?&not-unique
+	( check limit ) ,&ptr LDR2 ;symbols/end GTH2 ?&limit
 	( save addr ) .program/head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr scpy
@@ -211,6 +212,7 @@ JMP2r
 
 JMP2r
 	&not-unique ;err/duplicate !crash
+	&limit ;err/limit !crash
 	&skip POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
@@ -400,8 +402,9 @@ JMP2r
 	&duplicate "Duplicate  $1
 	&number "Number $1
 	&reference "Reference $1
-	&mode "Mode $1
 	&distance "Distance $1
+	&limit "Labels-limit $1
+	&mode "Mode $1
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
@@ -428,6 +431,6 @@ JMP2r
 @token $20
 @scope $20
 @sublabel $20
-@symbols $4000 ( addr*, refs, name[], 00 )
+@symbols $4000 ( addr*, refs, name[], 00 ) &end
 @rom $100 &start
 
