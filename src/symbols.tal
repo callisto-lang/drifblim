@@ -9,7 +9,7 @@
 	@src $30
 	@dst $30
 	@include $30
-	@program &head $2
+	@program &head $2 &write $1
 
 |0100 ( -> )
 
@@ -26,7 +26,10 @@ BRK
 @on-ready ( -> )
 
 	#0a18 DEO
+	( pass1 )
 	;src ;handle-file JSR2
+	( pass2 )
+
 	( debug ) #010e DEO
 	( halt ) #010f DEO
 
@@ -173,7 +176,6 @@ JMP2
 
 JMP2
 
-
 @set-scope ( t* -- name* )
 
 	;scope OVR2 SWP2 ;scpy ( .. )
@@ -191,6 +193,9 @@ JMP2r
 
 @get-ref ( token* -- <label*> )
 
+	.program/write LDZ ,&no-write JCN
+		POP2 ;&fill JMP2r
+		&no-write
 	LDAk LIT "& NEQ ,&no-sub JCN
 		INC2 ;make-sublabel JSR2
 		&no-sub
@@ -202,6 +207,7 @@ JMP2r
 	( count ) INC2k INC2 LDAk INC ROT ROT STA
 
 JMP2r
+	&fill ffff
 
 @create-label ( name* -- )
 
