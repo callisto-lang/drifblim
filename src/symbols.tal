@@ -9,7 +9,7 @@
 	@src $30
 	@dst $30
 	@include $30
-	@program &ptr $2
+	@program &head $2
 
 |0100 ( -> )
 
@@ -58,12 +58,12 @@ JMP2r
 
 @handle-token ( t* -- )
 
-	( DUP2 ;pstr JSR2 #2018 DEO .program/ptr LDZ2 ;phex JSR2 #0a18 DEO )
+	( DUP2 ;pstr JSR2 #2018 DEO .program/head LDZ2 ;phex JSR2 #0a18 DEO )
 
 	LDAk LIT "( EQU ,&on-parens JCN
 	LDAk LIT ") EQU ,&on-parens JCN
 	[ LIT &sleep $1 ] ,&on-sleep JCN
-	[ LIT2 &action =symbolize ] JSR2
+	;parse JSR2
 
 JMP2r
 	&on-parens ( t* -- ) LDA LIT "( EQU ,&sleep STR JMP2r
@@ -72,32 +72,7 @@ JMP2r
 (
 @|library )
 
-@library
-&do-padabs ;pstr JSR2 #0a18 DEO JMP2r
-&do-padrel ;pstr JSR2 #0a18 DEO JMP2r
-&do-toplab ;pstr JSR2 #0a18 DEO JMP2r
-&do-sublab ;pstr JSR2 #0a18 DEO JMP2r
-&do-litrel ;pstr JSR2 #0a18 DEO JMP2r
-&do-rawrel ;pstr JSR2 #0a18 DEO JMP2r
-&do-litzep ;pstr JSR2 #0a18 DEO ;pstr JSR2 #0a18 DEO JMP2r
-&do-rawzep ;pstr JSR2 #0a18 DEO JMP2r
-&do-litabs ;pstr JSR2 #0a18 DEO JMP2r
-&do-rawabs ;pstr JSR2 #0a18 DEO JMP2r
-&do-litjmi ;pstr JSR2 #0a18 DEO JMP2r
-&do-litjci ;pstr JSR2 #0a18 DEO JMP2r
-&do-ignore ;pstr JSR2 #0a18 DEO JMP2r
-&do-lithex ;pstr JSR2 #0a18 DEO JMP2r
-&do-rawstr ;pstr JSR2 #0a18 DEO JMP2r
-&do-inc ;pstr JSR2 #0a18 DEO JMP2r
-( non runic )
-&do-rawhex ;pstr JSR2 #0a18 DEO JMP2r
-&do-opcode ;pstr JSR2 #0a18 DEO JMP2r
-&do-jsi ;pstr JSR2 #0a18 DEO JMP2r
-
-(
-@|handler )
-
-@symbolize ( t* -- )
+@parse ( t* -- )
 
 	LDAk ,&rune STR
 	( runes )
@@ -112,66 +87,160 @@ JMP2r
 	DUP2 ;is-hex JSR2 ;library/do-rawhex JCN2
 	DUP2 ;is-opcode JSR2 ;library/do-opcode JCN2
 	( jsi )
-	;library/do-jsi JSR2
+	;library/do-litjsi JSR2
 
 JMP2r
+
+@library
+( head )
+&do-padabs INC2 ;shex JSR2 ;set-head JMP2
+&do-padrel INC2 ;shex JSR2 ;move-head JMP2
+( labels )
+&do-toplab INC2 ;set-scope JSR2 ;create-label JMP2
+&do-sublab INC2 ;make-sublabel JSR2 ;create-label JMP2
+( addressing )
+&do-litrel #80 ;write JSR2 
+&do-rawrel INC2 ;get-ref JSR2 ;get-rel JSR2 ;write JMP2
+&do-litzep #80 ;write JSR2
+&do-rawzep INC2 ;get-ref JSR2 LDA2 NIP ;write JMP2
+&do-litabs #a0 ;write JSR2 
+&do-rawabs INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
+( calls )
+&do-litjmi #20 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
+&do-litjci #40 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
+&do-litjsi #60 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
+( hexadecimals )
+&do-rawhex ;write-rawhex JMP2
+&do-lithex INC2 ;write-lithex JMP2
+( etc )
+&do-rawstr INC2 ;write-rawstr JMP2
+&do-opcode ;find-opcode JSR2 ;write JMP2
+&do-inc INC2k ;include STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;handle-file JMP2
+&do-ignore POP2 JMP2r
+
+(
+@|primitives )
+
+@write-short ( short* -- )
+
+	SWP ,write JSR
 
 @write ( byte -- )
 
 	;phex/b JSR2 #0a18 DEO
 
 	( move )
-	.program/ptr LDZ2k INC2 ROT STZ2
+	.program/head LDZ2k INC2 ROT STZ2
 
 JMP2r
 
-@add-toplab ( s* -- )
+@write-rawstr ( str* -- )
 
-	;pstr JSR2 #0a18 DEO
-
-JMP2r
-
-@add-sublab ( s* -- )
-
-	;pstr JSR2 #0a18 DEO
+	&w
+		LDAk ;write JSR2
+		INC2 LDAk ,&w JCN
+	POP2
 
 JMP2r
 
-@put-str ( s* -- ) &w LDAk ;write JSR2 INC2 LDAk ,&w JCN POP2 JMP2r
-@mov-ptr ( v* -- ) .program/ptr LDZ2 ADD2
-@set-ptr ( v* -- ) .program/ptr STZ2 JMP2r
+@write-rawhex ( str* -- )
 
-@symbolize-old ( t* -- )
+	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
+	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		;shex JSR2 ,write-short JMP
+		&no-short
+	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
+		;shex JSR2 NIP ,write JMP
+		&no-byte
+	&invalid
+	;err/number ;crash ( .. )
 
-	LDAk LIT "~ NEQ ,&no-include JCN INC2k ;include STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;handle-file JMP2 &no-include
-	LDAk LIT "| NEQ ,&no-padabs JCN INC2 ;shex JSR2 ,set-ptr JMP &no-padabs
-	LDAk LIT "$ NEQ ,&no-padrel JCN INC2 ;shex JSR2 ,mov-ptr JMP &no-padrel
-	LDAk LIT "" NEQ ,&no-str JCN INC2 ;put-str JMP2 &no-str
-	LDAk LIT "@ NEQ ,&no-toplab JCN INC2 ;add-toplab JMP2 &no-toplab
-	LDAk LIT "& NEQ ,&no-sublab JCN INC2 ;add-sublab JMP2 &no-sublab
-	LDAk LIT "_ EQU ,&l1 JCN
-	LDAk LIT "- EQU ,&l1 JCN
-	LDAk LIT "= EQU ,&l2 JCN
-	LDAk LIT ", EQU ,&l2 JCN
-	LDAk LIT ". EQU ,&l2 JCN
-	LDAk LIT "; EQU ,&l3 JCN
-	LDAk LIT "? EQU ,&l3 JCN
-	LDAk LIT "! EQU ,&l3 JCN
-	LDAk LIT "# EQU ,&lithex JCN
-	DUP2 ;is-opcode JSR2 ,&l1 JCN
-	;pstr JSR2 #0a18 DEO 
+JMP2
+
+@write-lithex ( str* -- )
+
+	DUP2 ;is-hex JSR2 #00 EQU ,&invalid JCN
+	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
+		#0a ;write JSR2
+		;shex JSR2 ;write-short JMP2
+		&no-short
+	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
+		#80 ;write JSR2
+		;shex JSR2 NIP ;write JMP2
+		&no-byte
+	&invalid
+	;err/number ;crash ( .. )
+
+JMP2
+
+
+@set-scope ( t* -- name* )
+
+	;scope OVR2 SWP2 ;scpy ( .. )
+
+JMP2
+
+@get-rel ( label* -- distance )
+
+	LDA2k .program/head LDZ2 SUB2 #0003 SUB2
+	DUP2 #0080 ADD2 POP ,&fail JCN
+	NIP2 NIP
 
 JMP2r
-	&lithex
-		;slen JSR2 DUP2 #0003 EQU2 ,&l2 JCN
-			DUP2 #0005 EQU2 ,&l3 JCN
-			;err/number ;crash JMP2
-	&str INC2 ;slen JSR2 ,&move JMP
-	&l0 POP2 JMP2r
-	&l1 POP2 #0001 ,&move JMP
-	&l2 POP2 #0002 ,&move JMP
-	&l3 POP2 #0003
-		&move .program/ptr LDZ2 ADD2 .program/ptr STZ2 JMP2r
+	&fail POP2 INC2 INC2 INC2 ;err/distance ;crash JMP2
+
+@get-ref ( token* -- <label*> )
+
+	LDAk LIT "& NEQ ,&no-sub JCN
+		INC2 ;make-sublabel JSR2
+		&no-sub
+	;find-label JSR2
+		INC2k ORA ,&found JCN
+			POP2 ;err/reference ;crash JMP2
+			&found
+
+	( count ) INC2k INC2 LDAk INC ROT ROT STA
+
+JMP2r
+
+@create-label ( name* -- )
+
+	( check duplicate ) DUP2 ;find-label JSR2 INC2 ORA ,&not-unique JCN
+	( save addr ) .program/head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2
+	( move ) INC2r INC2r INC2r
+	( save name ) DUP2 STH2kr ;scpy JSR2
+	( move ) ;slen JSR2 STH2r ADD2 INC2 ,&ptr STR2
+	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
+
+JMP2r
+	&not-unique ;err/duplicate ;crash JMP2
+
+@make-sublabel ( name* -- sublabel* )
+
+	;scope ;sublabel STH2k ;scpy JSR2
+	LIT "/ STH2kr ;sput JSR2
+	STH2kr ;scat JSR2
+	STH2r
+
+JMP2r
+
+@find-label ( name* -- <addr*> )
+
+	STH2
+	;symbols
+	&w
+		INC2 INC2 INC2 DUP2 STH2kr ;scmp JSR2 ,&found JCN
+		;scap JSR2 INC2 INC2k INC2 INC2 LDA ,&w JCN
+	POP2
+	POP2r
+	#ffff
+
+JMP2r
+	&found #0003 SUB2 POP2r JMP2r
+
+@put-str ( s* -- )  JMP2r
+@move-head ( v* -- ) .program/head LDZ2 ADD2
+@set-head ( v* -- ) .program/head STZ2 JMP2r
 
 (
 @helpers )
@@ -306,6 +375,14 @@ JMP2r
 @|buffers )
 
 @token $20
+@scope $20
+@sublabel $20
 
-@rom
+(
+@|memory )
+
+@symbols ( addr*, refs, text, 00 ) $4000
+
+@rom 
+
 
