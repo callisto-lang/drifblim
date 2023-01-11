@@ -94,33 +94,32 @@ JMP2r
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( non-runic )
-	DUP2 is-hex ?library/do-rawhex
-	DUP2 is-opcode ?library/do-opcode
-	( jsi )
-	library/do-litjsi
+	DUP2 is-hex ?library/rawhex
+	DUP2 is-opcode ?library/opcode
+	library/litjsi
 
 JMP2r
 
 @library
-&do-padabs INC2 get-hex !set-head
-&do-padrel INC2 get-hex !move-head
-&do-toplab INC2 ;scope OVR2 SWP2 scpy !create-label
-&do-sublab INC2 make-sublabel !create-label
-&do-litrel #80 write
-&do-rawrel INC2 get-ref get-rel INC !write
-&do-litzep #80 write
-&do-rawzep INC2 get-ref LDA2 NIP !write
-&do-litabs #a0 write
-&do-rawabs INC2 get-ref LDA2 !write-short
-&do-litjmi #20 write INC2 get-ref LDA2 !write-short
-&do-litjci #40 write INC2 get-ref LDA2 !write-short
-&do-litjsi #60 write get-ref LDA2 !write-short
-&do-lithex INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write
-&do-rawhex !write-hex
-&do-rawstr INC2 !write-str
-&do-opcode find-opcode !write
-&do-inc INC2k ;inc STH2k scpy sclr STH2r !handle-file
-&do-ignore POP2 JMP2r
+&padabs INC2 get-hex !set-head
+&padrel INC2 get-hex !move-head
+&toplab INC2 ;scope OVR2 SWP2 scpy !create-label
+&sublab INC2 make-sublabel !create-label
+&litrel #80 write
+&rawrel INC2 get-ref get-rel INC !write
+&litzep #80 write
+&rawzep INC2 get-ref LDA2 NIP !write
+&litabs #a0 write
+&rawabs INC2 get-ref LDA2 !write-short
+&litjmi #20 write INC2 get-ref LDA2 !write-short
+&litjci #40 write INC2 get-ref LDA2 !write-short
+&litjsi #60 write get-ref LDA2 !write-short
+&lithex INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write
+&rawhex !write-hex
+&rawstr INC2 !write-str
+&opcode find-opcode !write
+&inc INC2k ;inc STH2k scpy sclr STH2r !handle-file
+&ignore POP2 JMP2r
 
 (
 @|primitives )
@@ -410,15 +409,15 @@ JMP2r
 	&brk "BRK
 
 @runes
-	"| =library/do-padabs "$ =library/do-padrel
-	"@ =library/do-toplab "& =library/do-sublab
-	", =library/do-litrel "_ =library/do-rawrel
-	". =library/do-litzep "- =library/do-rawzep
-	"; =library/do-litabs "= =library/do-rawabs
-	"! =library/do-litjmi "? =library/do-litjci
-	"[ =library/do-ignore "] =library/do-ignore
-	"# =library/do-lithex "" =library/do-rawstr
-	"~ =library/do-inc
+	"| =library/padabs "$ =library/padrel
+	"@ =library/toplab "& =library/sublab
+	", =library/litrel "_ =library/rawrel
+	". =library/litzep "- =library/rawzep
+	"; =library/litabs "= =library/rawabs
+	"! =library/litjmi "? =library/litjci
+	"[ =library/ignore "] =library/ignore
+	"# =library/lithex "" =library/rawstr
+	"~ =library/inc
 	&err
 
 (
