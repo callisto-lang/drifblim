@@ -73,55 +73,48 @@ JMP2r
 @|library )
 
 @library
-&do-padabs JMP2r
-&do-padrel JMP2r
-&do-toplab JMP2r
-&do-sublab JMP2r
-&do-litrel JMP2r
-&do-rawrel JMP2r
-&do-litzep JMP2r
-&do-rawzep JMP2r
-&do-litabs JMP2r
-&do-rawabs JMP2r
-&do-litjmi JMP2r
-&do-litjci JMP2r
-&do-ignore JMP2r
-&do-lithex JMP2r
-&do-rawstr JMP2r
-&do-inc JMP2r
+&do-padabs ;pstr JSR2 #0a18 DEO JMP2r
+&do-padrel ;pstr JSR2 #0a18 DEO JMP2r
+&do-toplab ;pstr JSR2 #0a18 DEO JMP2r
+&do-sublab ;pstr JSR2 #0a18 DEO JMP2r
+&do-litrel ;pstr JSR2 #0a18 DEO JMP2r
+&do-rawrel ;pstr JSR2 #0a18 DEO JMP2r
+&do-litzep ;pstr JSR2 #0a18 DEO ;pstr JSR2 #0a18 DEO JMP2r
+&do-rawzep ;pstr JSR2 #0a18 DEO JMP2r
+&do-litabs ;pstr JSR2 #0a18 DEO JMP2r
+&do-rawabs ;pstr JSR2 #0a18 DEO JMP2r
+&do-litjmi ;pstr JSR2 #0a18 DEO JMP2r
+&do-litjci ;pstr JSR2 #0a18 DEO JMP2r
+&do-ignore ;pstr JSR2 #0a18 DEO JMP2r
+&do-lithex ;pstr JSR2 #0a18 DEO JMP2r
+&do-rawstr ;pstr JSR2 #0a18 DEO JMP2r
+&do-inc ;pstr JSR2 #0a18 DEO JMP2r
 ( non runic )
-&do-hex JMP2r
-&do-opc JMP2r
-&do-jsi JMP2r
+&do-rawhex ;pstr JSR2 #0a18 DEO JMP2r
+&do-opcode ;pstr JSR2 #0a18 DEO JMP2r
+&do-jsi ;pstr JSR2 #0a18 DEO JMP2r
 
 (
 @|handler )
 
-@get-type ( token* -- type* )
+@symbolize ( t* -- )
 
 	LDAk ,&rune STR
 	( runes )
 	;runes/err ;runes
 	&l
-		LDAk [ LIT &rune $1 ] EQU ,&on-runic JCN
+		LDAk [ LIT &rune $1 ] NEQ ,&no-runic JCN
+			NIP2 INC2 LDA2 JMP2
+			&no-runic
 		#0003 ADD2 GTH2k ,&l JCN
 	POP2 POP2
 	( non-runic )
-
-	POP2 #0000
-
-JMP2r
-	&on-runic ( token* -- )
-		POP2 POP2 POP2 #000a
-	JMP2r
-
-@symbolize ( t* -- )
-
-	DUP2 ;pstr JSR2 #2018 DEO
-		;get-type JSR2 ;phex JSR2 #0a18 DEO
+	DUP2 ;is-hex JSR2 ;library/do-rawhex JCN2
+	DUP2 ;is-opcode JSR2 ;library/do-opcode JCN2
+	( jsi )
+	;library/do-jsi JSR2
 
 JMP2r
-
 
 @write ( byte -- )
 
@@ -180,10 +173,19 @@ JMP2r
 	&l3 POP2 #0003
 		&move .program/ptr LDZ2 ADD2 .program/ptr STZ2 JMP2r
 
-
-
 (
 @helpers )
+
+@is-hex ( str* -- flag )
+
+	&w
+		LDAk ;chex JSR2 INC ,&valid JCN
+			POP2 #00 JMP2r &valid
+		INC2 LDAk ,&w JCN
+	POP2
+	#01
+
+JMP2r
 
 @is-opcode ( string* -- flag )
 
