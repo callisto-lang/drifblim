@@ -98,28 +98,22 @@ JMP2r
 JMP2r
 
 @library
-( head )
 &do-padabs INC2 ;shex JSR2 ;set-head JMP2
 &do-padrel INC2 ;shex JSR2 ;move-head JMP2
-( labels )
 &do-toplab INC2 ;set-scope JSR2 ;create-label JMP2
 &do-sublab INC2 ;make-sublabel JSR2 ;create-label JMP2
-( addressing )
 &do-litrel #80 ;write JSR2 
 &do-rawrel INC2 ;get-ref JSR2 ;get-rel JSR2 INC ;write JMP2
 &do-litzep #80 ;write JSR2
 &do-rawzep INC2 ;get-ref JSR2 LDA2 NIP ;write JMP2
 &do-litabs #a0 ;write JSR2 
 &do-rawabs INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
-( calls )
 &do-litjmi #20 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
 &do-litjci #40 ;write JSR2 INC2 ;get-ref JSR2 LDA2 ;write-short JMP2
 &do-litjsi #60 ;write JSR2 ;get-ref JSR2 LDA2 ;write-short JMP2
-( hexadecimals )
 &do-lithex INC2 DUP2 ;slen JSR2 NIP #02 SFT #a080 ROT [ JMP SWP POP ] ;write JSR2
 &do-rawhex ;write-hex JMP2
-( etc )
-&do-rawstr INC2 ;write-rawstr JMP2
+&do-rawstr INC2 ;write-str JMP2
 &do-opcode ;find-opcode JSR2 ;write JMP2
 &do-inc INC2k ;inc STH2k ;scpy JSR2 ;sclr JSR2 STH2r ;handle-file JMP2
 &do-ignore POP2 JMP2r
@@ -127,7 +121,7 @@ JMP2r
 (
 @|primitives )
 
-@write-rawstr ( str* -- )
+@write-str ( str* -- )
 
 	&w
 		LDAk ;write JSR2
@@ -139,15 +133,15 @@ JMP2r
 @write-hex ( str* -- )
 
 	DUP2 ;is-hex JSR2 #00 EQU ,&err JCN
-	DUP2 ;slen JSR2 #0002 NEQ2 ,&no-byte JCN
-		;shex JSR2 NIP ;write JMP2
-		&no-byte
-	DUP2 ;slen JSR2 #0004 NEQ2 ,&no-short JCN
-		;shex JSR2 ;write-short JMP2
-		&no-short
+	DUP2 ;slen JSR2 OVR2 ;shex JSR2 SWP2 NIP
+	DUP #02 EQU ,&byte JCN
+	DUP #04 EQU ,&short JCN
+	POP POP2
 	&err ;err/number ;crash ( .. )
 
 JMP2
+	&byte POP NIP2 NIP ;write JMP2
+	&short POP NIP2 ;write-short JMP2
 
 @write-short ( short* -- )
 
@@ -224,6 +218,17 @@ JMP2r
 
 JMP2r
 
+@is-hex ( str* -- flag )
+
+	&w
+		LDAk ;chex JSR2 INC ,&valid JCN
+			POP2 #00 JMP2r &valid
+		INC2 LDAk ,&w JCN
+	POP2
+	#01
+
+JMP2r
+
 @is-opcode ( string* -- flag )
 
 	DUP2 ;opcodes/brk ;scmp3 JSR2 ,find-opcode/on-brk JCN
@@ -280,17 +285,6 @@ JMP2r
 @set-head ( v* -- )
 
 	.program/head STZ2
-
-JMP2r
-
-@is-hex ( str* -- flag )
-
-	&w
-		LDAk ;chex JSR2 INC ,&valid JCN
-			POP2 #00 JMP2r &valid
-		INC2 LDAk ,&w JCN
-	POP2
-	#01
 
 JMP2r
 
