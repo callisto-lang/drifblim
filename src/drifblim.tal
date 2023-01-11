@@ -428,6 +428,6 @@ JMP2r
 @token $20
 @scope $20
 @sublabel $20
-@symbols $2000 ( addr*, refs, name[], 00 )
+@symbols $4000 ( addr*, refs, name[], 00 )
 @rom $100 &start
 
