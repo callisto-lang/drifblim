@@ -26,9 +26,11 @@ BRK
 
 	#0a18 DEO
 	( pass1 )
+	#0100 .program/head STZ2
 	;dict/reset ;scope scpy
 	;src handle-file
 	( pass2 )
+	#0100 .program/head STZ2
 	;dict/reset ;scope scpy
 	#01 .program/write STZ
 	;src handle-file
@@ -162,6 +164,9 @@ JMP2r
 	POP
 	( move )
 	#0001 !move-head
+
+(
+@|helpers )
 
 @get-hex ( str* -- value* )
 
