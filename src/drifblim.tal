@@ -8,7 +8,7 @@
 	@src $30
 	@dst $30
 	@inc $30
-	@program &head $2 &length $2 &write $1
+	@program &head $2 &length $2
 
 |0100 ( -> )
 
@@ -32,7 +32,7 @@ BRK
 	( pass2 )
 	#0100 .program/head STZ2
 	;dict/reset ;scope scpy
-	#01 .program/write STZ
+	#00 ;write/skip STA
 	;src handle-file
 	( export )
 	;dst .File1/name DEO2
@@ -156,7 +156,7 @@ JMP2r
 
 @write ( byte -- )
 
-	.program/write LDZ #00 EQU ?&no-write
+	[ LIT &skip 01 ] ?&no-write
 		DUP ;rom .program/head LDZ2 ADD2 STA
 		DUP #00 EQU ?&no-write
 			.program/head LDZ2 .program/length STZ2
@@ -177,7 +177,7 @@ JMP2r
 
 @get-rel ( label* -- distance )
 
-	.program/write LDZ #00 EQU ?&fill
+	;write/skip LDA ?&fill
 	LDA2k .program/head LDZ2 SUB2 #0003 SUB2
 	DUP2 #0080 ADD2 POP ?&fail
 	NIP2 NIP
@@ -188,7 +188,7 @@ JMP2r
 
 @get-ref ( token* -- <label*> )
 
-	.program/write LDZ ?&no-write
+	;write/skip LDA #00 EQU ?&no-write
 		POP2 ;&fill JMP2r
 		&no-write
 	LDAk LIT "& NEQ ?&no-sub
@@ -206,7 +206,7 @@ JMP2r
 
 @create-label ( name* -- )
 
-	.program/write LDZ ?&skip
+	;write/skip LDA #00 EQU ?&skip
 	( check name ) DUP2 is-hex ?&invalid
 	( check name ) DUP2 is-opcode ?&invalid
 	( check duplicate ) DUP2 find-label INC2 ORA ?&not-unique
