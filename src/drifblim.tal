@@ -110,9 +110,9 @@ JMP2r
 &rawzep INC2 get-ref LDA2 NIP !write
 &litabs #a0 write
 &rawabs INC2 get-ref LDA2 !write-short
-&litjmi #20 write INC2 get-ref LDA2 !write-short
-&litjci #40 write INC2 get-ref LDA2 !write-short
-&litjsi #60 write get-ref LDA2 !write-short
+&litjci #20 write INC2 !write-call
+&litjmi #40 write INC2 !write-call
+&litjsi #60 write !write-call
 &lithex INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write
 &rawhex !write-hex
 &rawstr INC2 !write-str
@@ -122,6 +122,12 @@ JMP2r
 
 (
 @|primitives )
+
+@write-call ( str* -- )
+
+	get-ref LDA2 .program/head LDZ2 INC2 INC2 SUB2 !write-short
+
+JMP2r
 
 @write-str ( str* -- )
 
@@ -417,7 +423,7 @@ JMP2r
 	", =library/litrel "_ =library/rawrel
 	". =library/litzep "- =library/rawzep
 	"; =library/litabs "= =library/rawabs
-	"! =library/litjmi "? =library/litjci
+	"? =library/litjci "! =library/litjmi
 	"[ =library/ignore "] =library/ignore
 	"# =library/lithex "" =library/rawstr
 	"~ =library/inc
