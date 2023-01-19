@@ -26,11 +26,11 @@ BRK
 
 	#0a18 DEO
 	( pass1 )
-	#0100 .program/head STZ2
+	#0100 set-head
 	;dict/reset ;scope scpy
 	;src handle-file
 	( pass2 )
-	#0100 .program/head STZ2
+	#0100 set-head
 	;dict/reset ;scope scpy
 	#00 ;write/skip STA
 	;src handle-file
@@ -57,8 +57,7 @@ BRK
 		.File1/success DEI2 ORA ?&continue
 			,&c LDR #00 EQU ?&err JMP2r
 		&continue [ LIT &c $1 ] handle-char !&s
-
-JMP2r
+( .. )
 	&err .File1/name DEI2 ;err/source !crash
 
 @handle-char ( c -- )
@@ -127,9 +126,9 @@ JMP2r
 
 @write-call ( str* -- )
 
-	get-ref LDA2 .program/head LDZ2 INC2 INC2 SUB2 !write-short
+	get-ref LDA2 .program/head LDZ2 INC2 INC2 SUB2
 
-JMP2r
+!write-short
 
 @write-str ( str* -- )
 
@@ -372,7 +371,7 @@ JMP2r
 @skey ( key buf -- proc ) OVR #21 LTH ?&eval #00 SWP sput #00 JMP2r &eval POP2 #01 JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ?&e NEQk ?&e POP2 INC2 INC2r !&l &e NIP2 POP2r EQU JMP2r
 @scmp3 ( a* b* -- f ) LDA2k ROT2 LDA2k ROT2 EQU2 STH INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
-@chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
+@chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH [ JMP JMP2r ] #27 SUB DUP #0f GTH [ JMP JMP2r ] POP #ff JMP2r
 @shex ( str* -- val* ) LIT2r 0000 &w LITr 40 SFT2r LITr 00 LDAk chex STH ADD2r INC2 LDAk ?&w POP2 STH2r JMP2r
 
 @pdec ( short* -- )
