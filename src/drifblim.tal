@@ -98,13 +98,13 @@ JMP2r
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( non-runic )
-	DUP2 is-hex ?library/rawhex
-	DUP2 is-opcode ?library/opcode
-	library/litjsi
+	DUP2 is-hex ?lib/rawhex
+	DUP2 is-opcode ?lib/opcode
+	lib/litjsi
 
 JMP2r
 
-@library
+@lib
 &padabs INC2 get-hex !set-head
 &padrel INC2 get-hex !move-head
 &toplab INC2 ;scope OVR2 SWP2 scpy !create-label
@@ -430,15 +430,15 @@ JMP2r
 	&brk "BRK
 
 @runes
-	"| =library/padabs "$ =library/padrel
-	"@ =library/toplab "& =library/sublab
-	", =library/litrel "_ =library/rawrel
-	". =library/litzep "- =library/rawzep
-	"; =library/litabs "= =library/rawabs
-	"? =library/litjci "! =library/litjmi
-	"[ =library/ignore "] =library/ignore
-	"# =library/lithex "" =library/rawstr
-	"~ =library/inc
+	"| =lib/padabs "$ =lib/padrel
+	"@ =lib/toplab "& =lib/sublab
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	"[ =lib/ignore "] =lib/ignore
+	"# =lib/lithex "" =lib/rawstr
+	"~ =lib/inc
 	&err
 
 (
