@@ -159,14 +159,17 @@ JMP2r
 
 @write ( byte -- )
 
+	,&head LDR2 #0100 LTH2 ?&err
+
 	[ LIT &skip 01 ] ?&no-write
 		DUP ;rom ;write/head LDA2 ADD2 STA
 		DUP #00 EQU ?&no-write
 			[ LIT2 &head 0100 ] ;assemble/length STA2
 		&no-write
 	POP
-	( move )
-	#0001 !move-head
+
+#0001 !move-head
+	&err POP ;token ;err/zeropage !crash
 
 (
 @|helpers )
@@ -417,6 +420,7 @@ JMP2r
 	&limit "Labels-limit $1
 	&invalid "Invalid $1
 	&mode "Mode $1
+	&zeropage "Zero-page $1
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
