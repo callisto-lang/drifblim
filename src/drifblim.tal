@@ -21,6 +21,16 @@ BRK
 @ready-dst ( -> ) ;await-dst .Console/vector DEO2 ;dict/output pstr BRK
 @await-dst ( -> ) .Console/read DEI .dst skey ?on-ready BRK
 
+@on-error ( id* name* -> )
+
+	;err pstr pstr
+	LIT ": #18 DEO #2018 DEO
+	pstr ;dict/in pstr
+	;scope pstr LIT ". #18 DEO #0a18 DEO
+	#010f DEO
+
+BRK
+
 @on-ready ( -> )
 
 	#0a18 DEO
@@ -45,7 +55,7 @@ BRK
 			,&c LDR #00 EQU ?&err JMP2r
 		&continue [ LIT &c $1 ] handle-char
 !&s
-	&err .File1/name DEI2 ;err/source !crash
+	&err .File1/name DEI2 ;err/source !on-error
 
 @handle-char ( c -- )
 
@@ -169,7 +179,7 @@ JMP2r
 	DUP #02 EQU ?&byte
 	DUP #04 EQU ?&short
 	POP POP2
-	;err/number !crash
+	;err/number !on-error
 	&byte POP NIP2 NIP !write
 	&short POP NIP2 ( fall through )
 
@@ -179,26 +189,22 @@ JMP2r
 
 @write ( byte -- )
 
+	,&b STR
 	[ LIT2 &head 0100 ] #0100 LTH2 ?&ignore
 	[ LIT &skip 01 ] ?&pass1
 	[ LIT2 &length $2 ] ,&head LDR2 LTH2 ?&ignore
-	( pass2 )
-	DUP ;&b STAk .File2/write DEO2 POP
+	( pass2 ) ;&b .File2/write DEO2
 	&ignore
-	POP
-	#0001 move-head
 
-JMP2r
+!move-head
 
-&b $1
+&pass1 ( -- )
 
-&pass1
-	DUP #00 EQU ?&no-record
+	[ LIT &b $1 ] #00 EQU ?&no-record
 		,&head LDR2 ;write/length STA2
 		&no-record
-	POP
-	#0001 move-head
-JMP2r
+
+!move-head
 
 (
 @|helpers )
@@ -206,9 +212,10 @@ JMP2r
 @get-hex ( str* -- value* )
 
 	DUP2 is-hex ?&valid
-		;err/number !crash
+		;err/number !on-error
 		&valid
-	!shex
+
+!shex
 
 @get-rel ( label* -- distance )
 
@@ -218,7 +225,7 @@ JMP2r
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 #0003 ADD2 ;err/distance !crash
+	&fail POP2 #0003 ADD2 ;err/distance !on-error
 	&fill POP2 #ff JMP2r
 
 @get-ref ( token* -- <label*> )
@@ -231,7 +238,7 @@ JMP2r
 		&no-sub
 	find-label
 		INC2k ORA ?&found
-			POP2 ;err/reference !crash
+			POP2 ;err/reference !on-error
 			&found
 	( count )
 	INC2k INC2 LDAk INC ROT ROT STA
@@ -252,8 +259,8 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
-	&invalid ;err/invalid !crash
-	&not-unique ;err/duplicate !crash
+	&invalid ;err/invalid !on-error
+	&not-unique ;err/duplicate !on-error
 	&skip POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
@@ -304,7 +311,7 @@ JMP2r
 		OVR LIT "r EQU ?&end DUP ADD
 		OVR LIT "k EQU ?&end DUP ADD
 		OVR #21 LTH ?&end
-			;token ;err/mode !crash
+			;token ;err/mode !on-error
 		&end NIP STH ORAr
 		INC2 LDAk ?&w
 	POP2 STHr
@@ -325,25 +332,15 @@ JMP2r
 JMP2r
 	&found #0003 SUB2 POP2r JMP2r
 
-@move-head ( v* -- )
+@move-head ( -- )
 
-	;write/head LDA2 ADD2
+	;write/head LDA2 INC2
 
 @set-head ( v* -- )
 
 	;write/head STA2
 
 JMP2r
-
-@crash ( id* name* -- )
-
-	;err pstr pstr
-	LIT ": #18 DEO #2018 DEO
-	pstr ;dict/in pstr
-	;scope pstr LIT ". #18 DEO #0a18 DEO
-	#010f DEO
-
-BRK
 
 @print-summary ( -- )
 
