@@ -9,28 +9,12 @@
 	@src $30
 	@dst $30
 
-|0100 ( -> )
+|0100
 
-	( interactive )
-	;await-src .Console/vector DEO2
-	;dict/input pstr
-
-BRK
-
-@await-src ( -> ) .Console/read DEI .src skey ?ready-dst BRK
-@ready-dst ( -> ) ;await-dst .Console/vector DEO2 ;dict/output pstr BRK
-@await-dst ( -> ) .Console/read DEI .dst skey ?on-ready BRK
-
-@on-error ( id* name* -> )
-
-	#0a18 DEO
-	;err pstr pstr
-	LIT ": #18 DEO #2018 DEO
-	pstr ;dict/in pstr
-	;scope pstr LIT ". #18 DEO #0a18 DEO
-	( halt ) #010f DEO
-
-BRK
+@ready-src ( -> ) ;&await .Console/vector DEO2 ;dict/input pstr BRK
+	&await ( -> ) .Console/read DEI .src skey ?ready-dst BRK
+@ready-dst ( -> ) ;&await .Console/vector DEO2 ;dict/output pstr BRK
+	&await ( -> ) .Console/read DEI .dst skey ?on-ready BRK
 
 @on-ready ( -> )
 
@@ -39,6 +23,14 @@ BRK
 	save-symbols
 	print-summary
 	( debug ) #010e DEO
+	( halt ) #010f DEO
+
+BRK
+
+@on-error ( id* name* -> )
+
+	#0a18 DEO
+	( print ) ;err pstr pstr #2018 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
 	( halt ) #010f DEO
 
 BRK
@@ -82,8 +74,9 @@ JMP2r
 
 @assemble ( src* dst* -- )
 
-	( output )
+	( prepare output )
 	.File2/name DEO2
+	#01 .File2/delete DEO
 	#0001 .File2/length DEO2
 	( pass1 )
 	#0100 set-head
@@ -163,12 +156,6 @@ JMP2r
 
 JMP2r
 
-@write-call ( str* -- )
-
-	get-ref LDA2 ;write/head LDA2 INC2 INC2 SUB2
-
-!write-short
-
 @write-str ( str* -- )
 
 	&w
@@ -177,6 +164,12 @@ JMP2r
 	POP2
 
 JMP2r
+
+@write-call ( str* -- )
+
+	get-ref LDA2 ;write/head LDA2 INC2 INC2 SUB2
+
+!write-short
 
 @write-hex ( str* -- )
 
@@ -254,9 +247,9 @@ JMP2r
 @create-label ( name* -- )
 
 	;write/skip LDA #00 EQU ?&skip
-	( check name ) DUP2 is-hex ?&invalid
-	( check name ) DUP2 is-opcode ?&invalid
-	( check duplicate ) DUP2 find-label INC2 ORA ?&not-unique
+	( not hex ) DUP2 is-hex ?&invalid
+	( not opc ) DUP2 is-opcode ?&invalid
+	( not dup ) DUP2 find-label INC2 ORA ?&not-unique
 	( save addr ) ;write/head LDA2 [ LIT2 &ptr =symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr scpy
@@ -435,12 +428,12 @@ JMP2r
 	&spacer 20 "-> 20 $1
 	&in ", 20 "in 20 $1
 	&bytes 20 "bytes( $1
-	&end "). 0a $1
+	&end ") &dot ". 0a $1
 	&labels 20 "labels $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
 	&sym-ext ".sym $1
 
-@err "!! 20 "Error 20 $1
+@err "!! 20 "Error: 20 $1
 	&source "Source $1
 	&duplicate "Duplicate  $1
 	&number "Number $1
