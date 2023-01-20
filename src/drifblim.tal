@@ -23,11 +23,12 @@ BRK
 
 @on-error ( id* name* -> )
 
+	#0a18 DEO
 	;err pstr pstr
 	LIT ": #18 DEO #2018 DEO
 	pstr ;dict/in pstr
 	;scope pstr LIT ". #18 DEO #0a18 DEO
-	#010f DEO
+	( halt ) #010f DEO
 
 BRK
 
@@ -138,11 +139,15 @@ JMP2r
 (
 @|primitives )
 
-@write-pad ( addr* -- )
+@write-pad ( addr* -- dest* )
 
-	;write/head LDA2 LTH2k ?&no-pad
-		SUB2k write-fill
+	;write/head LDA2
+	LTH2k ?&no-pad
+		SUB2k write-fill POP2 JMP2r
 		&no-pad
+	OVR2 #0100 LTH2 ?&no-err
+		;token ;err/rewind !on-error
+		&no-err
 	POP2
 
 JMP2r
@@ -355,19 +360,18 @@ JMP2r
 		scap INC2 INC2k INC2 INC2 LDA ?&w
 	POP2
 	( result )
-	;dict/assembled pstr
-	;src pstr
-	;dict/spacer pstr
-	;dst pstr
+	;dict/assembled pstr ;src pstr
+	;dict/spacer pstr ;dst pstr
 	( length )
 	;dict/in pstr ;write/length LDA2 #00ff SUB2 pdec ;dict/bytes pstr
-	LIT ", #18 DEO #2018 DEO ;create-label/count LDA2 pdec ;dict/labels pstr LIT ". #18 DEO #0a18 DEO
+	;create-label/count LDA2 pdec ;dict/labels pstr
+	;dict/end pstr
 
 JMP2r
 
 @save-symbols ( -- )
 
-	;dst scap ;&ext OVR2 scpy
+	;dst scap ;dict/sym-ext OVR2 scpy
 	;dst .File1/name DEO2
 	;symbols
 	&l
@@ -377,11 +381,9 @@ JMP2r
 			DUP2 slen INC2 .File1/length DEO2
 			DUP2 .File1/write DEO2
 		scap INC2 DUP2 #0003 ADD2 LDA ?&l
-	POP2
-	#00 ROT ROT STA
+	POP2 POP2
 
 JMP2r
-	&ext ".sym $1
 
 (
 @|stdlib )
@@ -402,18 +404,21 @@ JMP2r
 @pdec ( short* -- )
 
 	#00 ,&z STR
-	#2710 ,&parse JSR
-	#03e8 ,&parse JSR
-	#0064 ,&parse JSR
-	#000a ,&parse JSR
+	#2710 pdec/parse
+	#03e8 pdec/parse
+	#0064 pdec/parse
+	#000a pdec/parse
 	NIP #30 ADD #18 DEO
 
 JMP2r
-	&parse
-		DIV2k DUPk [ LIT &z $1 ] EQU ?&skip
-		DUP #30 ADD #18 DEO #ff ,&z STR
-		&skip POP MUL2 SUB2
-	JMP2r
+
+&parse ( short* den* -- short* )
+
+	DIV2k DUPk [ LIT &z $1 ] EQU ?&skip
+	DUP #30 ADD #18 DEO #ff ,&z STR
+	&skip POP MUL2 SUB2
+
+JMP2r
 
 (
 @|assets )
@@ -425,9 +430,11 @@ JMP2r
 	&reset "INIT $1
 	&spacer 20 "-> 20 $1
 	&in ", 20 "in 20 $1
-	&bytes 20 "bytes $1
+	&bytes 20 "bytes( $1
+	&end "). 0a $1
 	&labels 20 "labels $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
+	&sym-ext ".sym $1
 
 @err "!! 20 "Error 20 $1
 	&source "Source $1
@@ -437,6 +444,7 @@ JMP2r
 	&distance "Distance $1
 	&invalid "Invalid $1
 	&mode "Mode $1
+	&rewind "Rewind $1
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
