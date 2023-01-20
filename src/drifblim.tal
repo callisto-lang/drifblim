@@ -74,6 +74,8 @@ JMP2r
 	#0100 set-head
 	;dict/reset ;scope scpy
 	OVR2 handle-file
+	( write rom origin )
+	;create-label/ptr LDA2 INC2 INC2 ;write/rom STA2
 	( pass2 )
 	#0100 set-head
 	;dict/reset ;scope scpy
@@ -82,7 +84,7 @@ JMP2r
 	( export )
 	.File1/name DEO2
 	[ LIT2 &length $2 ] #00ff SUB2 .File1/length DEO2
-	;rom/start .File1/write DEO2
+	;write/rom LDA2 #0100 ADD2 .File1/write DEO2
 
 JMP2r
 
@@ -162,7 +164,7 @@ JMP2r
 	,&head LDR2 #0100 LTH2 ?&err
 
 	[ LIT &skip 01 ] ?&no-write
-		DUP ;rom ;write/head LDA2 ADD2 STA
+		DUP [ LIT2 &rom $2 ] ,&head LDR2 ADD2 STA
 		DUP #00 EQU ?&no-write
 			[ LIT2 &head 0100 ] ;assemble/length STA2
 		&no-write
@@ -336,14 +338,9 @@ BRK
 	;dict/spacer pstr
 	;dst pstr
 	( length )
-	;dict/in pstr
-	;assemble/length LDA2 #00ff SUB2 pdec
-	;dict/bytes pstr
-	LIT "( #18 DEO
-	;create-label/count LDA2 pdec
-	;dict/labels pstr
-	LIT ") #18 DEO
-	LIT ". #18 DEO #0a18 DEO
+	;dict/in pstr ;assemble/length LDA2 #00ff SUB2 pdec ;dict/bytes pstr
+	LIT "( #18 DEO #0000 ;write/rom LDA2 SUB2 ;assemble/length LDA2 SUB2 pdec ;dict/left pstr LIT ") #18 DEO
+	LIT ", #18 DEO #2018 DEO ;create-label/count LDA2 pdec ;dict/labels pstr LIT ". #18 DEO #0a18 DEO
 
 JMP2r
 
@@ -408,6 +405,7 @@ JMP2r
 	&spacer 20 "-> 20 $1
 	&in ", 20 "in 20 $1
 	&bytes 20 "bytes $1
+	&left 20 "left $1
 	&labels 20 "labels $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
 
@@ -449,5 +447,4 @@ JMP2r
 @sublabel $20
 @include $30
 @symbols $4000 ( addr*, refs, name[], 00 ) &end
-@rom $100 &start
 
