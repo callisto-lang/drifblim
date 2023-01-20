@@ -371,17 +371,21 @@ JMP2r
 
 @save-symbols ( -- )
 
-	;dst scap ;dict/sym-ext OVR2 scpy
-	;dst .File1/name DEO2
+	;dst
+		DUP2 scap ;dict/sym-ext OVR2 scpy
+		SWP2 .File1/name DEO2
 	;symbols
 	&l
+		( addr )
 		#0002 .File1/length DEO2
 		DUP2 .File1/write DEO2
+		( name )
 		#0003 ADD2
-			DUP2 slen INC2 .File1/length DEO2
+			DUP2 slen INC2 STH2k .File1/length DEO2
 			DUP2 .File1/write DEO2
-		scap INC2 DUP2 #0003 ADD2 LDA ?&l
-	POP2 POP2
+		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&l
+	POP2
+	#00 ROT ROT STA
 
 JMP2r
 
