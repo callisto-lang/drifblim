@@ -11,6 +11,7 @@ then
 fi
 
 uxnasm src/drifblim.tal bin/drifblim-seed.rom
+uxnasm src/drifloon.tal bin/drifloon.rom
 
 if [ -d "$HOME/roms" ] && [ -e bin/drifblim-seed.rom ]
 then
@@ -25,7 +26,4 @@ uxncli bin/drifblim.rom examples/hello.tal bin/hello.rom
 uxncli bin/hello.rom
 
 # Pack
-
-# uxncli bin/drifblim.rom etc/bh.tal bin/bh.rom
-# uxncli bin/bh.rom bin/drifblim.rom > bin/bh.log
 

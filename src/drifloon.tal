@@ -12,18 +12,19 @@ BRK
 
 	.Console/read DEI
 	DUP [ LIT2 &buffer =source ] STA
-	;&buffer LDA2k INC2 SWP2 STA2
 	#0a NEQ ?&end
+		,&buffer LDR2 ;source EQU2 ?&empty
 		assemble
 		print-summary
 		&end
+	;&buffer LDA2k INC2 SWP2 STA2
 
 BRK
+	&empty ;err pstr ;err/empty pstr ( halt ) #010f DEO BRK
 
 @on-error ( id* name* -> )
 
-	#0a19 DEO
-	( print ) ;err pstr pstr #2019 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
+	;err pstr pstr #2019 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
 	( halt ) #010f DEO
 
 BRK
@@ -38,6 +39,7 @@ BRK
 		LDAk handle-char
 		INC2 LDAk ?&w
 	POP2
+
 JMP2r
 
 @handle-char ( c -- )
@@ -399,6 +401,7 @@ JMP2r
 	&invalid "Invalid $1
 	&mode "Mode $1
 	&rewind "Rewind $1
+	&empty "Empty $1
 
 @opcodes
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
