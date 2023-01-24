@@ -29,6 +29,7 @@ BRK
 
 @on-error ( id* name* -> )
 
+	#01 .File2/delete DEO
 	#0a18 DEO
 	( print ) ;err pstr pstr #2018 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
 	( halt ) #010f DEO
