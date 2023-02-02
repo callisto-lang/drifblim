@@ -74,9 +74,8 @@ JMP2r
 	#0100 set-head
 	;dict/reset ;scope scpy
 	#00 ;write/skip STA
-	handle-source
 
-JMP2r
+!handle-source
 
 @parse ( t* -- )
 
@@ -92,9 +91,8 @@ JMP2r
 	( non-runic )
 	DUP2 is-hex ?lib/rawhex
 	DUP2 is-opcode ?lib/opcode
-	lib/litjsi
 
-JMP2r
+!lib/litjsi
 
 @lib
 	&padabs INC2 get-hex write-pad !set-head
@@ -342,9 +340,9 @@ JMP2r
 	( result )
 	;dict/assembled pstr ;write/length LDA2 #00ff SUB2 pdec ;dict/bytes pstr
 	;create-label/count LDA2 pdec ;dict/labels pstr
-	;dict/end pstr
+	;dict/end
 
-JMP2r
+!pstr
 
 (
 @|stdlib )
