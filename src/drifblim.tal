@@ -343,16 +343,13 @@ JMP2r
 
 @print-summary ( -- )
 
-	;symbols
-	&w
-		( ignore uppercased device labels )
-		INC2k INC2 INC2 LDA DUP #40 GTH SWP #5b LTH AND ?&used
-		INC2k INC2 LDA ?&used
-			;dict/unused pstr
-			#0003 ADD2 DUP2 pstr #0a18 DEO
-			&used
-		scap INC2 INC2k INC2 INC2 LDA ?&w
-	POP2
+	;create-label/ptr LDA2 ;symbols
+	&l
+		INC2k INC2 LDA ?&skip
+		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&skip
+			;dict/unused pstr DUP2 pstr #0a18 DEO
+		&skip scap INC2 GTH2k ?&l
+	POP2 POP2
 	( result )
 	;dict/assembled pstr ;src pstr
 	;dict/spacer pstr ;dst pstr
