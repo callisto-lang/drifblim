@@ -9,12 +9,14 @@
 	@src $30
 	@dst $30
 
-|0100
+|0100 ( -> )
 
-@ready-src ( -> ) ;&await .Console/vector DEO2 ;dict/input pstr BRK
+	;&await .Console/vector DEO2 ;dict/input pstr BRK
 	&await ( -> ) .Console/read DEI .src skey ?ready-dst BRK
-@ready-dst ( -> ) ;&await .Console/vector DEO2 ;dict/output pstr BRK
-	&await ( -> ) .Console/read DEI .dst skey ?on-ready BRK
+	@ready-dst ( -> ) ;&await .Console/vector DEO2 ;dict/output pstr BRK
+	&await ( -> ) .Console/read DEI .dst skey ?on-ready
+
+BRK
 
 @on-ready ( -> )
 
@@ -434,7 +436,7 @@ JMP2r
 
 @err "!! 20 "Error: 20 $1
 	&source "Source $1
-	&duplicate "Duplicate  $1
+	&duplicate "Duplicate $1
 	&number "Number $1
 	&reference "Reference $1
 	&distance "Distance $1
