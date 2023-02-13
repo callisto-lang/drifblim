@@ -25,7 +25,7 @@ BRK
 	save-symbols
 	print-summary
 	( debug ) #010e DEO
-	( halt ) #010f DEO
+	( halt ) #800f DEO
 
 BRK
 
