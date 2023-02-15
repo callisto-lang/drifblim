@@ -17,7 +17,8 @@ uxnasm src/drifloon.tal bin/drifloon.rom
 if [ -d "$HOME/roms" ] && [ -e bin/drifblim-seed.rom ]
 then
 	cp bin/drifblim-seed.rom $HOME/roms/drifblim.rom
-    echo "Installed in $HOME/roms"
+	cp bin/drifloon.rom $HOME/roms/
+	echo "Installed in $HOME/roms"
 fi
 
 # Running
