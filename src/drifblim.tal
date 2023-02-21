@@ -203,29 +203,20 @@ JMP2r
 		,&head LDR2 ;write/length STA2
 		&no-record
 
-!move-head
+( >> )
 
-(
-@|helpers )
+@move-head ( -- )
 
-@get-hex ( str* -- value* )
+	;write/head LDA2 INC2
 
-	DUP2 is-hex ?&valid
-		;err/number !on-error
-		&valid
+@set-head ( v* -- )
 
-!shex
-
-@get-rel ( label* -- distance )
-
-	;write/skip LDA ?&fill
-	LDA2k ;write/head LDA2 SUB2 #0003 SUB2
-	DUP2 #0080 ADD2 POP ?&fail
-	NIP2 NIP
+	;write/head STA2
 
 JMP2r
-	&fail POP2 #0003 ADD2 ;err/distance !on-error
-	&fill POP2 #ff JMP2r
+
+(
+@|labels )
 
 @get-ref ( token* -- <label*> )
 
@@ -271,6 +262,42 @@ JMP2r
 
 JMP2r
 
+@find-label ( name* -- <addr*> )
+
+	STH2
+	;symbols
+	&w
+		#0003 ADD2 DUP2 STH2kr scmp ?&found
+		scap INC2 INC2k INC2 INC2 LDA ?&w
+	POP2
+	POP2r
+	#ffff
+
+JMP2r
+	&found #0003 SUB2 POP2r JMP2r
+
+(
+@|helpers )
+
+@get-hex ( str* -- value* )
+
+	DUP2 is-hex ?&valid
+		;err/number !on-error
+		&valid
+
+!shex
+
+@get-rel ( label* -- distance )
+
+	;write/skip LDA ?&fill
+	LDA2k ;write/head LDA2 SUB2 #0003 SUB2
+	DUP2 #0080 ADD2 POP ?&fail
+	NIP2 NIP
+
+JMP2r
+	&fail POP2 #0003 ADD2 ;err/distance !on-error
+	&fill POP2 #ff JMP2r
+
 @is-hex ( str* -- f )
 
 	&w
@@ -314,30 +341,6 @@ JMP2r
 		&end NIP STH ORAr
 		INC2 LDAk ?&w
 	POP2 STHr
-
-JMP2r
-
-@find-label ( name* -- <addr*> )
-
-	STH2
-	;symbols
-	&w
-		#0003 ADD2 DUP2 STH2kr scmp ?&found
-		scap INC2 INC2k INC2 INC2 LDA ?&w
-	POP2
-	POP2r
-	#ffff
-
-JMP2r
-	&found #0003 SUB2 POP2r JMP2r
-
-@move-head ( -- )
-
-	;write/head LDA2 INC2
-
-@set-head ( v* -- )
-
-	;write/head STA2
 
 JMP2r
 
