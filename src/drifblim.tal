@@ -41,6 +41,20 @@ BRK
 (
 @|generics )
 
+@assemble ( src* dst* -- )
+
+	( prepare output )
+	.File2/name DEO2
+	#01 .File2/delete DEO
+	#0001 .File2/length DEO2
+	( pass1 ) DUP2 handle-top
+	( pass2 ) #00 ;write/skip STA
+
+@handle-top ( f* -- )
+
+	#0100 set-head
+	;dict/reset ;scope scpy
+
 @handle-file ( f* -- )
 
 	.File1/name DEO2
@@ -74,23 +88,6 @@ JMP2r
 
 (
 @|core )
-
-@assemble ( src* dst* -- )
-
-	( prepare output )
-	.File2/name DEO2
-	#01 .File2/delete DEO
-	#0001 .File2/length DEO2
-	( pass1 )
-	#0100 set-head
-	;dict/reset ;scope scpy
-	DUP2 handle-file
-	( pass2 )
-	#0100 set-head
-	;dict/reset ;scope scpy
-	#00 ;write/skip STA
-
-!handle-file
 
 @parse ( t* -- )
 
