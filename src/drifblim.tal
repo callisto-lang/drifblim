@@ -8,15 +8,17 @@
 
 	@src $30
 	@dst $30
+	@token $20
+	@scope $20
+	@sublabel $20
+	@include $30
 
 |0100 ( -> )
 
 	;&await .Console/vector DEO2 ;dict/input pstr BRK
 	&await ( -> ) .Console/read DEI .src skey ?ready-dst BRK
 	@ready-dst ( -> ) ;&await .Console/vector DEO2 ;dict/output pstr BRK
-	&await ( -> ) .Console/read DEI .dst skey ?on-ready
-
-BRK
+	&await ( -> ) .Console/read DEI .dst skey ?on-ready BRK
 
 @on-ready ( -> )
 
@@ -165,7 +167,7 @@ JMP2r
 
 @write-call ( str* -- )
 
-	get-ref LDA2 ;write/head LDA2 INC2 INC2 SUB2
+	get-ref LDA2 ,write/head LDR2 INC2 INC2 SUB2
 
 !write-short
 
@@ -197,18 +199,18 @@ JMP2r
 &pass1 ( -- )
 
 	[ LIT &b $1 ] #00 EQU ?&no-record
-		,&head LDR2 ;write/length STA2
+		,&head LDR2 ,write/length STR2
 		&no-record
 
 ( >> )
 
 @move-head ( -- )
 
-	;write/head LDA2 INC2
+	,write/head LDR2 INC2
 
 @set-head ( v* -- )
 
-	;write/head STA2
+	,write/head STR2
 
 JMP2r
 
@@ -448,7 +450,7 @@ JMP2r
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	&brk "BRK
 
-@runes
+@runes [
 	"| =lib/padabs "$ =lib/padrel
 	"@ =lib/toplab "& =lib/sublab
 	", =lib/litrel "_ =lib/rawrel
@@ -457,15 +459,11 @@ JMP2r
 	"? =lib/litjci "! =lib/litjmi
 	"[ =lib/ignore "] =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inc
+	"~ =lib/inc ]
 	&err
 
 (
 @|memory )
 
-@token $20
-@scope $20
-@sublabel $20
-@include $30
 @symbols ( addr*, refs, name[], 00 )
 
