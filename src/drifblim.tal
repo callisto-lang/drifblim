@@ -280,11 +280,10 @@ JMP2r
 
 @get-hex ( str* -- value* )
 
-	DUP2 is-hex ?&valid
-		;err/number !on-error
-		&valid
+	DUP2 is-hex ?shex
+	get-ref/no-write LDA2
 
-!shex
+JMP2r
 
 @get-rel ( label* -- distance )
 
