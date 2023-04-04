@@ -1,31 +1,34 @@
 #!/bin/sh -e
 
-echo "Cleaning.."
-rm -rf bin
-mkdir bin
+ASM="uxnasm"
+EMU="uxncli"
+LIN="uxncli $HOME/roms/uxnlin.rom"
 
-if [ -e "$HOME/roms/uxnlin.rom" ]
+SRC="src/drifblim.tal"
+DST="bin/drifblim.rom"
+CPY="$HOME/roms"
+ARG="${SRC} ${DST}"
+
+mkdir -p bin
+
+if [[ "$*" == *"--lint"* ]]
 then
-	echo "Linting.."
-	uxncli $HOME/roms/uxnlin.rom src/drifblim.tal
-	uxncli $HOME/roms/uxnlin.rom src/drifloon.tal
+	$LIN $SRC
 fi
 
-uxnasm src/drifblim.tal bin/drifblim-seed.rom
-uxnasm src/drifloon.tal bin/drifloon.rom
+$ASM $SRC $DST
 
-if [ -d "$HOME/roms" ] && [ -e bin/drifblim-seed.rom ]
+if [[ "$*" == *"--save"* ]]
 then
-	cp bin/drifblim-seed.rom $HOME/roms/drifblim.rom
-	cp bin/drifloon.rom $HOME/roms/
-	echo "Installed in $HOME/roms"
+	cp $DST $CPY
 fi
 
-# Running
+printf "\nAssembling ${DST}(seed) with ${ASM}.\n\n"
+$EMU $DST $ARG
 
-uxncli bin/drifblim-seed.rom src/drifblim.tal bin/drifblim.rom
-uxncli bin/drifblim.rom examples/hello.tal bin/hello.rom
-uxncli bin/hello.rom
+printf "\nAssembling ${DST} with ${DST}.\n\n"
+$EMU $DST examples/hello.tal bin/hello.rom
 
-# Pack
+echo ""
+$EMU bin/hello.rom
 
