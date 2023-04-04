@@ -33,7 +33,7 @@ BRK
 
 @on-error ( id* name* -> )
 
-	#01 .File2/delete DEO
+	[ LIT2 01 -File2/delete ] DEO
 	#0a18 DEO
 	( print ) ;err pstr pstr #2018 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
 	( halt ) #010f DEO
@@ -47,7 +47,7 @@ BRK
 
 	( prepare output )
 	.File2/name DEO2
-	#01 .File2/delete DEO
+	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
 	( pass1 ) DUP2 handle-top
 	( pass2 ) #00 ;write/skip STA
@@ -80,12 +80,14 @@ JMP2r
 
 @handle-token ( t* -- )
 
-	LDAk LIT "( EQU ?&on-parens
-	LDAk LIT ") EQU ?&on-parens
+	LDAk LIT "( EQU ?&on-lparen
+	LDAk LIT ") EQU ?&on-rparen
 	[ LIT &sleep $1 ] ?&on-sleep
 
 !parse
-	&on-parens ( t* -- ) LDA LIT "( EQU ,&sleep STR JMP2r
+	&on-lparen ( t* -- ) POP2 #01 !&on-parens
+	&on-rparen ( t* -- ) POP2 ,&sleep LDR ?&go JMP2r &go #ff
+	&on-parens ( i -- ) ,&sleep LDR ADD ,&sleep STR JMP2r
 	&on-sleep ( t* -- ) POP2 JMP2r
 
 (
@@ -103,8 +105,8 @@ JMP2r
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( non-runic )
-	DUP2 is-hex ?lib/rawhex
-	DUP2 is-opcode ?lib/opcode
+	is-hex ?lib/rawhex
+	is-opcode ?lib/opcode
 
 !lib/litjsi
 
@@ -238,8 +240,8 @@ JMP2r
 @create-label ( name* -- )
 
 	;write/skip LDA #00 EQU ?&skip
-	( not hex ) DUP2 is-hex ?&invalid
-	( not opc ) DUP2 is-opcode ?&invalid
+	( not hex ) is-hex ?&invalid
+	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-label INC2 ORA ?&not-unique
 	( save addr ) ;write/head LDA2 [ LIT2 &ptr =symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
@@ -280,7 +282,7 @@ JMP2r
 
 @get-hex ( str* -- value* )
 
-	DUP2 is-hex ?shex
+	is-hex ?shex
 	get-ref/no-write LDA2
 
 JMP2r
@@ -296,8 +298,9 @@ JMP2r
 	&fail POP2 #0003 ADD2 ;err/distance !on-error
 	&fill POP2 #ff JMP2r
 
-@is-hex ( str* -- f )
+@is-hex ( str* -- str* f )
 
+	DUP2
 	&w
 		LDAk chex INC ?&valid
 			POP2 #00 JMP2r &valid
@@ -307,9 +310,9 @@ JMP2r
 
 JMP2r
 
-@is-opcode ( string* -- f )
+@is-opcode ( str* -- str* f )
 
-	DUP2 ;opcodes/brk scmp3 ?find-opcode/on-brk
+	DUP2 DUP2 ;opcodes/brk scmp3 ?find-opcode/on-brk
 
 @find-opcode ( name* -- byte )
 
