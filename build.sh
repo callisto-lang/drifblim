@@ -23,6 +23,9 @@ then
 	cp $DST $CPY
 fi
 
+# Drifloon
+$ASM src/drifloon.tal bin/drifloon.rom
+
 printf "\nAssembling ${DST}(seed) with ${ASM}.\n\n"
 $EMU $DST $ARG
 
