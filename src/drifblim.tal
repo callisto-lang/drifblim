@@ -26,7 +26,6 @@
 	;src ;dst assemble
 	save-symbols
 	print-summary
-	( debug ) #010e DEO
 	( halt ) #800f DEO
 
 BRK
