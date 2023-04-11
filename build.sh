@@ -1,37 +1,25 @@
 #!/bin/sh -e
 
-ASM="uxnasm"
-EMU="uxncli"
-LIN="uxncli $HOME/roms/uxnlin.rom"
+set -o nounset # Fails when accessing an unset variable.
+set -o errexit # Exits if a command exits with a non-zero status.
 
-SRC="src/drifblim.tal"
-DST="bin/drifblim.rom"
-CPY="$HOME/roms"
-ARG="${SRC} ${DST}"
+roms_dir=${UXN_ROMS_DIR-"$HOME/roms"}
+asm="uxnasm"
+emu="uxncli"
+lin="uxncli $roms_dir/uxnlin.rom"
+name="drifblim"
+src="src/${name}.tal"
+dst="bin/${name}.rom"
+cpy="$roms_dir"
+arg="${src} ${dst}"
 
 mkdir -p bin
+case "$*" in *--lint*) $lin $src ;; esac
+$asm $src $dst
+case "$*" in *--save*) cp $dst $cpy ;; esac
+$asm src/drifloon.tal bin/drifloon.rom
+$emu $dst $arg
 
-if [[ "$*" == *"--lint"* ]]
-then
-	$LIN $SRC
-fi
-
-$ASM $SRC $DST
-
-if [[ "$*" == *"--save"* ]]
-then
-	cp $DST $CPY
-fi
-
-# Drifloon
-$ASM src/drifloon.tal bin/drifloon.rom
-
-printf "\nAssembling ${DST}(seed) with ${ASM}.\n\n"
-$EMU $DST $ARG
-
-printf "\nAssembling ${DST} with ${DST}.\n\n"
-$EMU $DST examples/hello.tal bin/hello.rom
-
-echo ""
-$EMU bin/hello.rom
-
+# Test with hello.rom
+$emu $dst examples/hello.tal bin/hello.rom
+$emu bin/hello.rom
