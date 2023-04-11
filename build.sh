@@ -10,13 +10,12 @@ lin="uxncli $roms_dir/uxnlin.rom"
 name="drifblim"
 src="src/${name}.tal"
 dst="bin/${name}.rom"
-cpy="$roms_dir"
 arg="${src} ${dst}"
 
 mkdir -p bin
 case "$*" in *--lint*) $lin $src ;; esac
 $asm $src $dst
-case "$*" in *--save*) cp $dst $cpy ;; esac
+case "$*" in *--save*) cp $dst $roms_dir ;; esac
 $asm src/drifloon.tal bin/drifloon.rom
 $emu $dst $arg
 
