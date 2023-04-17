@@ -1,6 +1,6 @@
 ( uxncli drifblim.rom source.tal application.rom )
 
-|10 @Console &vector $2 &read $1 &pad $5 &write $1 &err $1
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |b0 @File2 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
@@ -15,14 +15,14 @@
 
 |0100 ( -> )
 
-	;&await .Console/vector DEO2 ;dict/input pstr BRK
+	.Console/type DEI ?&has-args ;dict/usage pstr &has-args
+	;&await .Console/vector DEO2 BRK
 	&await ( -> ) .Console/read DEI .src skey ?ready-dst BRK
-	@ready-dst ( -> ) ;&await .Console/vector DEO2 ;dict/output pstr BRK
+	@ready-dst ( -> ) ;&await .Console/vector DEO2 BRK
 	&await ( -> ) .Console/read DEI .dst skey ?on-ready BRK
 
 @on-ready ( -> )
 
-	#0a18 DEO
 	;src ;dst assemble
 	save-symbols
 	print-summary
@@ -401,7 +401,7 @@ JMP2r
 
 @pdec ( short* -- )
 
-	#00 ,&z STR
+	[ LIT2 00 _&z ] STR
 	#2710 pdec/parse
 	#03e8 pdec/parse
 	#0064 pdec/parse
@@ -413,7 +413,7 @@ JMP2r
 &parse ( short* den* -- short* )
 
 	DIV2k DUPk [ LIT &z $1 ] EQU ?&skip
-	DUP #30 ADD #18 DEO #ff ,&z STR
+	DUP #30 ADD #18 DEO [ LIT2 ff _&z ] STR
 	&skip POP MUL2 SUB2
 
 JMP2r
@@ -422,8 +422,7 @@ JMP2r
 @|assets )
 
 @dict
-	&input "Input(.tal): 20 $1
-	&output "Output(.rom): 20 $1
+	&usage "usage: 20 "drifblim.rom 20 "input.tal 20 "output.rom 0a $1
 	&assembled "Assembled 20 $1
 	&reset "INIT $1
 	&spacer 20 "-> 20 $1
