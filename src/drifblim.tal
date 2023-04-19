@@ -62,7 +62,7 @@ BRK
 	#0001 .File1/length DEO2
 	&s
 		;&c .File1/read DEO2
-		.File1/success DEI2 ORA #00 EQU ?&end
+		read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 		&end
 	;write/head LDA2 #0100 EQU2 ?&err
@@ -91,9 +91,10 @@ JMP2r
 	LDA ;comment STH2k sput
 	#20 STH2kr sput
 	&s
-		read-char NIP
-		DUP STH2kr sput
-		LIT ") NEQ ?&s
+		;&c .File1/read DEO2
+		read-eof ?&end
+		[ LIT &c $1 ] DUP STH2kr sput LIT ") NEQ ?&s
+	&end
 	#00 STH2kr sput
 	STH2r
 		DUP2 create-label
@@ -102,15 +103,12 @@ JMP2r
 
 @skip-comment ( t* -- )
 
-	POP2 &s read-char LIT ") NEQ AND ?&s
-
-JMP2r
-
-@read-char ( -- live c )
-
-	;&c .File1/read DEO2
-	.File1/success DEI2 ORA
-	[ LIT &c $1 ]
+	POP2
+	&s
+		;&c .File1/read DEO2
+		read-eof ?&end
+		[ LIT &c $1 ] LIT ") NEQ ?&s
+	&end
 
 JMP2r
 
@@ -405,6 +403,12 @@ JMP2r
 		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&l
 	POP2
 	#00 ROT ROT STA
+
+JMP2r
+
+@read-eof ( -- f )
+
+	.File1/success DEI2 ORA #00 EQU
 
 JMP2r
 
