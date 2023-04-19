@@ -87,30 +87,21 @@ JMP2r
 
 @handle-comment ( t* -- )
 
-	;write/skip LDA ?skip-comment
 	LDA ;comment STH2k sput
 	#20 STH2kr sput
 	&s
 		;&c .File1/read DEO2
 		read-eof ?&end
+		;comment slen #00ff GTH2 ?&end
 		[ LIT &c $1 ] DUP STH2kr sput LIT ") NEQ ?&s
 	&end
 	#00 STH2kr sput
 	STH2r
-		DUP2 create-label
+	;write/skip LDA ?&no-write
+		DUP2 create-symbol/force
+		&no-write
 
 !sclr
-
-@skip-comment ( t* -- )
-
-	POP2
-	&s
-		;&c .File1/read DEO2
-		read-eof ?&end
-		[ LIT &c $1 ] LIT ") NEQ ?&s
-	&end
-
-JMP2r
 
 (
 @|core )
@@ -135,8 +126,8 @@ JMP2r
 @lib
 	&padabs INC2 get-hex write-pad !set-head
 	&padrel INC2 get-hex !write-fill
-	&toplab INC2 ;scope OVR2 SWP2 scpy !create-label
-	&sublab INC2 make-sublabel !create-label
+	&toplab INC2 ;scope OVR2 SWP2 scpy !create-symbol
+	&sublab INC2 make-sublabel !create-symbol
 	&litrel #80 write
 	&rawrel INC2 get-ref get-rel INC !write
 	&litzep #80 write
@@ -249,7 +240,7 @@ JMP2r
 	LDAk LIT "& NEQ ?&no-sub
 		INC2 make-sublabel
 		&no-sub
-	find-label
+	find-symbol
 		INC2k ORA ?&found
 			POP2 ;err/reference !on-error
 			&found
@@ -259,12 +250,13 @@ JMP2r
 JMP2r
 	&fill ffff "[empty] $1
 
-@create-label ( name* -- )
+@create-symbol ( name* -- )
 
 	;write/skip LDA #00 EQU ?&skip
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
-	( not dup ) DUP2 find-label INC2 ORA ?&not-unique
+	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
+	&force
 	( save addr ) ;write/head LDA2 [ LIT2 &ptr =symbols ] STH2k STA2
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr scpy
@@ -285,7 +277,7 @@ JMP2r
 
 JMP2r
 
-@find-label ( name* -- <addr*> )
+@find-symbol ( name* -- <addr*> )
 
 	STH2
 	;symbols
@@ -369,10 +361,12 @@ JMP2r
 
 @print-summary ( -- )
 
-	;create-label/ptr LDA2 ;symbols
+	;create-symbol/ptr LDA2 ;symbols
 	&l
 		INC2k INC2 LDA ?&skip
-		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&skip
+		#0003 ADD2
+			LDAk LIT "A SUB #1a LTH ?&skip
+			LDAk LIT "( EQU ?&skip
 			;dict/unused pstr DUP2 pstr #0a18 DEO
 		&skip scap INC2 GTH2k ?&l
 	POP2 POP2
@@ -381,7 +375,7 @@ JMP2r
 	;dict/spacer pstr ;dst pstr
 	( length )
 	;dict/in pstr ;write/length LDA2 #00ff SUB2 pdec ;dict/bytes pstr
-	;create-label/count LDA2 pdec ;dict/labels pstr
+	;create-symbol/count LDA2 pdec ;dict/labels pstr
 	;dict/end
 
 !pstr
