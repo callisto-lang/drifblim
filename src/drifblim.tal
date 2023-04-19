@@ -50,7 +50,6 @@ BRK
 	#0001 .File2/length DEO2
 	( pass1 ) DUP2 handle-top
 	( pass2 ) #00 ;write/skip STA
-	;create-label/ptr LDA2 ;write-meta/ptr STA2
 
 @handle-top ( f* -- )
 
@@ -86,23 +85,32 @@ JMP2r
 
 @handle-comment ( t* -- )
 
-	;write/head LDA2 SWP write-meta write-meta
-	#00 write-meta
-	LDA write-meta
-	#20 write-meta
+	;write/skip LDA ?skip-comment
+
+	LDA ;comment STH2k sput
+	#20 STH2kr sput
 	&s
-		;&c .File1/read DEO2
-		[ LIT &c $1 ] DUP write-meta
+		read-char
+		SWP #00 EQU ?&e
+		DUP STH2kr sput
 		LIT ") NEQ ?&s
-	#00
+	&e
+	#00 STH2kr sput
+	STH2r DUP2 create-label
 
-!write-meta
+!sclr
 
-@write-meta ( c -- )
+@skip-comment ( t* -- )
 
-	;write/skip LDA ?&skip
-	[ LIT2 &ptr $2 ] STAk INC2 ,&ptr STR2
-	&skip POP
+	POP2 &s read-char LIT ") NEQ AND ?&s
+
+JMP2r
+
+@read-char ( -- live c )
+
+	;&c .File1/read DEO2
+	.File1/success DEI2 ORA
+	[ LIT &c $1 ]
 
 JMP2r
 
@@ -481,6 +489,8 @@ JMP2r
 
 (
 @|memory )
+
+@comment $100
 
 @symbols ( addr*, refs, name[], 00 )
 
