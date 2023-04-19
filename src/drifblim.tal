@@ -88,17 +88,15 @@ JMP2r
 @handle-comment ( t* -- )
 
 	;write/skip LDA ?skip-comment
-
 	LDA ;comment STH2k sput
 	#20 STH2kr sput
 	&s
-		read-char
-		SWP #00 EQU ?&e
+		read-char NIP
 		DUP STH2kr sput
 		LIT ") NEQ ?&s
-	&e
 	#00 STH2kr sput
-	STH2r DUP2 create-label
+	STH2r
+		DUP2 create-label
 
 !sclr
 
