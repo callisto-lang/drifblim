@@ -62,10 +62,12 @@ BRK
 	#0001 .File1/length DEO2
 	&s
 		;&c .File1/read DEO2
-		.File1/success DEI2 ORA ?&continue
-			,&c LDR #00 EQU ?&err JMP2r
-		&continue [ LIT &c $1 ] handle-char
-!&s
+		.File1/success DEI2 ORA #00 EQU ?&end
+		[ LIT &c $1 ] handle-char !&s
+		&end
+	;write/head LDA2 #0100 EQU2 ?&err
+
+JMP2r
 	&err .File1/name DEI2 ;err/source !on-error
 
 @handle-char ( c -- )
