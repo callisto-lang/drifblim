@@ -1,4 +1,4 @@
-( uxncli drifblim.rom source.tal application.rom )
+( usage: drifblim.rom input.tal output.rom )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -50,6 +50,7 @@ BRK
 	#0001 .File2/length DEO2
 	( pass1 ) DUP2 handle-top
 	( pass2 ) #00 ;write/skip STA
+	;create-label/ptr LDA2 ;write-meta/ptr STA2
 
 @handle-top ( f* -- )
 
@@ -79,15 +80,31 @@ JMP2r
 
 @handle-token ( t* -- )
 
-	LDAk LIT "( EQU ?&on-lparen
-	LDAk LIT ") EQU ?&on-rparen
-	[ LIT &sleep $1 ] ?&on-sleep
+	LDAk LIT "( EQU ?handle-comment
 
 !parse
-	&on-lparen ( t* -- ) POP2 #01 !&on-parens
-	&on-rparen ( t* -- ) POP2 ,&sleep LDR ?&go JMP2r &go #ff
-	&on-parens ( i -- ) ,&sleep LDR ADD ,&sleep STR JMP2r
-	&on-sleep ( t* -- ) POP2 JMP2r
+
+@handle-comment ( t* -- )
+
+	;write/head LDA2 SWP write-meta write-meta
+	#00 write-meta
+	LDA write-meta
+	#20 write-meta
+	&s
+		;&c .File1/read DEO2
+		[ LIT &c $1 ] DUP write-meta
+		LIT ") NEQ ?&s
+	#00
+
+!write-meta
+
+@write-meta ( c -- )
+
+	;write/skip LDA ?&skip
+	[ LIT2 &ptr $2 ] STAk INC2 ,&ptr STR2
+	&skip POP
+
+JMP2r
 
 (
 @|core )
