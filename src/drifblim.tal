@@ -52,7 +52,8 @@ BRK
 @set-error ( name* -- )
 
 	,check-err/name STR2
-	;scope ,check-err/scope STR2
+	;token ;token-err scpy
+	;scope ;scope-err scpy
 	#00 ,check-err/pass STR
 
 JMP2r
@@ -64,8 +65,9 @@ JMP2r
 	[ LIT &pass 01 ] ?&skip
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
-		[ LIT2 &name $2 ] pstr ;dict/in pstr
-		[ LIT2 &scope $2 ] pstr ;dict/dot pstr
+		[ LIT2 &name $2 ] pstr #2018 DEO
+		;token-err pstr ;dict/in pstr
+		;scope-err pstr ;dict/dot pstr
 		POP2r
 		#010e DEO
 		#010f DEO BRK
@@ -524,6 +526,8 @@ JMP2r
 @|memory )
 
 @comment $100
+@token-err $20
+@scope-err $20
 
 @symbols ( addr*, refs, name[], 00 )
 
