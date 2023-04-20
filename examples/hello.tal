@@ -16,8 +16,9 @@ BRK
 
 JMP2r
 
+( @1234 ) ( invalid )
 ( ,label2 ) ( distance err )
-@label2
+( @label2 ) ( duplicate )
 
 $100 @label2
 

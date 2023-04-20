@@ -58,10 +58,9 @@ BRK
 (
 @|generics )
 
-@set-error ( id* name* -- )
+@set-error ( name* -- )
 
 	,check-err/name STR2
-	,check-err/id STR2
 	;scope ,check-err/scope STR2
 	#00 ,check-err/pass STR
 
@@ -73,8 +72,7 @@ JMP2r
 
 	[ LIT &pass 01 ] ?&skip
 		;err pstr
-		[ LIT2 &name $2 ] pstr #2019 DEO
-		[ LIT2 &id $2 ] pstr ;dict/in pstr
+		[ LIT2 &name $2 ] pstr ;dict/in pstr
 		[ LIT2 &scope $2 ] pstr ;dict/dot pstr
 		POP2r
 		#010e DEO
@@ -311,9 +309,8 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
-	&invalid ;err/invalid !on-error
-	&not-unique DUP2 find-symbol #0003 ADD2 ;err/duplicate set-error
-	&skip POP2 JMP2r
+	&invalid ;err/invalid set-error POP2 JMP2r
+	&not-unique ;err/duplicate set-error &skip POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
@@ -356,7 +353,7 @@ JMP2r
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 ;err/distance set-error #ff JMP2r
+	&fail POP2 ;err/distance set-error ( >> )
 	&fill POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
@@ -494,7 +491,7 @@ JMP2r
 	&assembled "Assembled 20 $1
 	&reset "INIT $1
 	&spacer 20 "-> 20 $1
-	&in ", 20 "in 20 $1
+	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
 	&end ") &dot ". 0a $1
 	&labels 20 "labels $1
@@ -507,7 +504,7 @@ JMP2r
 	&number "Number $1
 	&reference "Reference $1
 	&distance "Distance $1
-	&invalid "Invalid $1
+	&invalid "Invalid 20 "symbol 20 "name $1
 	&rewind "Rewind $1
 
 @opcodes
