@@ -57,18 +57,24 @@ BRK
 (
 @|generics )
 
+@check-err ( -- )
+
+
+
+JMP2r
+
 @first-pass ( -- )
 
-	;src
+	;src handle-top
 
-!handle-top
+!check-err
 
 @second-pass ( -- )
 
 	#00 ;write/skip STA
-	;src
+	;src handle-top
 
-( >> )
+!check-err
 
 @handle-top ( f* -- )
 
@@ -370,8 +376,6 @@ JMP2r
 		OVR LIT "2 EQU ?&end DUP ADD
 		OVR LIT "r EQU ?&end DUP ADD
 		OVR LIT "k EQU ?&end DUP ADD
-		OVR #21 LTH ?&end
-			;token ;err/mode !on-error
 		&end NIP STH ORAr
 		INC2 LDAk ?&w
 	POP2 STHr
