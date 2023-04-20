@@ -16,6 +16,7 @@ BRK
 
 JMP2r
 
+( .what ) ( reference )
 ( @1234 ) ( invalid )
 ( ,label2 ) ( distance err )
 ( @label2 ) ( duplicate )

@@ -285,7 +285,8 @@ JMP2r
 		&no-sub
 	find-symbol
 		INC2k ORA ?&found
-			POP2 ;err/reference !on-error
+			POP2 ;&fill
+			;err/reference !set-error
 			&found
 	( count )
 	INC2k INC2 LDAk INC ROT ROT STA
@@ -309,8 +310,9 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 
 JMP2r
-	&invalid ;err/invalid set-error POP2 JMP2r
-	&not-unique ;err/duplicate set-error &skip POP2 JMP2r
+	&invalid POP2 ;err/invalid !set-error
+	&not-unique POP2 ;err/duplicate !set-error
+	&skip POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
