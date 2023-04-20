@@ -196,8 +196,8 @@ JMP2r
 	LTH2k ?&no-pad
 		SUB2k write-fill POP2 JMP2r
 		&no-pad
-	OVR2 #0100 LTH2 ?&no-err
-		;token ;err/rewind !on-error
+	DUP2 #0101 LTH2 ?&no-err
+		;err/rewind set-error
 		&no-err
 	POP2
 
