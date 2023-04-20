@@ -57,7 +57,7 @@ BRK
 
 @first-pass ( -- )
 
-	;src handle-top
+	handle-top
 
 ( >> )
 
@@ -89,6 +89,9 @@ JMP2r
 
 	#0100 set-head
 	;dict/reset ;scope scpy
+	;src
+
+( >> )
 
 @handle-file ( f* -- )
 
