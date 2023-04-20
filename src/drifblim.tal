@@ -13,17 +13,25 @@
 	@sublabel $20
 	@include $30
 
-|0100 ( -> )
+|0100
 
-	.Console/type DEI ?&has-args ;dict/usage pstr &has-args
-	;&await .Console/vector DEO2 BRK
-	&await ( -> ) .Console/read DEI .src skey ?ready-dst BRK
-	@ready-dst ( -> ) ;&await .Console/vector DEO2 BRK
-	&await ( -> ) .Console/read DEI .dst skey ?on-ready BRK
+@on-reset ( -> )
 
-@on-ready ( -> )
+	.Console/type DEI ?&has-args
+		;dict/usage pstr &has-args
+	;&await-src .Console/vector DEO2
 
-	;src ;dst assemble
+BRK &await-src ( -> ) .Console/read DEI .src skey ?ready-dst BRK
+
+@ready-dst ( -> )
+
+	;&await-dst .Console/vector DEO2
+
+BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval-once BRK
+
+@eval-once ( -> )
+
+	assemble
 	save-symbols
 	print-summary
 	( halt ) #800f DEO
@@ -44,10 +52,10 @@ BRK
 
 @assemble ( src* dst* -- )
 
-	( prepare output )
-	.File2/name DEO2
+	;dst .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
+	;src
 	( pass1 ) DUP2 handle-top
 	( pass2 ) #00 ;write/skip STA
 
