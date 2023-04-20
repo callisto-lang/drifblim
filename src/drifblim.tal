@@ -77,6 +77,7 @@ JMP2r
 		[ LIT2 &id $2 ] pstr ;dict/in pstr
 		[ LIT2 &scope $2 ] pstr ;dict/dot pstr
 		POP2r
+		#010e DEO
 		#010f DEO BRK
 		&skip
 
@@ -311,7 +312,7 @@ JMP2r
 
 JMP2r
 	&invalid ;err/invalid !on-error
-	&not-unique ;err/duplicate !on-error
+	&not-unique DUP2 find-symbol #0003 ADD2 ;err/duplicate set-error
 	&skip POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
