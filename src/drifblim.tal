@@ -85,7 +85,7 @@ JMP2r
 
 JMP2r
 
-@handle-top ( f* -- )
+@handle-top ( -- )
 
 	#0100 set-head
 	;dict/reset ;scope scpy
@@ -164,7 +164,7 @@ JMP2r
 @lib
 	&padabs INC2 get-hex write-pad !set-head
 	&padrel INC2 get-hex !write-fill
-	&toplab INC2 ;scope OVR2 SWP2 scpy !create-symbol
+	&toplab INC2 DUP2 ;scope scpy !create-symbol
 	&sublab INC2 make-sublabel !create-symbol
 	&litrel #80 write
 	&rawrel INC2 get-ref get-rel INC !write
