@@ -3,7 +3,7 @@
 |0100 @program
 
 	;hello-word print-str
-	#010f DEO
+	#800f DEO
 
 BRK
 
