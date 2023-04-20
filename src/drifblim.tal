@@ -46,15 +46,6 @@ BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval-once BRK
 
 BRK
 
-@on-error ( id* name* -> )
-
-	[ LIT2 01 -File2/delete ] DEO
-	#0a19 DEO
-	( print ) ;err pstr pstr #2019 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
-	( halt ) #010f DEO
-
-BRK
-
 (
 @|generics )
 
@@ -71,6 +62,7 @@ JMP2r
 @check-err ( -> )
 
 	[ LIT &pass 01 ] ?&skip
+		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
 		[ LIT2 &name $2 ] pstr ;dict/in pstr
 		[ LIT2 &scope $2 ] pstr ;dict/dot pstr
@@ -108,10 +100,11 @@ JMP2r
 		read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 		&end
-	;write/head LDA2 #0100 EQU2 ?&err
+	;write/head LDA2 #0100 GTH2 ?&ok
+		;err/source set-error
+		&ok
 
 JMP2r
-	&err .File1/name DEI2 ;err/source !on-error
 
 @handle-char ( c -- )
 
@@ -500,7 +493,7 @@ JMP2r
 	&sym-ext ".sym $1
 
 @err "!! 20 "Error: 20 $1
-	&source "Source $1
+	&source "Empty 20 "file $1
 	&duplicate "Duplicate $1
 	&number "Number $1
 	&reference "Reference $1
