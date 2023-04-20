@@ -49,18 +49,17 @@ BRK
 (
 @|generics )
 
+@second-pass ( -- )
+
+	#00 ;write/skip STA
+
+( >> )
+
 @first-pass ( -- )
 
 	;src handle-top
 
-!validate
-
-@second-pass ( -- )
-
-	#00 ;write/skip STA
-	;src handle-top
-
-!validate
+( >> )
 
 @validate ( -> )
 
