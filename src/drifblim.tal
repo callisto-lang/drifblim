@@ -33,8 +33,8 @@ BRK
 @on-error ( id* name* -> )
 
 	[ LIT2 01 -File2/delete ] DEO
-	#0a18 DEO
-	( print ) ;err pstr pstr #2018 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
+	#0a19 DEO
+	( print ) ;err pstr pstr #2019 DEO pstr ;dict/in pstr ;scope pstr ;dict/dot pstr
 	( halt ) #010f DEO
 
 BRK
@@ -367,7 +367,7 @@ JMP2r
 		#0003 ADD2
 			LDAk LIT "A SUB #1a LTH ?&skip
 			LDAk LIT "( EQU ?&skip
-			;dict/unused pstr DUP2 pstr #0a18 DEO
+			;dict/unused pstr DUP2 pstr #0a19 DEO
 		&skip scap INC2 GTH2k ?&l
 	POP2 POP2
 	( result )
@@ -409,7 +409,7 @@ JMP2r
 (
 @|stdlib )
 
-@pstr ( str* -- ) LDAk ?&w POP2 JMP2r &w LDAk #18 DEO INC2 LDAk ?&w POP2 JMP2r
+@pstr ( str* -- ) LDAk ?&w POP2 JMP2r &w LDAk #19 DEO INC2 LDAk ?&w POP2 JMP2r
 @scap ( str* -- end* ) LDAk ?&w JMP2r &w INC2 LDAk ?&w JMP2r
 @sput ( chr str* -- ) scap INC2k #00 ROT ROT STA STA JMP2r
 @slen ( str* -- len* ) DUP2 scap SWP2 SUB2 JMP2r
@@ -429,14 +429,14 @@ JMP2r
 	#03e8 pdec/parse
 	#0064 pdec/parse
 	#000a pdec/parse
-	NIP #30 ADD #18 DEO
+	NIP #30 ADD #19 DEO
 
 JMP2r
 
 &parse ( short* den* -- short* )
 
 	DIV2k DUPk [ LIT &z $1 ] EQU ?&skip
-	DUP #30 ADD #18 DEO [ LIT2 ff _&z ] STR
+	DUP #30 ADD #19 DEO [ LIT2 ff _&z ] STR
 	&skip POP MUL2 SUB2
 
 JMP2r
