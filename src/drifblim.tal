@@ -233,11 +233,10 @@ JMP2r
 
 	DUP2 slen OVR2 get-hex SWP2 NIP
 	DUP #02 EQU ?&byte
-	DUP #04 EQU ?&short
-	POP POP2
-	;err/number !on-error
+	#04 EQU ?&short
+	POP2 POP2 ;err/number !set-error
 	&byte POP NIP2 NIP !write
-	&short POP NIP2 ( fall through )
+	&short NIP2 ( >> )
 
 @write-short ( short* -- )
 

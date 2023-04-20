@@ -16,8 +16,8 @@ BRK
 
 JMP2r
 
-( |0080 #12 )
-
+( #122325 ) ( number )
+( |0080 #12 ) ( rewind )
 ( .what ) ( reference )
 ( @1234 ) ( invalid )
 ( ,label2 ) ( distance err )
