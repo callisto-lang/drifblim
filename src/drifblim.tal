@@ -49,18 +49,20 @@ BRK
 (
 @|generics )
 
-@set-error ( name* -- )
+@first-pass ( -- )
 
-	,check-err/name STR2
-	;token ;token-err scpy
-	;scope ;scope-err scpy
-	#00 ,check-err/pass STR
+	;src handle-top
 
-JMP2r
+!validate
 
-( oh, that's a weird one )
+@second-pass ( -- )
 
-@check-err ( -> )
+	#00 ;write/skip STA
+	;src handle-top
+
+!validate
+
+@validate ( -> )
 
 	[ LIT &pass 01 ] ?&skip
 		[ LIT2 01 -File2/delete ] DEO
@@ -75,18 +77,14 @@ JMP2r
 
 JMP2r
 
-@first-pass ( -- )
+@set-error ( name* -- )
 
-	;src handle-top
+	,validate/name STR2
+	;token ;token-err scpy
+	;scope ;scope-err scpy
+	#00 ,validate/pass STR
 
-!check-err
-
-@second-pass ( -- )
-
-	#00 ;write/skip STA
-	;src handle-top
-
-!check-err
+JMP2r
 
 @handle-top ( f* -- )
 
@@ -142,7 +140,7 @@ JMP2r
 !sclr
 
 (
-@|core )
+@|tokenizer )
 
 @parse ( t* -- )
 

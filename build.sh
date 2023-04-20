@@ -22,3 +22,4 @@ $emu $dst $arg
 # Test with hello.rom
 $emu $dst examples/hello.tal bin/hello.rom
 $emu bin/hello.rom
+
