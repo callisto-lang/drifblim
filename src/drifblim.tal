@@ -39,6 +39,7 @@ BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval-once BRK
 	( run )
 	first-pass
 	second-pass
+
 	save-symbols
 	print-summary
 	( halt ) #800f DEO
@@ -57,9 +58,27 @@ BRK
 (
 @|generics )
 
-@check-err ( -- )
+@set-error ( id* name* -- )
 
+	,check-err/name STR2
+	,check-err/id STR2
+	;scope ,check-err/scope STR2
+	#00 ,check-err/pass STR
 
+JMP2r
+
+( oh, that's a weird one )
+
+@check-err ( -> )
+
+	[ LIT &pass 01 ] ?&skip
+		;err pstr
+		[ LIT2 &name $2 ] pstr #2019 DEO
+		[ LIT2 &id $2 ] pstr ;dict/in pstr
+		[ LIT2 &scope $2 ] pstr ;dict/dot pstr
+		POP2r
+		#010f DEO BRK
+		&skip
 
 JMP2r
 
@@ -275,6 +294,8 @@ JMP2r
 JMP2r
 	&fill ffff "[empty] $1
 
+@phex ( short* -- ) SWP phex/b &b ( byte -- ) DUP #04 SFT phex/c &c ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
+
 @create-symbol ( name* -- )
 
 	;write/skip LDA #00 EQU ?&skip
@@ -334,7 +355,7 @@ JMP2r
 	NIP2 NIP
 
 JMP2r
-	&fail POP2 #0003 ADD2 ;err/distance !on-error
+	&fail POP2 ;err/distance set-error #ff JMP2r
 	&fill POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
@@ -486,7 +507,6 @@ JMP2r
 	&reference "Reference $1
 	&distance "Distance $1
 	&invalid "Invalid $1
-	&mode "Mode $1
 	&rewind "Rewind $1
 
 @opcodes

@@ -16,5 +16,9 @@ BRK
 
 JMP2r
 
+( ,label2 )
+
+$100 @label2
+
 ~examples/include.tal
 
