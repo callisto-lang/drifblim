@@ -9,6 +9,8 @@
 	@src $30
 	@dst $30
 
+	@scan $1
+
 |0100
 
 @on-reset ( -> )
@@ -83,7 +85,7 @@ BRK
 	( cleanup cache )
 	#01 ;validate/pass STA
 	#0100 ;write/head STA2
-	#01 ;write/skip STA
+	#01 .scan STZ
 	#0000 ;write/length STA2
 
 	( clear memory )
@@ -96,12 +98,12 @@ BRK
 	;symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
 
-	( first pass )
+	( scan pass )
 	handle-top
 	validate
 
-	( second pass )
-	#00 ;write/skip STA
+	( write pass )
+	#00 .scan STZ
 	handle-top
 
 @validate ( -> )
@@ -178,7 +180,7 @@ JMP2r
 	&end
 	#00 STH2kr sput
 	STH2r
-	;write/skip LDA ?&no-write
+	.scan LDZ ?&no-write
 		DUP2 create-symbol/force
 		&no-write
 
@@ -284,7 +286,7 @@ JMP2r
 
 	,&b STR
 	[ LIT2 &head 0100 ] #0100 LTH2 ?&ignore ( cache )
-	[ LIT &skip 01 ] ?&pass1 ( cache )
+	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] ,&head LDR2 LTH2 ?&ignore ( cache )
 	( pass2 ) ;&b .File2/write DEO2
 	&ignore
@@ -314,7 +316,7 @@ JMP2r
 
 @get-ref ( token* -- <label*> )
 
-	;write/skip LDA #00 EQU ?&no-write
+	.scan LDZ #00 EQU ?&no-write
 		POP2 ;&fill JMP2r
 		&no-write
 	LDAk LIT "& NEQ ?&no-sub
@@ -335,7 +337,7 @@ JMP2r
 
 @create-symbol ( name* -- )
 
-	;write/skip LDA #00 EQU ?&skip
+	.scan LDZ #00 EQU ?&skip
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
@@ -386,7 +388,7 @@ JMP2r
 
 @get-rel ( label* -- distance )
 
-	;write/skip LDA ?&fill
+	.scan LDZ ?&fill
 	LDA2k ;write/head LDA2 SUB2 #0003 SUB2
 	DUP2 #0080 ADD2 POP ?&fail
 	NIP2 NIP
