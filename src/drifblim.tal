@@ -10,6 +10,7 @@
 	@dst $30
 
 	@scan $1
+	@head $2
 
 |0100
 
@@ -84,7 +85,7 @@ BRK
 
 	( cleanup cache )
 	#01 ;validate/pass STA
-	#0100 ;write/head STA2
+	#0100 .head STZ2
 	#01 .scan STZ
 	#0000 ;write/length STA2
 
@@ -147,7 +148,7 @@ JMP2r
 		read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 		&end
-	;write/head LDA2 #0100 GTH2 ?&ok
+	.head LDZ2 #0100 GTH2 ?&ok
 		;err/source set-error
 		&ok
 
@@ -232,7 +233,7 @@ JMP2r
 
 @write-pad ( addr* -- dest* )
 
-	;write/head LDA2
+	.head LDZ2
 	LTH2k ?&no-pad
 		SUB2k write-fill POP2 JMP2r
 		&no-pad
@@ -265,7 +266,7 @@ JMP2r
 
 @write-call ( str* -- )
 
-	get-ref LDA2 ,write/head LDR2 INC2 INC2 SUB2
+	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
 
 !write-short
 
@@ -285,9 +286,9 @@ JMP2r
 @write ( byte -- )
 
 	,&b STR
-	[ LIT2 &head 0100 ] #0100 LTH2 ?&ignore ( cache )
+	.head LDZ2 #0100 LTH2 ?&ignore ( cache )
 	.scan LDZ ?&pass1
-	[ LIT2 &length $2 ] ,&head LDR2 LTH2 ?&ignore ( cache )
+	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?&ignore ( cache )
 	( pass2 ) ;&b .File2/write DEO2
 	&ignore
 
@@ -296,18 +297,18 @@ JMP2r
 &pass1 ( -- )
 
 	[ LIT &b $1 ] #00 EQU ?&no-record
-		,&head LDR2 ,write/length STR2
+		.head LDZ2 ,write/length STR2
 		&no-record
 
 ( >> )
 
 @move-head ( -- )
 
-	,write/head LDR2 INC2
+	.head LDZ2 INC2
 
 @set-head ( v* -- )
 
-	,write/head STR2
+	.head STZ2
 
 JMP2r
 
@@ -342,7 +343,7 @@ JMP2r
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
 	&force
-	( save addr ) ;write/head LDA2 [ LIT2 &ptr =symbols ] STH2k STA2 ( cache )
+	( save addr ) .head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2 ( cache )
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr scpy
 	( move ) slen STH2r ADD2 INC2 ,&ptr STR2
@@ -389,7 +390,7 @@ JMP2r
 @get-rel ( label* -- distance )
 
 	.scan LDZ ?&fill
-	LDA2k ;write/head LDA2 SUB2 #0003 SUB2
+	LDA2k .head LDZ2 SUB2 #0003 SUB2
 	DUP2 #0080 ADD2 POP ?&fail
 	NIP2 NIP
 
