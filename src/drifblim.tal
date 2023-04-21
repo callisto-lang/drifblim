@@ -68,8 +68,8 @@ BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
 &eval ( -> )
 
 	assemble
-	;src sclr
 	print-summary
+	;src sclr
 
 BRK
 

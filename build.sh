@@ -24,5 +24,5 @@ $emu $dst examples/hello.tal bin/hello.rom
 $emu bin/hello.rom
 
 # Test interactive mode
-$emu $dst ^bin/hello.rom
+uxnemu "${roms_dir}/left.rom" examples/hello.tal | $emu $dst ^bin/hello.rom
 
