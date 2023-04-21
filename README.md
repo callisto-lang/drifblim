@@ -2,7 +2,7 @@
 
 [Drifblim](https://wiki.xxiivv.com/drifblim) is a [Uxntal](https://wiki.xxiivv.com/site/uxntal.html) assembler, written in that same language.
 
-The assembler is written in about 400 lines, it's designed to help bootstrap the Uxn ecosystem and to demonstrate the concept of a personal one-page computer concept. The goal is for Driflim's source code to be released as a print-friendly document, along with its assembled hexadecimal data and the _napkin definition_ of the Uxn virtual machine.
+The assembler is designed to help bootstrap the Uxn ecosystem, it is available as an assembled rom, a symbols file and a print-friendly source code, along with its hexadecimal data and the _napkin definition_ of the Uxn virtual machine.
 
 ## Build
 
@@ -22,13 +22,15 @@ If do not wish to assemble it yourself, you can download [drifblim.rom](https://
 
 [![builds.sr.ht status](https://builds.sr.ht/~rabbits/drifblim.svg)](https://builds.sr.ht/~rabbits/drifblim?)
 
-## Project Mode
+## Interactive Mode
 
-Drifblim allows for live-reloading when used as a `launcher.rom`(f4). To use this feature, you need to create a `.drifblim` file of 61 bytes to be loaded in the zero-page:
+Drifblim allows for interactive reassembly. To use this feature, you need to launch drifblim with the output path prefixed with a caret(`^`):
 
-- `00-2f`, source path.
-- `30-5f`, destination path.
-- `60`, non-zero values will also run the run on assembly.
+```
+uxncli drifblim.rom ^bin/output.rom
+```
+
+In this mode, each file path sent through the console, will be assembled to `bin/output.rom`. This was created to be used with the [Left](https://git.sr.ht/~rabbits/left) text editor.
 
 _Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
 
