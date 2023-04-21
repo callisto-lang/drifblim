@@ -21,25 +21,28 @@
 		;dict/usage pstr &has-args
 	;&await-src .Console/vector DEO2
 
-BRK &await-src ( -> ) .Console/read DEI .src skey ?ready-dst BRK
+BRK
+
+&await-src ( -> )
+
+	.Console/read DEI
+		DUP LIT "^ EQU ?set-interactive
+		.src skey ?ready-dst
+
+BRK
+
+(
+@|standard )
 
 @ready-dst ( -> )
 
 	;&await-dst .Console/vector DEO2
 
-BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval-once BRK
+BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&eval-once BRK
 
-@eval-once ( -> )
+&eval-once ( -> )
 
-	( setup export )
-	;dst .File2/name DEO2
-	[ LIT2 01 -File2/delete ] DEO
-	#0001 .File2/length DEO2
-
-	( run )
-	first-pass
-	second-pass
-
+	assemble
 	save-symbols
 	print-summary
 	( halt ) #800f DEO
@@ -47,19 +50,45 @@ BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval-once BRK
 BRK
 
 (
+@|interactive )
+
+@set-interactive ( c -> )
+
+	POP
+	;&await-dst .Console/vector DEO2
+
+BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval BRK
+
+@eval ( -> )
+
+	;&await-src .Console/vector DEO2
+
+BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
+
+&eval ( -> )
+
+	assemble
+	;src sclr
+
+BRK
+
+(
 @|generics )
 
-@second-pass ( -- )
+@assemble ( -- )
 
-	#00 ;write/skip STA
+	( setup export )
+	;dst .File2/name DEO2
+	[ LIT2 01 -File2/delete ] DEO
+	#0001 .File2/length DEO2
 
-( >> )
-
-@first-pass ( -- )
-
+	( first pass )
 	handle-top
+	validate
 
-( >> )
+	( second pass )
+	#00 ;write/skip STA
+	handle-top
 
 @validate ( -> )
 

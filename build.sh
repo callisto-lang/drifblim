@@ -23,3 +23,6 @@ $emu $dst $arg
 $emu $dst examples/hello.tal bin/hello.rom
 $emu bin/hello.rom
 
+# Test interactive mode
+$emu $dst ^bin/hello.rom
+
