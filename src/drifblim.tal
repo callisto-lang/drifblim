@@ -8,10 +8,6 @@
 
 	@src $30
 	@dst $30
-	@token $20
-	@scope $20
-	@sublabel $20
-	@include $30
 
 |0100
 
@@ -70,6 +66,7 @@ BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
 	assemble
 	print-summary
 	;src sclr
+	#010e DEO
 
 BRK
 
@@ -113,11 +110,10 @@ BRK
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
 		[ LIT2 &name $2 ] pstr #2018 DEO
-		;token-err pstr ;dict/in pstr
-		;scope-err pstr ;dict/dot pstr
-		POP2r
+		;token/err pstr ;dict/in pstr
+		;scope/err pstr ;dict/dot pstr
 		[ LIT &interactive $1 ] ?&skip
-		#010e DEO
+		POP2r
 		#010f DEO BRK
 		&skip
 
@@ -126,8 +122,8 @@ JMP2r
 @set-error ( name* -- )
 
 	,validate/name STR2
-	;token ;token-err scpy
-	;scope ;scope-err scpy
+	;token ;token/err scpy
+	;scope ;scope/err scpy
 	#00 ,validate/pass STR
 
 JMP2r
@@ -575,8 +571,10 @@ JMP2r
 @memory
 
 @comment $100
-@token-err $20
-@scope-err $20
+@token $20 &err $20
+@scope $20 &err $20
+@sublabel $20
+@include $30
 
 @symbols ( addr*, refs, name[], 00 )
 
