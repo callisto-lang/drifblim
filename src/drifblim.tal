@@ -54,7 +54,7 @@ BRK
 
 @set-interactive ( c -> )
 
-	POP
+	;validate/interactive STA
 	;&await-dst .Console/vector DEO2
 
 BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval BRK
@@ -69,6 +69,7 @@ BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
 
 	assemble
 	;src sclr
+	print-summary
 
 BRK
 
@@ -82,6 +83,22 @@ BRK
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
 
+	( cleanup cache )
+	#01 ;validate/pass STA
+	#0100 ;write/head STA2
+	#01 ;write/skip STA
+	#0000 ;write/length STA2
+
+	( clear memory )
+	;create-symbol/ptr LDA2 ;memory
+	&l
+		#0000 OVR2 STA2
+		INC2 INC2 GTH2k ?&l
+	POP2 POP2
+
+	;symbols ;create-symbol/ptr STA2
+	#0000 ;create-symbol/count STA2
+
 	( first pass )
 	handle-top
 	validate
@@ -92,13 +109,14 @@ BRK
 
 @validate ( -> )
 
-	[ LIT &pass 01 ] ?&skip
+	[ LIT &pass 01 ] ?&skip ( cache )
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
 		[ LIT2 &name $2 ] pstr #2018 DEO
 		;token-err pstr ;dict/in pstr
 		;scope-err pstr ;dict/dot pstr
 		POP2r
+		[ LIT &interactive $1 ] ?&skip
 		#010e DEO
 		#010f DEO BRK
 		&skip
@@ -269,9 +287,9 @@ JMP2r
 @write ( byte -- )
 
 	,&b STR
-	[ LIT2 &head 0100 ] #0100 LTH2 ?&ignore
-	[ LIT &skip 01 ] ?&pass1
-	[ LIT2 &length $2 ] ,&head LDR2 LTH2 ?&ignore
+	[ LIT2 &head 0100 ] #0100 LTH2 ?&ignore ( cache )
+	[ LIT &skip 01 ] ?&pass1 ( cache )
+	[ LIT2 &length $2 ] ,&head LDR2 LTH2 ?&ignore ( cache )
 	( pass2 ) ;&b .File2/write DEO2
 	&ignore
 
@@ -326,11 +344,11 @@ JMP2r
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
 	&force
-	( save addr ) ;write/head LDA2 [ LIT2 &ptr =symbols ] STH2k STA2
+	( save addr ) ;write/head LDA2 [ LIT2 &ptr =symbols ] STH2k STA2 ( cache )
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr scpy
 	( move ) slen STH2r ADD2 INC2 ,&ptr STR2
-	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
+	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2 ( cache )
 
 JMP2r
 	&invalid POP2 ;err/invalid !set-error
@@ -553,6 +571,8 @@ JMP2r
 
 (
 @|memory )
+
+@memory
 
 @comment $100
 @token-err $20
