@@ -25,15 +25,15 @@ BRK
 &await-src ( -> )
 
 	.Console/read DEI
-		DUP LIT "^ EQU ?set-interactive
-		.src skey ?ready-dst
+		DUP LIT "^ EQU ?on-interactive
+		.src skey ?on-default
 
 BRK
 
 (
-@|standard )
+@|modes )
 
-@ready-dst ( -> )
+@on-default ( -> )
 
 	;&await-dst .Console/vector DEO2
 
@@ -41,34 +41,27 @@ BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&eval-once BRK
 
 &eval-once ( -> )
 
-	assemble
-	save-symbols
-	print-summary
+	assemble save-symbols print-summary
 	( halt ) #800f DEO
 
 BRK
 
-(
-@|interactive )
-
-@set-interactive ( c -> )
+@on-interactive ( c -> )
 
 	;validate/interactive STA
 	;&await-dst .Console/vector DEO2
 
-BRK &await-dst ( -> ) .Console/read DEI .dst skey ?eval BRK
+BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&capture-src BRK
 
-@eval ( -> )
+&capture-src ( -> )
 
 	;&await-src .Console/vector DEO2
 
-BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
+BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval-loop BRK
 
-&eval ( -> )
+&eval-loop ( -> )
 
-	assemble
-	save-symbols
-	print-summary
+	assemble save-symbols print-summary
 	;src sclr
 
 BRK
