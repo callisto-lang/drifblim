@@ -11,6 +11,7 @@
 
 	@scan $1
 	@head $2
+	@error-name $2
 
 |0100
 
@@ -83,12 +84,6 @@ BRK
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
 
-	( cleanup cache )
-	#01 ;validate/pass STA
-	#0100 .head STZ2
-	#01 .scan STZ
-	#0000 ;write/length STA2
-
 	( clear memory )
 	;create-symbol/ptr LDA2 ;memory
 	&l
@@ -96,23 +91,25 @@ BRK
 		INC2 INC2 GTH2k ?&l
 	POP2 POP2
 
+	( cleanup cache )
+	#0000 .error-name STZ2
+	#0000 ;write/length STA2
 	;symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
 
 	( scan pass )
-	handle-top
+	#01 handle-top
 	validate
 
 	( write pass )
-	#00 .scan STZ
-	handle-top
+	#00 handle-top
 
 @validate ( -> )
 
-	[ LIT &pass 01 ] ?&skip ( cache )
+	.error-name LDZ2 #0000 EQU2 ?&skip
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
-		[ LIT2 &name $2 ] pstr #2018 DEO
+		.error-name LDZ2 pstr #2018 DEO
 		;token/err pstr ;dict/in pstr
 		;scope/err pstr ;dict/dot pstr
 		[ LIT &interactive $1 ] ?&skip
@@ -124,15 +121,15 @@ JMP2r
 
 @set-error ( name* -- )
 
-	,validate/name STR2
+	.error-name STZ2
 	;token ;token/err scpy
-	;scope ;scope/err scpy
-	#00 ,validate/pass STR
+	;scope ;scope/err
 
-JMP2r
+!scpy
 
-@handle-top ( -- )
+@handle-top ( scan -- )
 
+	.scan STZ
 	#0100 set-head
 	;dict/reset ;scope scpy
 	;src
@@ -286,7 +283,7 @@ JMP2r
 @write ( byte -- )
 
 	,&b STR
-	.head LDZ2 #0100 LTH2 ?&ignore ( cache )
+	.head LDZ2 #0100 LTH2 ?&ignore
 	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?&ignore ( cache )
 	( pass2 ) ;&b .File2/write DEO2
