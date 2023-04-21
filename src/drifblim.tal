@@ -67,6 +67,7 @@ BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
 &eval ( -> )
 
 	assemble
+	save-symbols
 	print-summary
 	;src sclr
 
