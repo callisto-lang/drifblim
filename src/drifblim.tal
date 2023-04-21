@@ -8,7 +8,6 @@
 
 	@src $30
 	@dst $30
-
 	@scan $1
 	@head $2
 	@error-name $2
@@ -70,7 +69,6 @@ BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval BRK
 	assemble
 	print-summary
 	;src sclr
-	#010e DEO
 
 BRK
 
@@ -331,8 +329,6 @@ JMP2r
 JMP2r
 	&fill ffff "[empty] $1
 
-@phex ( short* -- ) SWP phex/b &b ( byte -- ) DUP #04 SFT phex/c &c ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO JMP2r
-
 @create-symbol ( name* -- )
 
 	.scan LDZ #00 EQU ?&skip
@@ -442,6 +438,9 @@ JMP2r
 
 @print-summary ( -- )
 
+	.error-name LDZ2 #0000 EQU2 ?&continue
+		JMP2r
+		&continue
 	;create-symbol/ptr LDA2 ;symbols
 	&l
 		INC2k INC2 LDA ?&skip
