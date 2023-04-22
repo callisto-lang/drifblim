@@ -48,7 +48,6 @@ BRK
 
 @on-interactive ( c -> )
 
-	;validate/interactive STA
 	;&await-dst .Console/vector DEO2
 
 BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&capture-src BRK
@@ -62,6 +61,8 @@ BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval-loop BRK
 &eval-loop ( -> )
 
 	assemble save-symbols print-summary
+	( output success name )
+	;dst &w LDAk #18 DEO INC2 LDAk ?&w POP2 #0a18 DEO
 	;src sclr
 
 BRK
@@ -101,12 +102,13 @@ BRK
 	.error-name LDZ2 #0000 EQU2 ?&skip
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
-		.error-name LDZ2 pstr #2018 DEO
+		.error-name LDZ2 pstr #2019 DEO
 		;token/err pstr ;dict/in pstr
 		;scope/err pstr ;dict/dot pstr
-		[ LIT &interactive $1 ] ?&skip
-		POP2r
-		#010f DEO BRK
+		( No stop in interactive mode )
+		.Console/vector DEI2 ;on-interactive/await-src EQU2 ?&skip
+			POP2r
+			#010f DEO BRK
 		&skip
 
 JMP2r
