@@ -277,7 +277,10 @@ JMP2r
 @write ( byte -- )
 
 	,&b STR
-	.head LDZ2 #0100 LTH2 ?&ignore
+	.head LDZ ?&no-zep
+	,&b LDR #00 EQU ?&no-zep
+		;err/zeropage !set-error
+		&no-zep
 	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?&ignore ( cache )
 	( pass2 ) ;&b .File2/write DEO2
@@ -534,11 +537,12 @@ JMP2r
 
 @err "!! 20 "Error: 20 $1
 	&source "Empty 20 "file $1
+	&zeropage "Zero-page $1
 	&duplicate "Duplicate $1
 	&number "Number $1
 	&reference "Reference $1
 	&distance "Distance $1
-	&invalid "Invalid 20 "symbol 20 "name $1
+	&invalid "Invalid 20 "label $1
 	&rewind "Rewind $1
 
 @opcodes

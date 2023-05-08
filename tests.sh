@@ -24,10 +24,13 @@ $emu $dst "tests/err-num.tal" "bin/res.rom"
 echo "          Distance ,label in INIT."
 $emu $dst "tests/err-dis.tal" "bin/res.rom"
 
-echo "          Empty file  in INIT."
+echo "          Zero-page #12 in INIT."
 $emu $dst "tests/err-zep.tal" "bin/res.rom"
 
-echo ">         Invalid symbol name @1234 in 1234."
+echo "          Rewind |0100 in INIT."
+$emu $dst "tests/err-rew.tal" "bin/res.rom"
+
+echo "          Invalid label @1234 in 1234."
 $emu $dst "tests/err-hex.tal" "bin/res.rom"
 
 echo "          Number 1234567 in INIT."
