@@ -172,9 +172,8 @@ JMP2r
 	&end
 	#00 STH2kr sput
 	STH2r
-	.scan LDZ ?&no-write
+	.scan LDZ ?sclr
 		DUP2 create-symbol/force
-		&no-write
 
 !sclr
 
@@ -282,20 +281,18 @@ JMP2r
 	,&b LDR #00 EQU ?&no-zep
 		;err/zeropage set-error
 		&no-zep
-	.head LDZ #00 EQU ?&ignore
+	.head LDZ #00 EQU ?move-head
 	( </TODO> )
 	.scan LDZ ?&pass1
-	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?&ignore ( cache )
+	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?move-head ( cache )
 	( pass2 ) ;&b .File2/write DEO2
-	&ignore
 
 !move-head
 
 &pass1 ( -- )
 
-	[ LIT &b $1 ] #00 EQU ?&no-record
+	[ LIT &b $1 ] #00 EQU ?move-head
 		.head LDZ2 ,write/length STR2
-		&no-record
 
 ( >> )
 
