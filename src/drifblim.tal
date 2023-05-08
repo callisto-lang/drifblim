@@ -277,7 +277,13 @@ JMP2r
 @write ( byte -- )
 
 	,&b STR
-	.head LDZ2 #0100 LTH2 ?&ignore
+	( <TODO> )
+	.head LDZ ?&no-zep
+	,&b LDR #00 EQU ?&no-zep
+		;err/zeropage set-error
+		&no-zep
+	.head LDZ #00 EQU ?&ignore
+	( </TODO> )
 	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?&ignore ( cache )
 	( pass2 ) ;&b .File2/write DEO2
@@ -542,6 +548,7 @@ JMP2r
 	&invalid "Invalid 20 "label $1
 	&rewind "Rewind $1
 	&opcode "Opcode $1
+	&zeropage "Zeropage $1
 
 @opcodes [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
