@@ -167,7 +167,7 @@ JMP2r
 	&s
 		;&c .File1/read DEO2
 		read-eof ?&end
-		;comment slen #00ff GTH2 ?&end
+		;comment slen POP ?&end
 		[ LIT &c $1 ] DUP STH2kr sput LIT ") NEQ ?&s
 	&end
 	#00 STH2kr sput
@@ -192,7 +192,7 @@ JMP2r
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( non-runic )
-	is-hex ?lib/rawhex
+	is-hex ?write-hex
 	is-opcode ?lib/opcode
 
 !lib/litjsi
@@ -211,8 +211,7 @@ JMP2r
 	&litjci #20 write INC2 !write-call
 	&litjmi #40 write INC2 !write-call
 	&litjsi #60 write !write-call
-	&lithex INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write
-	&rawhex !write-hex
+	&lithex INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write !write-hex
 	&rawstr INC2 !write-str
 	&opcode find-opcode !write
 	&inc INC2k ;include STH2k scpy sclr STH2r !handle-file
@@ -285,9 +284,8 @@ JMP2r
 
 &zeropage ( -- )
 
-	,&b LDR #00 EQU ?&no-write
-		;err/zeropage set-error
-		&no-write
+	,&b LDR #00 EQU ?move-head
+	;err/zeropage set-error
 
 !move-head
 
