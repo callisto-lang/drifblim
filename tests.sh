@@ -33,6 +33,9 @@ $emu $dst "tests/err-rew.tal" "bin/res.rom"
 echo "          Invalid label @1234 in 1234."
 $emu $dst "tests/err-hex.tal" "bin/res.rom"
 
+echo "          Opcode ADD2q in INIT."
+$emu $dst "tests/err-opc.tal" "bin/res.rom"
+
 echo "          Number 1234567 in INIT."
 $emu $dst "tests/err-raw.tal" "bin/res.rom"
 
