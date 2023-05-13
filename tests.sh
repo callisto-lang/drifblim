@@ -39,3 +39,6 @@ $emu $dst "tests/err-opc.tal" "bin/res.rom"
 echo "          Number 1234567 in INIT."
 $emu $dst "tests/err-raw.tal" "bin/res.rom"
 
+echo "          Nested comment ( in INIT."
+$emu $dst "tests/err-com.tal" "bin/res.rom"
+
