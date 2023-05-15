@@ -341,13 +341,14 @@ JMP2r
 	DUP2
 	&w ( -- )
 		LDAk chex INC ?&valid
-		POP2 #00 JMP2r
-	&valid ( -- )
+		POP2 #00 
+JMP2r
+	&valid ( str* ~- f )
 		INC2 LDAk ?&w
 		POP2 #01
 JMP2r
 
-@is-opcode ( str* -- str* f )
+@is-opcode ( str* -+ str* f )
 	DUP2 DUP2 ;opcodes/brk scmp3 ?find-opcode/on-brk
 @find-opcode ( name* -- byte )
 	STH2
