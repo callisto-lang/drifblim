@@ -15,91 +15,80 @@
 |0100
 
 @on-reset ( -> )
-
 	.Console/type DEI ?&has-args
-		;dict/usage pstr &has-args ( -- )
-	;&await-src .Console/vector DEO2
-
+		;dict/usage pstr
+	&has-args ( -- )
+		;&await-src .Console/vector DEO2
 BRK
-
-&await-src ( -> )
-
+	&await-src ( -> )
 	.Console/read DEI
 		DUP LIT "^ EQU ?on-interactive
 		.src skey ?on-default
-
 BRK
 
 (
 @|modes )
 
 @on-default ( -> )
-
 	;&await-dst .Console/vector DEO2
-
-BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&eval-once BRK
+BRK
+	&await-dst ( -> )
+		.Console/read DEI .dst skey ?&eval-once
+BRK
 
 &eval-once ( -> )
-
 	assemble save-symbols print-summary
 	( halt ) #800f DEO
-
 BRK
 
 @on-interactive ( c -> )
-
 	POP
 	;&await-dst .Console/vector DEO2
-
-BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&capture-src BRK
+BRK
+	&await-dst ( -> )
+		.Console/read DEI .dst skey ?&capture-src
+BRK
 
 &capture-src ( -> )
-
 	;&await-src .Console/vector DEO2
-
-BRK &await-src ( -> ) .Console/read DEI .src skey ?&eval-loop BRK
+BRK
+	&await-src ( -> )
+		.Console/read DEI .src skey ?&eval-loop
+BRK
 
 &eval-loop ( -> )
-
 	assemble save-symbols print-summary
 	( output success name )
 	;dst &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 #0a18 DEO
 	;src sclr
-
 BRK
 
 (
 @|generics )
 
 @assemble ( -- )
-
 	( setup export )
 	;dst .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
-
 	( clear memory )
 	;create-symbol/ptr LDA2 ;memory
 	&l ( -- )
 		#0000 OVR2 STA2
 		INC2 INC2 GTH2k ?&l
 	POP2 POP2
-
 	( cleanup cache )
 	#0000 .error-name STZ2
 	#0000 ;write/length STA2
 	;symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
-
 	( scan pass )
 	#01 handle-top
 	validate
-
 	( write pass )
 	#00 handle-top
 
 @validate ( -> )
-
 	.error-name LDZ2 #0000 EQU2 ?&skip
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
@@ -111,26 +100,20 @@ BRK
 			POP2r
 			#010f DEO BRK
 		&skip ( -- )
-
 JMP2r
 
 @set-error ( name* -- )
-
 	.error-name STZ2
 	;token ;token/err scpy
 	;scope ;scope/err
-
 !scpy
 
 @handle-top ( scan -+ )
-
 	.scan STZ
 	#0100 set-head
 	;dict/reset ;scope scpy
 	;src
-
 @handle-file ( f* -- )
-
 	.File1/name DEO2
 	#0001 .File1/length DEO2
 	&s ( -- )
@@ -141,14 +124,11 @@ JMP2r
 	.head LDZ2 #0100 GTH2 ?&ok
 		;err/source set-error
 		&ok ( -- )
-
 JMP2r
 
 @handle-char ( c -- )
-
 	#20 GTHk NIP ?&append POP
 	;token LDAk ?&run POP2
-
 JMP2r
 	&append ( c ~- )
 		;token slen #001f EQU2 ?&error ;token !sput
@@ -158,13 +138,10 @@ JMP2r
 		DUP2 handle-token !sclr
 
 @handle-token ( t* -- )
-
 	LDAk LIT "( EQU ?handle-comment
-
 !parse
 
 @handle-comment ( t* -- )
-
 	LDA ;comment STH2k sput
 	#20 STH2kr sput
 	&s ( -- )
@@ -181,14 +158,12 @@ JMP2r
 	STH2r
 	.scan LDZ ?sclr
 		DUP2 create-symbol/force
-
 !sclr
 
 (
 @|tokenizer )
 
 @parse ( t* -- )
-
 	LDAk ,&rune STR
 	( runes )
 	;runes/err ;runes
@@ -199,7 +174,6 @@ JMP2r
 	( non-runic )
 	is-hex ?write-hex
 	is-opcode ?lib/opcode
-
 !lib/litjsi
 
 @parse-runic ( t* a* b* -- )
@@ -229,7 +203,6 @@ JMP2r
 @|primitives )
 
 @write-pad ( addr* -- dest* )
-
 	.head LDZ2
 	LTH2k ?&no-pad
 		SUB2k NIP2 !write-fill
@@ -238,87 +211,61 @@ JMP2r
 		;err/rewind set-error
 		&no-err ( -- )
 	POP2
-
 JMP2r
 
 @write-fill ( len* -- )
-
 	#0000 EQU2k ?&skip
 	&l ( -- )
 		#00 write
 		INC2 GTH2k ?&l
 	&skip ( -- )
 	POP2 POP2
-
 JMP2r
 
 @write-str ( str* -- )
-
 	&w ( -- )
 		LDAk write
 		INC2 LDAk ?&w
 	POP2
-
 JMP2r
 
 @write-call ( str* -- )
-
 	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
-
 !write-short
 
 @write-hex ( str* -- )
-
 	DUP2 slen OVR2 get-hex SWP2 NIP
 	DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 POP2 ;err/number !set-error
 	&byte ( -- ) POP NIP2 NIP !write
 	&short ( -- ) NIP2 ( >> )
-
 @write-short ( short* -+ )
-
 	SWP write
-
 @write ( byte -- )
-
 	,&b STR
 	.head LDZ #00 EQU ?&zeropage
 	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?move-head ( cache )
 	( pass2 ) ;&b .File2/write DEO2
-
 !move-head
-
 &zeropage ( -- )
-
 	,&b LDR #00 EQU ?move-head
 	;err/zeropage set-error
-
 !move-head
-
 &pass1 ( -- )
-
 	[ LIT &b $1 ] #00 EQU ?move-head
 		.head LDZ2 ,write/length STR2
-
-( >> )
-
 @move-head ( -+ )
-
 	.head LDZ2 INC2
-
 @set-head ( v* -- )
-
 	.head STZ2
-
 JMP2r
 
 (
 @|labels )
 
 @get-ref ( token* -- <label>* )
-
 	.scan LDZ #00 EQU ?&no-write
 		POP2 ;&fill JMP2r
 		&no-write ( -- )
@@ -332,12 +279,10 @@ JMP2r
 			&found ( -- )
 	( count )
 	INC2k INC2 LDAk INC ROT ROT STA
-
 JMP2r
 	&fill ffff "[empty] $1
 
 @create-symbol ( name* -- )
-
 	.scan LDZ #00 EQU ?&skip
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
@@ -348,89 +293,78 @@ JMP2r
 	( save name ) DUP2 STH2kr scpy
 	( move ) slen STH2r ADD2 INC2 ,&ptr STR2
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2 ( cache )
-
 JMP2r
 	&invalid ( name* ~- ) POP2 ;err/invalid !set-error
 	&not-unique ( name* ~- ) POP2 ;err/duplicate !set-error
 	&skip ( name* ~- ) POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
-
 	;scope ;sublabel STH2k scpy
 	LIT "/ STH2kr sput
 	STH2kr scat
 	STH2r
-
 JMP2r
 
 @find-symbol ( name* -- <addr>* )
-
 	STH2
 	;symbols
 	&w ( -- )
 		#0003 ADD2 DUP2 STH2kr scmp ?&found
 		scap INC2 INC2k INC2 INC2 LDA ?&w
-	POP2
-	POP2r
-	#ffff
-
+	POP2 POP2r #ffff
 JMP2r
-	&found ( -- ) #0003 SUB2 POP2r JMP2r
+	&found ( -- )
+		#0003 SUB2 POP2r
+JMP2r
 
 (
 @|helpers )
 
 @get-hex ( str* -- value* )
-
 	is-hex ?shex
 	get-ref/no-write LDA2
-
 JMP2r
 
 @get-rel ( label* -- distance )
-
 	.scan LDZ ?&fill
 	LDA2k .head LDZ2 SUB2 #0003 SUB2
 	DUP2 #0080 ADD2 POP ?&fail
 	NIP2 NIP
-
 JMP2r
-	&fail ( -- ) POP2 ;err/distance set-error ( >> )
-	&fill ( -- ) POP2 #ff JMP2r
+	&fail ( -- )
+		POP2 ;err/distance set-error ( >> )
+	&fill ( -- )
+		POP2 #ff
+JMP2r
 
 @is-hex ( str* -- str* f )
-
 	DUP2
 	&w ( -- )
 		LDAk chex INC ?&valid
-			POP2 #00 JMP2r &valid ( -- )
+		POP2 #00 JMP2r
+	&valid ( -- )
 		INC2 LDAk ?&w
-	POP2
-	#01
-
+		POP2 #01
 JMP2r
 
 @is-opcode ( str* -- str* f )
-
 	DUP2 DUP2 ;opcodes/brk scmp3 ?find-opcode/on-brk
-
 @find-opcode ( name* -- byte )
-
 	STH2
 	#2000
 	&l ( -- )
 		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
 		INC GTHk ?&l
 	POP2 POP2r #00
-
 JMP2r
 	&on-found ( -- )
 		NIP ( LITk ) DUP #00 EQU #70 SFT ADD
 		STH2r #0003 ADD2 find-modes ADD JMP2r
-	&on-brk ( -- ) POP2 #01 JMP2r
+	&on-brk ( -- )
+		POP2 #01
+JMP2r
 
 @find-modes ( mode* -- byte )
-
 	LITr 00
 	&w ( -- )
 		LDAk #20
@@ -441,11 +375,9 @@ JMP2r
 		&end ( -- ) NIP STH ORAr
 		INC2 LDAk ?&w
 	POP2 STHr
-
 JMP2r
 
 @print-summary ( -- )
-
 	.error-name LDZ2 #0000 EQU2 ?&continue
 		JMP2r
 		&continue ( -- )
@@ -465,11 +397,9 @@ JMP2r
 	;dict/in pstr ;write/length LDA2 #00ff SUB2 pdec ;dict/bytes pstr
 	;create-symbol/count LDA2 pdec ;dict/labels pstr
 	;dict/end
-
 !pstr
 
 @save-symbols ( -- )
-
 	;dst
 		DUP2 scap ;dict/sym-ext OVR2 scpy
 		SWP2 .File1/name DEO2
@@ -485,13 +415,10 @@ JMP2r
 		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&l
 	POP2
 	#00 ROT ROT STA
-
 JMP2r
 
 @read-eof ( -- f )
-
 	.File1/success DEI2 ORA #00 EQU
-
 JMP2r
 
 (
