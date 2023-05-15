@@ -35,10 +35,9 @@ BRK
 	&await-dst ( -> )
 		.Console/read DEI .dst skey ?&eval-once
 BRK
-
-&eval-once ( -> )
-	assemble save-symbols print-summary
-	( halt ) #800f DEO
+	&eval-once ( -> )
+		assemble save-symbols print-summary
+		( halt ) #800f DEO
 BRK
 
 @on-interactive ( c -> )
@@ -48,19 +47,17 @@ BRK
 	&await-dst ( -> )
 		.Console/read DEI .dst skey ?&capture-src
 BRK
-
-&capture-src ( -> )
-	;&await-src .Console/vector DEO2
+	&capture-src ( -> )
+		;&await-src .Console/vector DEO2
 BRK
 	&await-src ( -> )
 		.Console/read DEI .src skey ?&eval-loop
 BRK
-
-&eval-loop ( -> )
-	assemble save-symbols print-summary
-	( output success name )
-	;dst &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 #0a18 DEO
-	;src sclr
+	&eval-loop ( -> )
+		assemble save-symbols print-summary
+		( output success name )
+		;dst &w ( -- ) LDAk #18 DEO INC2 LDAk ?&w POP2 #0a18 DEO
+		;src sclr
 BRK
 
 (
@@ -249,12 +246,12 @@ JMP2r
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?move-head ( cache )
 	( pass2 ) ;&b .File2/write DEO2
 !move-head
-&zeropage ( -- )
-	,&b LDR #00 EQU ?move-head
-	;err/zeropage set-error
+	&zeropage ( -- )
+		,&b LDR #00 EQU ?move-head
+		;err/zeropage set-error
 !move-head
-&pass1 ( -- )
-	[ LIT &b $1 ] #00 EQU ?move-head
+	&pass1 ( -- )
+		[ LIT &b $1 ] #00 EQU ?move-head
 		.head LDZ2 ,write/length STR2
 @move-head ( -+ )
 	.head LDZ2 INC2
