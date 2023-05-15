@@ -150,8 +150,12 @@ JMP2r
 	;token LDAk ?&run POP2
 
 JMP2r
-	&append ( c ~- ) ;token DUP2 slen #001f LTH2 ?sput POP JMP2r
-	&run ( t* ~- ) DUP2 handle-token !sclr
+	&append ( c ~- )
+		;token slen #001f EQU2 ?&error ;token !sput
+	&error ( c ~- )
+		POP ;err/token !set-error
+	&run ( t* ~- )
+		DUP2 handle-token !sclr
 
 @handle-token ( t* -- )
 
@@ -546,6 +550,7 @@ JMP2r
 	&reference "Reference $1
 	&distance "Distance $1
 	&invalid "Invalid 20 "label $1
+	&token "Invalid 20 "token $1
 	&rewind "Rewind $1
 	&opcode "Opcode $1
 	&nested "Nested 20 "comment $1

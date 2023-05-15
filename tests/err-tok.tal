@@ -1,0 +1,6 @@
+( token length too long )
+|0100 #1234 BRK
+
+@token-is-way-too-long-to-be-valid
+	&some-long-sublabel
+

@@ -42,3 +42,6 @@ $emu $dst "tests/err-raw.tal" "bin/res.rom"
 echo "          Nested comment ( in INIT."
 $emu $dst "tests/err-com.tal" "bin/res.rom"
 
+echo "          Nested comment ( in INIT."
+$emu $dst "tests/err-tok.tal" "bin/res.rom"
+
