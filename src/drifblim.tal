@@ -232,7 +232,7 @@ JMP2r
 
 	.head LDZ2
 	LTH2k ?&no-pad
-		SUB2k write-fill POP2 JMP2r
+		SUB2k NIP2 !write-fill
 		&no-pad ( -- )
 	DUP2 #0101 LTH2 ?&no-err
 		;err/rewind set-error
