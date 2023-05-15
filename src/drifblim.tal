@@ -331,8 +331,8 @@ JMP2r
 	DUP2 #0080 ADD2 POP ?&fail
 	NIP2 NIP
 JMP2r
-	&fail ( -- )
-		POP2 ;err/distance set-error ( >> )
+	&fail ( label* distance* ~- distance )
+		POP2 ;err/distance set-error
 	&fill ( -- )
 		POP2 #ff
 JMP2r
