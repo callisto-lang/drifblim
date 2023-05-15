@@ -193,9 +193,7 @@ JMP2r
 	( runes )
 	;runes/err ;runes
 	&l ( -- )
-		LDAk [ LIT &rune $1 ] NEQ ?&no-runic
-			NIP2 INC2 LDA2 JMP2
-			&no-runic ( -- )
+		LDAk [ LIT &rune $1 ] EQU ?parse-runic
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( non-runic )
@@ -203,6 +201,9 @@ JMP2r
 	is-opcode ?lib/opcode
 
 !lib/litjsi
+
+@parse-runic ( t* a* b* -- )
+	NIP2 INC2 LDA2 ( unsafe ) JMP2
 
 @lib
 	&padabs ( -- ) INC2 get-hex write-pad !set-head
@@ -217,7 +218,7 @@ JMP2r
 	&rawabs ( -- ) INC2 get-ref LDA2 !write-short
 	&litjci ( -- ) #20 write INC2 !write-call
 	&litjmi ( -- ) #40 write INC2 !write-call
-	&litjsi ( -- ) #60 write !write-call
+	&litjsi ( t* -- ) #60 write !write-call
 	&lithex ( -- ) INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write !write-hex
 	&rawstr ( -- ) INC2 !write-str
 	&opcode ( -- ) find-opcode !write
