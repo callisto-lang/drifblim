@@ -48,6 +48,7 @@ BRK
 
 @on-interactive ( c -> )
 
+	POP
 	;&await-dst .Console/vector DEO2
 
 BRK &await-dst ( -> ) .Console/read DEI .dst skey ?&capture-src BRK
@@ -121,14 +122,12 @@ JMP2r
 
 !scpy
 
-@handle-top ( scan -- )
+@handle-top ( scan -+ )
 
 	.scan STZ
 	#0100 set-head
 	;dict/reset ;scope scpy
 	;src
-
-( >> )
 
 @handle-file ( f* -- )
 
@@ -151,8 +150,8 @@ JMP2r
 	;token LDAk ?&run POP2
 
 JMP2r
-	&append ( c -- ) ;token DUP2 slen #001f LTH2 ?sput POP JMP2r
-	&run ( t* -- ) DUP2 handle-token !sclr
+	&append ( c ~- ) ;token DUP2 slen #001f LTH2 ?sput POP JMP2r
+	&run ( t* ~- ) DUP2 handle-token !sclr
 
 @handle-token ( t* -- )
 
@@ -272,7 +271,7 @@ JMP2r
 	&byte ( -- ) POP NIP2 NIP !write
 	&short ( -- ) NIP2 ( >> )
 
-@write-short ( short* -- )
+@write-short ( short* -+ )
 
 	SWP write
 
@@ -300,7 +299,7 @@ JMP2r
 
 ( >> )
 
-@move-head ( -- )
+@move-head ( -+ )
 
 	.head LDZ2 INC2
 
@@ -313,7 +312,7 @@ JMP2r
 (
 @|labels )
 
-@get-ref ( token* -- <label*> )
+@get-ref ( token* -- <label>* )
 
 	.scan LDZ #00 EQU ?&no-write
 		POP2 ;&fill JMP2r
@@ -346,9 +345,9 @@ JMP2r
 	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2 ( cache )
 
 JMP2r
-	&invalid ( -- ) POP2 ;err/invalid !set-error
-	&not-unique ( -- ) POP2 ;err/duplicate !set-error
-	&skip ( -- ) POP2 JMP2r
+	&invalid ( name* ~- ) POP2 ;err/invalid !set-error
+	&not-unique ( name* ~- ) POP2 ;err/duplicate !set-error
+	&skip ( name* ~- ) POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 
@@ -359,7 +358,7 @@ JMP2r
 
 JMP2r
 
-@find-symbol ( name* -- <addr*> )
+@find-symbol ( name* -- <addr>* )
 
 	STH2
 	;symbols
