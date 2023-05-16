@@ -175,8 +175,8 @@ JMP2r
 	is-opcode ?lib/opcode
 !lib/litjsi
 
-@parse-runic ( t* a* b* -- )
-	NIP2 INC2 LDA2 JMP2 ( TODO: Add unsafe type )
+@parse-runic ( t* a* b* -: )
+	NIP2 INC2 LDA2 ( unsafe ) JMP2
 
 @lib
 	&padabs ( t* -- ) INC2 get-hex write-pad !set-head
@@ -185,7 +185,7 @@ JMP2r
 	&sublab ( t* -- ) INC2 make-sublabel !create-symbol
 	&litrel ( t* -- ) #80 write
 	&rawrel ( t* -- ) INC2 get-ref get-rel INC !write
-	&litzep (t* -- ) #80 write
+	&litzep ( t* -- ) #80 write
 	&rawzep ( t* -- ) INC2 get-ref LDA2 NIP !write
 	&litabs ( t* -- ) #a0 write
 	&rawabs ( t* -- ) INC2 get-ref LDA2 !write-short
@@ -228,17 +228,16 @@ JMP2r
 	POP2
 JMP2r
 
-@write-call ( str* -- )
-	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
-!write-short
-
 @write-hex ( str* -- )
 	DUP2 slen OVR2 get-hex SWP2 NIP
 	DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 POP2 ;err/number !set-error
 	&byte ( str* value* length ~- ) POP NIP2 NIP !write
-	&short ( str* short* ~- ) NIP2 ( TODO: Add branch fallthrough type )
+	&short ( str* short* ~- ) NIP2 !write-short
+
+@write-call ( str* -+ )
+	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
 @write-short ( short* -+ )
 	SWP write
 @write ( byte -- )

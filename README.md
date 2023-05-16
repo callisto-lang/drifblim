@@ -37,3 +37,5 @@ _Drifblim is strong enough to lift Pokémon or people but has no control over it
 ## Support
 
 - Linted with [uxnlin.rom](https://git.sr.ht/~rabbits/uxnlin)
+- Balanced with [uxnbal.rom](https://git.sr.ht/~rabbits/uxnbal)
+
