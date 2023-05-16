@@ -179,24 +179,24 @@ JMP2r
 	NIP2 INC2 LDA2 JMP2 ( TODO: Add unsafe type )
 
 @lib
-	&padabs ( -- ) INC2 get-hex write-pad !set-head
-	&padrel ( -- ) INC2 get-hex !write-fill
-	&toplab ( -- ) INC2 DUP2 ;scope scpy !create-symbol
-	&sublab ( -- ) INC2 make-sublabel !create-symbol
-	&litrel ( -- ) #80 write
-	&rawrel ( -- ) INC2 get-ref get-rel INC !write
-	&litzep ( -- ) #80 write
-	&rawzep ( -- ) INC2 get-ref LDA2 NIP !write
-	&litabs ( -- ) #a0 write
-	&rawabs ( -- ) INC2 get-ref LDA2 !write-short
-	&litjci ( -- ) #20 write INC2 !write-call
-	&litjmi ( -- ) #40 write INC2 !write-call
+	&padabs ( t* -- ) INC2 get-hex write-pad !set-head
+	&padrel ( t* -- ) INC2 get-hex !write-fill
+	&toplab ( t* -- ) INC2 DUP2 ;scope scpy !create-symbol
+	&sublab ( t* -- ) INC2 make-sublabel !create-symbol
+	&litrel ( t* -- ) #80 write
+	&rawrel ( t* -- ) INC2 get-ref get-rel INC !write
+	&litzep (t* -- ) #80 write
+	&rawzep ( t* -- ) INC2 get-ref LDA2 NIP !write
+	&litabs ( t* -- ) #a0 write
+	&rawabs ( t* -- ) INC2 get-ref LDA2 !write-short
+	&litjci ( t* -- ) #20 write INC2 !write-call
+	&litjmi ( t* -- ) #40 write INC2 !write-call
 	&litjsi ( t* -- ) #60 write !write-call
-	&lithex ( -- ) INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write !write-hex
-	&rawstr ( -- ) INC2 !write-str
-	&opcode ( -- ) find-opcode !write
-	&inc ( -- ) INC2k ;include STH2k scpy sclr STH2r !handle-file
-	&ignore ( -- ) POP2 JMP2r
+	&lithex ( t* -- ) INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write !write-hex
+	&rawstr ( t* -- ) INC2 !write-str
+	&opcode ( t* -- ) find-opcode !write
+	&inc ( t* -- ) INC2k ;include STH2k scpy sclr STH2r !handle-file
+	&ignore ( t* -- ) POP2 JMP2r
 
 (
 @|primitives )
