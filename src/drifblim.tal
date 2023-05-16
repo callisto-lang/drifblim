@@ -149,8 +149,10 @@ JMP2r
 			DUP LIT "( NEQ ?&no-nested
 				;err/nested set-error
 				&no-nested ( -- )
-			DUP STH2kr sput LIT ") NEQ ?&s
-	&end ( -- )
+			DUP
+				STH2kr sput
+				LIT ") NEQ ?&s
+	&end ( ~- )
 	#00 STH2kr sput
 	STH2r
 	.scan LDZ ?sclr
@@ -174,7 +176,7 @@ JMP2r
 !lib/litjsi
 
 @parse-runic ( t* a* b* -- )
-	NIP2 INC2 LDA2 ( unsafe ) JMP2
+	NIP2 INC2 LDA2 JMP2 ( TODO: Add unsafe type )
 
 @lib
 	&padabs ( -- ) INC2 get-hex write-pad !set-head
@@ -236,7 +238,7 @@ JMP2r
 	#04 EQU ?&short
 	POP2 POP2 ;err/number !set-error
 	&byte ( str* value* length ~- ) POP NIP2 NIP !write
-	&short ( str* short* ~+ ) NIP2
+	&short ( str* short* ~- ) NIP2 ( TODO: Add branch fallthrough type )
 @write-short ( short* -+ )
 	SWP write
 @write ( byte -- )
@@ -284,7 +286,7 @@ JMP2r
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
-	&force ( -- )
+	&force ( name* -- )
 	( save addr ) .head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2 ( cache )
 	( move ) INC2r INC2r INC2r
 	( save name ) DUP2 STH2kr scpy
