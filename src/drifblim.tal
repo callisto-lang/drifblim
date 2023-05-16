@@ -203,7 +203,7 @@ JMP2r
 	.head LDZ2
 	LTH2k ?&no-pad
 		SUB2k NIP2 !write-fill
-		&no-pad ( -- )
+		&no-pad ( addr* head* ~- dest* )
 	DUP2 #0101 LTH2 ?&no-err
 		;err/rewind set-error
 		&no-err ( -- )
@@ -235,8 +235,8 @@ JMP2r
 	DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 POP2 ;err/number !set-error
-	&byte ( -- ) POP NIP2 NIP !write
-	&short ( -- ) NIP2 ( >> )
+	&byte ( str* value* length ~- ) POP NIP2 NIP !write
+	&short ( str* short* ~+ ) NIP2
 @write-short ( short* -+ )
 	SWP write
 @write ( byte -- )
@@ -338,7 +338,7 @@ JMP2r
 	DUP2
 	&w ( -- )
 		LDAk chex INC ?&valid
-		POP2 #00 
+		POP2 #00
 JMP2r
 	&valid ( str* ~- f )
 		INC2 LDAk ?&w
@@ -355,10 +355,10 @@ JMP2r
 		INC GTHk ?&l
 	POP2 POP2r #00
 JMP2r
-	&on-found ( -- )
+	&on-found ( name* ~- byte )
 		NIP ( LITk ) DUP #00 EQU #70 SFT ADD
 		STH2r #0003 ADD2 find-modes ADD JMP2r
-	&on-brk ( -- )
+	&on-brk ( name* ~- byte )
 		POP2 #01
 JMP2r
 
