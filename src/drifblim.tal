@@ -245,15 +245,14 @@ JMP2r
 	.head LDZ #00 EQU ?&zeropage
 	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?move-head ( cache )
-	( pass2 ) ;&b .File2/write DEO2
-!move-head
-	&zeropage ( -- )
+	;&b .File2/write DEO2 !move-head
+	&zeropage ( ~- )
 		,&b LDR #00 EQU ?move-head
-		;err/zeropage set-error
-!move-head
-	&pass1 ( -- )
+		;err/zeropage set-error !move-head
+	&pass1 ( ~+ )
 		[ LIT &b $1 ] #00 EQU ?move-head
 		.head LDZ2 ,write/length STR2
+
 @move-head ( -+ )
 	.head LDZ2 INC2
 @set-head ( v* -- )
@@ -379,7 +378,7 @@ JMP2r
 @print-summary ( -- )
 	.error-name LDZ2 #0000 EQU2 ?&continue
 		JMP2r
-		&continue ( -- )
+		&continue ( ~- )
 	;create-symbol/ptr LDA2 ;symbols
 	&l ( -- )
 		INC2k INC2 LDA ?&skip
@@ -433,9 +432,8 @@ JMP2r
 JMP2r
 
 @scap ( str* -- end* )
-	LDAk ?&w
-	JMP2r
-	&w ( -- )
+	LDAk ?&w JMP2r
+	&w ( ~- )
 		INC2 LDAk ?&w
 JMP2r
 
@@ -450,12 +448,10 @@ JMP2r
 @scat ( src* dst* -+ )
 	scap
 @scpy ( src* dst* -- )
-	OVR2 LDA ?&e
-	POP2 POP2
-JMP2r
-	&e ( src* dst* ~- src* )
+	OVR2 LDA ?&e POP2 POP2 JMP2r
+	&e ( src* dst* ~- )
 		STH2
-	&w ( src* ~- )
+	&w ( -- )
 		LDAk STH2kr STA INC2r INC2 LDAk ?&w
 		POP2 #00 STH2r STA
 JMP2r
