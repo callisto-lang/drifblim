@@ -95,7 +95,7 @@ BRK
 		( No stop in interactive mode )
 		.Console/vector DEI2 ;on-interactive/await-src EQU2 ?&skip
 			POP2r
-			#010f DEO BRK
+			( TODO: move this outside ) #010f DEO BRK
 		&skip ( -- )
 JMP2r
 
@@ -117,10 +117,10 @@ JMP2r
 		;&c .File1/read DEO2
 		read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
-		&end ( -- )
-	.head LDZ2 #0100 GTH2 ?&ok
-		;err/source set-error
-		&ok ( -- )
+	&end ( ~- )
+		.head LDZ2 #0100 GTH2 ?&ok
+			;err/source set-error
+	&ok ( -- )
 JMP2r
 
 @handle-char ( c -- )
@@ -309,7 +309,7 @@ JMP2r
 		scap INC2 INC2k INC2 INC2 LDA ?&w
 	POP2 POP2r #ffff
 JMP2r
-	&found ( -- )
+	&found ( `name* symbols* ~- <addr>* )
 		#0003 SUB2 POP2r
 JMP2r
 
