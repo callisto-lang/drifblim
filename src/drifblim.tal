@@ -37,7 +37,8 @@ BRK
 BRK
 	&eval-once ( -> )
 		assemble save-symbols print-summary
-		( halt ) #800f DEO
+		( error code )
+		#80 .error-name LDZ2 #0000 NEQ2 ORA #0f DEO
 BRK
 
 @on-interactive ( c -> )
@@ -80,23 +81,16 @@ BRK
 	;symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
 	( scan pass )
-	#01 handle-top
-	validate
+	#01 handle-top ?&when-error
 	( write pass )
-	#00 handle-top
-
-@validate ( -> )
-	.error-name LDZ2 #0000 EQU2 ?&skip
+	#00 handle-top ?&when-error
+JMP2r
+	&when-error ( ~- )
 		[ LIT2 01 -File2/delete ] DEO
 		;err pstr
 		.error-name LDZ2 pstr #2019 DEO
 		;token/err pstr ;dict/in pstr
 		;scope/err pstr ;dict/dot pstr
-		( No stop in interactive mode )
-		.Console/vector DEI2 ;on-interactive/await-src EQU2 ?&skip
-			POP2r
-			( TODO: move this outside ) #010f DEO BRK
-		&skip ( -- )
 JMP2r
 
 @set-error ( name* -- )
@@ -105,11 +99,14 @@ JMP2r
 	;scope ;scope/err
 !scpy
 
-@handle-top ( scan -+ )
+@handle-top ( scan -- err )
 	.scan STZ
 	#0100 set-head
 	;dict/reset ;scope scpy
-	;src
+	;src handle-file
+	.error-name LDZ2 #0000 NEQ2
+JMP2r
+
 @handle-file ( f* -- )
 	.File1/name DEO2
 	#0001 .File1/length DEO2
