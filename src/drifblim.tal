@@ -344,8 +344,15 @@ JMP2r
 		POP2 #01
 JMP2r
 
-@is-opcode ( str* -+ str* f )
-	DUP2 DUP2 ;opcodes/brk scmp3 ?find-opcode/on-brk
+@is-opcode ( str* -- str* f )
+	DUP2 find-opcode ?&pass
+	DUP2 ;opcodes/brk scmp3 ?&pass
+	#00
+JMP2r
+	&pass ( str* ~- str* f )
+		#01
+JMP2r
+
 @find-opcode ( name* -- byte )
 	STH2
 	#2000
@@ -354,12 +361,9 @@ JMP2r
 		INC GTHk ?&l
 	POP2 POP2r #00
 JMP2r
-	&on-found ( name* ~- byte )
+	&on-found ( bounds* `name* ~- byte )
 		NIP ( LITk ) DUP #00 EQU #70 SFT ADD
 		STH2r #0003 ADD2 find-modes ADD JMP2r
-	&on-brk ( name* ~- byte )
-		POP2 #01
-JMP2r
 
 @find-modes ( mode* -- byte )
 	LITr 00
