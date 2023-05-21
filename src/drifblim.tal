@@ -152,7 +152,7 @@ JMP2r
 			DUP
 				STH2kr sput
 				LIT ") NEQ ?&s
-	&end ( ~- )
+	&end ( `ptr* ~- )
 	#00 STH2kr sput
 	STH2r
 	.scan LDZ ?sclr
@@ -265,17 +265,16 @@ JMP2r
 @get-ref ( token* -- <label>* )
 	.scan LDZ #00 EQU ?&no-write
 		POP2 ;&fill JMP2r
-		&no-write ( -- )
-	LDAk LIT "& NEQ ?&no-sub
-		INC2 make-sublabel
-		&no-sub ( -- )
-	find-symbol
-		INC2k ORA ?&found
-			POP2 ;&fill
-			;err/reference !set-error
-			&found ( -- )
-	( count )
-	INC2k INC2 LDAk INC ROT ROT STA
+	&no-write ( ~- )
+		LDAk LIT "& NEQ ?&no-sub
+			INC2 make-sublabel
+	&no-sub ( -- )
+		find-symbol
+			INC2k ORA ?&found
+				POP2 ;&fill
+				;err/reference !set-error
+	&found ( t* ~- <label>* )
+		INC2k INC2 LDAk INC ROT ROT STA
 JMP2r
 	&fill ffff "[empty] $1
 
@@ -476,11 +475,11 @@ JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
-	&l ( a* -- f )
+	&l ( a* `b* -- f )
 		LDAk LDAkr STHr NEQk ?&d
 		DUP EOR EQUk ?&d
 		POP2 INC2 INC2r !&l
-	&d ( a* c1 c2 ~- f )
+	&d ( a* c1 c2 `b* ~- f )
 		NIP2 POP2r EQU
 JMP2r
 
@@ -491,9 +490,10 @@ JMP2r
 JMP2r
 
 @chex ( c -- <val> )
-	LIT "0 SUB DUP #09 GTH [ JMP JMP2r ]
-	#27 SUB DUP #0f GTH [ JMP JMP2r ]
+	LIT "0 SUB DUP #0a LTH ?&end
+	#27 SUB DUP #10 LTH ?&end
 	POP #ff
+	&end ( -- )
 JMP2r
 
 @shex ( str* -- val* )
