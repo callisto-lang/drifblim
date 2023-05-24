@@ -38,7 +38,7 @@ BRK
 	&eval-once ( -> )
 		assemble save-symbols print-summary
 		( error code )
-		#80 .error-name LDZ2 #0000 NEQ2 ORA #0f DEO
+		[ LIT2 80 -error-name ] LDZ2 #0000 NEQ2 ORA #0f DEO
 BRK
 
 @on-interactive ( c -> )
@@ -90,8 +90,8 @@ JMP2r
 		;err pstr
 		.error-name LDZ2 pstr #2019 DEO
 		;token/err pstr ;dict/in pstr
-		;scope/err pstr ;dict/dot pstr
-JMP2r
+		;scope/err pstr ;dict/dot
+!pstr
 
 @set-error ( name* -- )
 	.error-name STZ2
