@@ -457,13 +457,10 @@ JMP2r
 JMP2r
 
 @sclr ( str* -- )
-	LDAk ?&w
-	POP2
-JMP2r
-	&w ( str* ~- )
-		STH2k #00 STH2r STA
-		INC2 LDAk ?&w
-		POP2
+	#00 ROT ROT
+	&w ( -- )
+		STAk INC2 LDAk ?&w
+	POP2 POP
 JMP2r
 
 @skey ( key buf -- proc )
@@ -502,7 +499,8 @@ JMP2r
 	&w ( -- )
 		LITr 40 SFT2r LITr 00 LDAk chex STH
 		ADD2r INC2 LDAk ?&w
-		POP2 STH2r
+	POP2
+	STH2r
 JMP2r
 
 @pdec ( short* -- )
