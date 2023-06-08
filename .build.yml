@@ -3,19 +3,20 @@ oauth: pages.sr.ht/PAGES:RW
 environment:
     SITE: rabbits.srht.site/drifblim
 sources:
+    - https://git.sr.ht/~rabbits/uxn11
     - https://git.sr.ht/~rabbits/drifblim
 tasks:
     - prepare: |
-        curl -fsS https://rabbits.srht.site/uxn/uxn-lin64.tar.gz | tar -zx
-    - build: |
+        cd uxn11
+        cc src/uxnasm.c -o ../uxnasm
+    - assemble: |
         cd drifblim
-        ../uxn/uxnasm src/drifblim.tal ../drifblim.rom
+        ../uxnasm src/drifblim.tal drifblim.rom
     - upload: |
-        tar -czf out.tar.gz drifblim.rom
+        tar -czf out.tar.gz drifblim/drifblim.rom
         acurl() {
             set +x
             curl -H "Authorization: Bearer ${OAUTH2_TOKEN}" "${@}"
             set -x
         }
         acurl -fsS "https://pages.sr.ht/publish/${SITE}" -Fcontent=@out.tar.gz
-        acurl -fsS "https://pages.sr.ht/publish/${SITE}" -Fcontent=@out.tar.gz -Fprotocol=GEMINI
