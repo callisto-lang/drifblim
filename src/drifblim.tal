@@ -139,9 +139,8 @@
 		;&c .File1/read DEO2
 		read-eof ?&end
 		;comment slen POP ?&end
-		[ LIT &c $1 ] DUP LIT "( NEQ ?&no-nested
-		;err/nested set-error
-	&no-nested ( -- )
+		[ LIT &c $1 ] DUP LIT "( NEQ ?&>no-nested
+			;err/nested set-error &>no-nested
 		DUP STH2kr sput LIT ") NEQ ?&s
 	&end ( `ptr* ~- )
 		#00 STH2kr sput STH2r .scan LDZ ?sclr
@@ -207,13 +206,12 @@
 @|primitives )
 
 @write-pad ( addr* -- dest* )
-	.head LDZ2 LTH2k ?&no-pad
-	SUB2k NIP2 !write-fill
-	&no-pad ( addr* head* ~- dest* )
-		DUP2 #0101 LTH2 ?&no-err
-		;err/rewind set-error
-	&no-err ( -- )
-		POP2 JMP2r
+	.head LDZ2 LTH2k ?&>no-pad
+		SUB2k NIP2 !write-fill
+		&>no-pad
+	DUP2 #0101 LTH2 ?&>no-err
+		;err/rewind set-error &>no-err
+	POP2 JMP2r
 
 @write-fill ( len* -- )
 	#0000 EQU2k ?&skip
@@ -331,7 +329,7 @@
 	DUP2
 	&w ( -- )
 		LDAk chex INC ?&>valid
-		POP2 #00 JMP2r &>valid
+			POP2 #00 JMP2r &>valid
 		INC2 LDAk ?&w
 	POP2 #01 JMP2r
 
@@ -366,15 +364,15 @@
 
 @print-summary ( -- )
 	.error-name LDZ2 #0000 EQU2 ?&>continue
-	JMP2r &>continue
+		JMP2r &>continue
 	;create-symbol/ptr LDA2 ;symbols
 	&l ( -- )
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&>skip
 		LDAk LIT "( EQU ?&>skip
-		;dict/unused <pstr>
-		DUP2 <pstr>
-		#0a19 DEO &>skip
+			;dict/unused <pstr>
+			DUP2 <pstr>
+			#0a19 DEO &>skip
 		scap INC2 GTH2k ?&l
 	POP2 POP2
 	( | result )
@@ -482,9 +480,10 @@
 @<pdec> ( short* -- )
 	#2710 LIT2r 00fb
 	&w ( -- )
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&skip
-		DUP LIT "0 ADD #19 DEO
-		INCr &skip POP2 #000a DIV2 SWPr INCr STHkr ?&w
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&>skip
+			DUP LIT "0 ADD #19 DEO
+			INCr &>skip
+		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
 
 (
@@ -517,18 +516,18 @@
 
 @opcodes
 	[
-"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
-"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
-"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-&brk "BRK ]
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	&brk "BRK ]
 
 @runes
 	[
-"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
-", =lib/litrel "_ =lib/rawrel ". =lib/litzep "- =lib/rawzep
-"; =lib/litabs "= =lib/rawabs "? =lib/litjci "! =lib/litjmi
-"[ =lib/ignore "] =lib/ignore "# =lib/lithex "" =lib/rawstr "~ =lib/inc ]
+	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
+	", =lib/litrel "_ =lib/rawrel ". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs "? =lib/litjci "! =lib/litjmi
+	"[ =lib/ignore "] =lib/ignore "# =lib/lithex "" =lib/rawstr "~ =lib/inc ]
 	&err
 (
 @|memory )
