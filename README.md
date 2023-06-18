@@ -32,10 +32,11 @@ uxncli drifblim.rom ^bin/output.rom
 
 In this mode, each file path sent through the console, will be assembled to `bin/output.rom`. This was created to be used with the [Left](https://git.sr.ht/~rabbits/left) text editor.
 
-_Drifblim is strong enough to lift Pokémon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
+_Drifblim is strong enough to lift Pokemon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
 
 ## Support
 
+- Assembled with [itself](https://git.sr.ht/~rabbits/drifblim)
 - Linted with [uxnlin.rom](https://git.sr.ht/~rabbits/uxnlin)
-- Balanced with [uxnbal.rom](https://git.sr.ht/~rabbits/uxnbal)
+- Formatted with [uxnfor](https://git.sr.ht/~rabbits/uxnfor)
 
