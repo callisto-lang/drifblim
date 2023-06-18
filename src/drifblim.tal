@@ -1,5 +1,4 @@
-(
-	usage: drifblim.rom input.tal output.rom )
+( usage: drifblim.rom input.tal output.rom )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
@@ -36,8 +35,7 @@
 		.Console/read DEI .dst skey ?&eval-once
 		BRK
 	&eval-once ( -> )
-		assemble save-symbols print-summary
-		( error code ) [ LIT2 80 -error-name ] LDZ2 #0000 NEQ2 ORA #0f DEO
+		assemble save-symbols print-summary [ LIT2 80 -error-name ] LDZ2 #0000 NEQ2 ORA #0f DEO
 		BRK
 
 @on-interactive ( c -> )
@@ -221,8 +219,9 @@
 		POP2 POP2 JMP2r
 
 @write-str ( str* -- )
+	!&a
 	&w ( -- )
-		LDAk write INC2 LDAk ?&w
+		LDAk write INC2 &a LDAk ?&w
 	POP2 JMP2r
 
 @write-hex ( str* -- )
@@ -254,6 +253,7 @@
 		[ LIT &b $1 ] #00 EQU ?move-head
 		.head LDZ2 ,write/length STR2
 
+
 @move-head ( -+ )
 	.head LDZ2 INC2
 
@@ -265,17 +265,15 @@
 @|labels )
 
 @get-ref ( token* -- <label>* )
-	.scan LDZ #00 EQU ?&no-write
-	POP2 ;&fill JMP2r
-	&no-write ( ~- )
-		LDAk LIT "& NEQ ?&no-sub
-		INC2 make-sublabel
-	&no-sub ( -- )
-		find-symbol INC2k ORA ?&found
+	.scan LDZ #00 EQU ?&>no-write
+		POP2 ;&fill JMP2r &>no-write
+	LDAk LIT "& NEQ ?&>no-sub
+		INC2 make-sublabel &>no-sub
+	find-symbol INC2k ORA ?&>found
 		POP2 ;&fill ;err/reference !set-error
-	&found ( t* ~- <label>* )
-		INC2k INC2 LDAk INC ROT ROT STA
-		JMP2r &fill ffff "[empty] $1
+		&>found
+	INC2k INC2 LDAk INC ROT ROT STA
+	JMP2r &fill ffff "[empty] $1
 
 @create-symbol ( name* -- )
 	.scan LDZ #00 EQU ?&skip
@@ -301,20 +299,21 @@
 	;scope ;sublabel STH2k scpy LIT "/ STH2kr sput STH2kr scat STH2r JMP2r
 
 @find-symbol ( name* -- <addr>* )
-	STH2 ;symbols
+	,&t STR2
+	;symbols
 	&w ( -- )
-		#0003 ADD2 DUP2 STH2kr scmp ?&found
+		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
 		scap INC2 INC2k INC2 INC2 LDA ?&w
-	POP2 POP2r #ffff JMP2r
-	&found ( `name* symbols* ~- <addr>* )
-		#0003 SUB2 POP2r JMP2r
+	POP2 #ffff JMP2r
+	&found ( symbols* ~- <addr>* )
+		#0003 SUB2 JMP2r
 
 (
 @|helpers )
 
 @get-hex ( str* -- value* )
 	is-hex ?shex
-	get-ref/no-write LDA2 JMP2r
+	get-ref/>no-write LDA2 JMP2r
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
