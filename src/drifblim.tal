@@ -253,7 +253,6 @@
 		[ LIT &b $1 ] #00 EQU ?move-head
 		.head LDZ2 ,write/length STR2
 
-
 @move-head ( -+ )
 	.head LDZ2 INC2
 
