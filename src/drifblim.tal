@@ -272,7 +272,8 @@
 		POP2 ;&fill ;err/reference !set-error
 		&>found
 	INC2k INC2 LDAk INC ROT ROT STA
-	JMP2r &fill ffff "[empty] $1
+	JMP2r
+	&fill ffff "[empty] $1
 
 @create-symbol ( name* -- )
 	.scan LDZ #00 EQU ?&skip
