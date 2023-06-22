@@ -454,7 +454,9 @@
 		NIP2 POP2r EQU JMP2r
 
 @scmp3 ( a* b* -- f )
-	LDA2k ROT2 LDA2k ROT2 EQU2 STH INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+	STH2 LDAkr LDAk STHr NEQ ?&>end
+		INC2r INC2 &>end
+	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -- <val> )
 	LIT "0 SUB DUP #0a LTH ?&end
