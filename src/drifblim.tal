@@ -121,7 +121,7 @@
 	&error ( c zp -- )
 		POP2 ;err/token !set-error
 	&run ( t* -- )
-		.token ,&ptr STR
+		DUP ,&ptr STR
 		DUP2 parse !<sclr>
 
 (
@@ -129,13 +129,15 @@
 
 @parse ( t* -- )
 	LDAk LIT "( EQU ?parse-comment
+	( | runic )
 	LDAk ,&rune STR
-	( runes ) ;runes/err ;runes
+	;runes/err ;runes
 	&l ( -- )
 		LDAk [ LIT &rune $1 ] EQU ?parse-runic
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
-	( non-runic ) is-hex ?write-hex
+	( | non-runic )
+	is-hex ?write-hex
 	is-opcode ?lib/opcode
 	!lib/litjsi
 
