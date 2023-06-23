@@ -8,6 +8,7 @@
 
 	@src $30
 	@dst $30
+	@token $20 &err $20
 	@scan $1
 	@head $2
 	@error-name $2
@@ -118,13 +119,24 @@
 	&error ( c -- )
 		POP ;err/token !set-error
 	&run ( t* -- )
-		DUP2 handle-token !<sclr>
+		DUP2 parse !<sclr>
 
-@handle-token ( t* -- )
-	LDAk LIT "( EQU ?handle-comment
-	!parse
+(
+@|tokenizer )
 
-@handle-comment ( t* -- )
+@parse ( t* -- )
+	LDAk LIT "( EQU ?parse-comment
+	LDAk ,&rune STR
+	( runes ) ;runes/err ;runes
+	&l ( -- )
+		LDAk [ LIT &rune $1 ] EQU ?parse-runic
+		#0003 ADD2 GTH2k ?&l
+	POP2 POP2
+	( non-runic ) is-hex ?write-hex
+	is-opcode ?lib/opcode
+	!lib/litjsi
+
+@parse-comment ( t* -- )
 	LDA ;comment STH2k <sput>
 	#20 STH2kr <sput>
 	&s ( -- )
@@ -138,20 +150,6 @@
 		#00 STH2kr <sput>
 		STH2r .scan LDZ ?<sclr>
 		DUP2 create-symbol/force !<sclr>
-
-(
-@|tokenizer )
-
-@parse ( t* -- )
-	LDAk ,&rune STR
-	( runes ) ;runes/err ;runes
-	&l ( -- )
-		LDAk [ LIT &rune $1 ] EQU ?parse-runic
-		#0003 ADD2 GTH2k ?&l
-	POP2 POP2
-	( non-runic ) is-hex ?write-hex
-	is-opcode ?lib/opcode
-	!lib/litjsi
 
 @parse-runic ( t* a* b* -- )
 	NIP2 INC2 LDA2
@@ -556,9 +554,6 @@
 @sublabel $20
 
 @include $30
-
-@token $20
-	&err $20
 
 @scope $20
 	&err $20
