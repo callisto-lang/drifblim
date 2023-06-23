@@ -8,7 +8,7 @@
 
 	@src $30
 	@dst $30
-	@token $20 &err $20
+	@token $20 &cap $1 &err $20
 	@scan $1
 	@head $2
 	@error-name $2
@@ -114,11 +114,14 @@
 	POP ;token LDAk ?&run
 	POP2 JMP2r
 	&append ( c -- )
-		;token slen #001f EQU2 ?&error
-		;token !<sput>
-	&error ( c -- )
-		POP ;err/token !set-error
+		[ LIT &ptr -token ] INCk ,&ptr STR
+		DUP .token/cap EQU ?&error
+		STZ
+		JMP2r
+	&error ( c zp -- )
+		POP2 ;err/token !set-error
 	&run ( t* -- )
+		.token ,&ptr STR
 		DUP2 parse !<sclr>
 
 (
