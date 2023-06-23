@@ -265,8 +265,7 @@
 @|labels )
 
 @get-ref ( token* -- <label>* )
-	.scan LDZ #00 EQU ?&>no-write
-		POP2 ;&fill JMP2r &>no-write
+	.scan LDZ ?&scan
 	LDAk LIT "& NEQ ?&>no-sub
 		INC2 make-sublabel &>no-sub
 	find-symbol INC2k ORA ?&>found
@@ -274,16 +273,17 @@
 		&>found
 	INC2k INC2 LDAk INC ROT ROT STA
 	JMP2r
+	&scan POP2 ;&fill JMP2r
 	&fill ffff "[empty] $1
 
 @create-symbol ( name* -- )
-	.scan LDZ #00 EQU ?&skip
+	.scan LDZ ?&>continue
+		POP2 JMP2r &>continue
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
 	&force ( name* -- )
 		( save addr ) .head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2
-		( cache )
 		( move ) INC2r INC2r INC2r
 		( save name ) DUP2 STH2kr <scpy>
 		( move ) slen STH2r ADD2 INC2 ,&ptr STR2
@@ -293,8 +293,6 @@
 		POP2 ;err/invalid !set-error
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !set-error
-	&skip ( name* -- )
-		POP2 JMP2r
 
 @make-sublabel ( name* -- sublabel* )
 	;scope ;sublabel STH2k <scpy>
@@ -317,7 +315,7 @@
 
 @get-hex ( str* -- value* )
 	is-hex ?shex
-	get-ref/>no-write LDA2 JMP2r
+	get-ref/scan LDA2 JMP2r
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
