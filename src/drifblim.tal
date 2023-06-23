@@ -16,7 +16,7 @@
 
 @on-reset ( -> )
 	.Console/type DEI ?&has-args
-	;dict/usage <pstr>
+	;dict/usage <print-err>
 	&has-args ( -- )
 		;&await-src .Console/vector DEO2
 		BRK
@@ -32,10 +32,11 @@
 	;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst skey ?&eval-once
+		.Console/read DEI .dst skey ?&eval
 		BRK
-	&eval-once ( -> )
-		assemble save-symbols print-summary [ LIT2 80 -error-name ] LDZ2 #0000 NEQ2 ORA #0f DEO
+	&eval ( -> )
+		<assemble>
+		[ LIT2 80 -error-name ] LDZ2 #0000 NEQ2 ORA #0f DEO
 		BRK
 
 @on-interactive ( c -> )
@@ -48,31 +49,23 @@
 		;&await-src .Console/vector DEO2
 		BRK
 	&await-src ( -> )
-		.Console/read DEI .src skey ?&eval-loop
+		.Console/read DEI .src skey ?&eval
 		BRK
-	&eval-loop ( -> )
-		assemble save-symbols print-summary
-		( output success name ) ;dst
-	&w ( -- )
-		LDAk #18 DEO
-		INC2 LDAk ?&w
-	POP2 #0a18 DEO
-	;src sclr BRK
+	&eval ( -> )
+		<assemble>
+		;dst <print-strlb>
+		;src sclr BRK
 
 (
 @|generics )
 
-@assemble ( -- )
+@<assemble> ( -- )
 	( | setup export )
 	;dst .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
 	( | clear memory )
-	;create-symbol/ptr LDA2 ;memory
-	&l ( -- )
-		#0000 OVR2 STA2
-		INC2 INC2 GTH2k ?&l
-	POP2 POP2
+	;create-symbol/ptr LDA2 ;memory mclr
 	( | cleanup cache )
 	#0000 .error-name STZ2
 	#0000 ;write/length STA2
@@ -80,16 +73,16 @@
 	#0000 ;create-symbol/count STA2
 	( scan pass ) #01 handle-top ?&when-error
 	( write pass ) #00 handle-top ?&when-error
-	JMP2r
+	save-symbols !<print-summary>
 	&when-error ( ~- )
 		[ LIT2 01 -File2/delete ] DEO
-		;err <pstr>
-		.error-name LDZ2 <pstr>
+		;err <print-err>
+		.error-name LDZ2 <print-err>
 		#2019 DEO
-		;token/err <pstr>
-		;dict/in <pstr>
-		;scope/err <pstr>
-		;dict/dot !<pstr>
+		;token/err <print-err>
+		;dict/in <print-err>
+		;scope/err <print-err>
+		;dict/dot !<print-err>
 
 @set-error ( name* -- )
 	.error-name STZ2
@@ -106,8 +99,7 @@
 	.File1/name DEO2
 	#0001 .File1/length DEO2
 	&s ( -- )
-		;&c .File1/read DEO2
-		read-eof ?&end
+		;&c read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 	&end ( ~- )
 		.head LDZ2 #0100 GTH2 ?&ok
@@ -134,8 +126,7 @@
 @handle-comment ( t* -- )
 	LDA ;comment STH2k sput #20 STH2kr sput
 	&s ( -- )
-		;&c .File1/read DEO2
-		read-eof ?&end
+		;&c read-eof ?&end
 		;comment slen POP ?&end
 		[ LIT &c $1 ] DUP LIT "( NEQ ?&>no-nested
 			;err/nested set-error &>no-nested
@@ -361,7 +352,7 @@
 		NIP STH ORAr INC2 LDAk ?&w
 	POP2 STHr JMP2r
 
-@print-summary ( -- )
+@<print-summary> ( -- )
 	.error-name LDZ2 #0000 EQU2 ?&>continue
 		JMP2r &>continue
 	;create-symbol/ptr LDA2 ;symbols
@@ -369,23 +360,21 @@
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&>skip
 		LDAk LIT "( EQU ?&>skip
-			;dict/unused <pstr>
-			DUP2 <pstr>
+			;dict/unused <print-err>
+			DUP2 <print-err>
 			#0a19 DEO &>skip
 		scap INC2 GTH2k ?&l
 	POP2 POP2
 	( | result )
-	;dict/assembled <pstr>
-	;src <pstr>
-	;dict/spacer <pstr>
-	;dst <pstr>
+	;dict/assembled <print-err>
+	;dst <print-err>
 	( | length )
-	;dict/in <pstr>
-	;write/length LDA2 #00ff SUB2 <pdec>
-	;dict/bytes <pstr>
-	;create-symbol/count LDA2 <pdec>
-	;dict/labels <pstr>
-	;dict/end !<pstr>
+	;dict/in <print-err>
+	;write/length LDA2 #00ff SUB2 <print-dec>
+	;dict/bytes <print-err>
+	;create-symbol/count LDA2 <print-dec>
+	;dict/labels <print-err>
+	;dict/end !<print-err>
 
 @save-symbols ( -- )
 	;dst DUP2 scap ;dict/sym-ext OVR2 scpy SWP2 .File1/name DEO2
@@ -401,8 +390,9 @@
 	POP2 #00 ROT ROT STA
 	JMP2r
 
-@read-eof ( -- f )
-	.File1/success DEI2 ORA #00 EQU JMP2r
+@read-eof ( addr* -- f )
+	.File1/read DEO2
+	.File1/success DEI2 #0000 EQU2 JMP2r
 
 (
 @|stdlib )
@@ -459,11 +449,10 @@
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -- <val> )
-	LIT "0 SUB DUP #0a LTH ?&end
-	#27 SUB DUP #10 LTH ?&end
-	POP #ff
-	&end ( -- )
-		JMP2r
+	LIT "0 SUB DUP #0a LTH ?&>end
+	#27 SUB DUP #10 LTH ?&>end
+		POP #ff &>end
+	JMP2r
 
 @shex ( str* -- val* )
 	LIT2r 0000
@@ -471,14 +460,28 @@
 		LITr 40 SFT2r LITr 00 LDAk chex STH ADD2r INC2 LDAk ?&w
 	POP2 STH2r JMP2r
 
-@<pstr> ( str* -- )
+@mclr ( to* from* -- )
+	&l ( -- )
+		#0000 OVR2 STA2
+		INC2 INC2 GTH2k ?&l
+	POP2 POP2 JMP2r
+
+@<print-strlb> ( str* -- )
+	!&a
+	&w ( -- )
+		LDAk #18 DEO
+		INC2 &a LDAk ?&w
+	POP2 #0a18 DEO
+	JMP2r
+
+@<print-err> ( str* -- )
 	!&a
 	&w ( str* ~- )
 		LDAk #19 DEO
 		INC2 &a LDAk ?&w
 	POP2 JMP2r
 
-@<pdec> ( short* -- )
+@<print-dec> ( short* -- )
 	#2710 LIT2r 00fb
 	&w ( -- )
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&>skip
@@ -493,7 +496,6 @@
 @dict &usage "usage: 20 "drifblim.rom 20 "input.tal 20 "output.rom 0a $1
 	&assembled "Assembled 20 $1
 	&reset "INIT $1
-	&spacer 20 "-> 20 $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
 	&end ") &dot ". 0a $1
