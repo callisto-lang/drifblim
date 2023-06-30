@@ -9,6 +9,7 @@
 	@src $30
 	@dst $30
 	@token $20 &cap $1 &err $20
+	@scope $20 &err $20
 	@scan $1
 	@head $2
 	@error-name $2
@@ -71,7 +72,7 @@
 	( | cleanup cache )
 	#0000 .error-name STZ2
 	#0000 ;write/length STA2
-	;symbols ;create-symbol/ptr STA2
+	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
 	( scan pass ) #01 handle-top ?&when-error
 	( write pass ) #00 handle-top ?&when-error
@@ -142,11 +143,11 @@
 	!lib/litjsi
 
 @parse-comment ( t* -- )
-	LDA ;comment STH2k <sput>
+	LDA ;memory/comment STH2k <sput>
 	#20 STH2kr <sput>
 	&s ( -- )
 		;&c read-eof ?&end
-		;comment slen POP ?&end
+		;memory/comment slen POP ?&end
 		[ LIT &c $1 ] DUP LIT "( NEQ ?&>no-nested
 			;err/nested set-error &>no-nested
 		DUP STH2kr <sput>
@@ -195,7 +196,7 @@
 	&opcode ( t* -- )
 		find-opcode !write
 	&inc ( t* -- )
-		INC2k ;include STH2k <scpy>
+		INC2k ;memory/include STH2k <scpy>
 		<sclr>
 		STH2r !handle-file
 	&ignore ( t* -- )
@@ -283,7 +284,7 @@
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
 	&force ( name* -- )
-		( save addr ) .head LDZ2 [ LIT2 &ptr =symbols ] STH2k STA2
+		( save addr ) .head LDZ2 [ LIT2 &ptr =memory/symbols ] STH2k STA2
 		( move ) INC2r INC2r INC2r
 		( save name ) DUP2 STH2kr <scpy>
 		( move ) slen STH2r ADD2 INC2 ,&ptr STR2
@@ -295,14 +296,14 @@
 		POP2 ;err/duplicate !set-error
 
 @make-sublabel ( name* -- sublabel* )
-	;scope ;sublabel STH2k <scpy>
+	;scope ;memory/sublabel STH2k <scpy>
 	LIT "/ STH2kr <sput>
 	STH2kr <scat>
 	STH2r JMP2r
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;symbols
+	;memory/symbols
 	&w ( -- )
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
 		scap INC2 INC2k INC2 INC2 LDA ?&w
@@ -366,7 +367,7 @@
 @<print-summary> ( -- )
 	.error-name LDZ2 #0000 EQU2 ?&>continue
 		JMP2r &>continue
-	;create-symbol/ptr LDA2 ;symbols
+	;create-symbol/ptr LDA2 ;memory/symbols
 	&l ( -- )
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&>skip
@@ -390,7 +391,7 @@
 @save-symbols ( -- )
 	;dst DUP2 scap ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File1/name DEO2
-	;symbols
+	;memory/symbols
 	&l ( -- )
 		( | addr )
 		#0002 .File1/length DEO2
@@ -540,27 +541,24 @@
 
 @runes
 	[
-	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
-	", =lib/litrel "_ =lib/rawrel ". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs "? =lib/litjci "! =lib/litjmi
-	"[ =lib/ignore "] =lib/ignore "# =lib/lithex "" =lib/rawstr "~ =lib/inc ]
-	&err
+	"| =lib/padabs "$ =lib/padrel
+	"@ =lib/toplab "& =lib/sublab
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	5b =lib/ignore 5d =lib/ignore
+	"# =lib/lithex "" =lib/rawstr
+	"~ =lib/inc ]
+	&err ( -- )
+
 (
 @|memory )
 
-
-@memory
-
-
-@comment $100
-
-@sublabel $20
-
-@include $30
-
-@scope $20
-	&err $20
-
-@symbols ( addr*, refs, name[], 00 )
+@memory ( buffers )
+	&comment $100
+	&sublabel $20
+	&include $30
+	&symbols ( addr*, refs, name[], 00 )
 
 
