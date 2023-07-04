@@ -18,7 +18,7 @@
 
 @on-reset ( -> )
 	.Console/type DEI ?&has-args
-	;dict/usage <print-err>
+	;dict/usage <print-err>/
 	&has-args ( -- )
 		;&await-src .Console/vector DEO2
 		BRK
@@ -55,7 +55,7 @@
 		BRK
 	&eval ( -> )
 		<assemble>
-		;dst <print-line>
+		;dst <print-line>/
 		;src <sclr>
 		BRK
 
@@ -71,7 +71,7 @@
 	;create-symbol/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
 	#0000 .error-name STZ2
-	#0000 ;write/length STA2
+	#0000 ;<write>/length STA2
 	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
 	( scan pass ) #01 handle-top ?&when-error
@@ -79,13 +79,13 @@
 	save-symbols !<print-summary>
 	&when-error ( -- )
 		[ LIT2 01 -File2/delete ] DEO
-		;err <print-err>
-		.error-name LDZ2 <print-err>
+		;err <print-err>/
+		.error-name LDZ2 <print-err>/
 		#2019 DEO
-		;token/err <print-err>
-		;dict/in <print-err>
-		;scope/err <print-err>
-		;dict/dot !<print-err>
+		;token/err <print-err>/
+		;dict/in <print-err>/
+		;scope/err <print-err>/
+		;dict/dot !<print-err>/
 
 @set-error ( name* -- )
 	.error-name STZ2
@@ -138,7 +138,7 @@
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( | non-runic )
-	is-hex ?write-hex
+	is-hex ?<write-hex>
 	is-opcode ?lib/opcode
 	!lib/litjsi
 
@@ -163,38 +163,43 @@
 
 @lib
 	&padabs ( t* -- )
-		INC2 get-hex write-pad !<set-head>
+		INC2 get-hex <write-pad>
+		!<set-head>
 	&padrel ( t* -- )
-		INC2 get-hex !write-fill
+		INC2 get-hex !<write-fill>
 	&toplab ( t* -- )
 		INC2 DUP2 ;scope <scpy>
 		!create-symbol
 	&sublab ( t* -- )
 		INC2 make-sublabel !create-symbol
 	&litrel ( t* -- )
-		#80 write
+		#80 <write>
 	&rawrel ( t* -- )
-		INC2 get-ref get-rel INC !write
+		INC2 get-ref get-rel INC !<write>
 	&litzep ( t* -- )
-		#80 write
+		#80 <write>
 	&rawzep ( t* -- )
-		INC2 get-ref LDA2 NIP !write
+		INC2 get-ref LDA2 NIP !<write>
 	&litabs ( t* -- )
-		#a0 write
+		#a0 <write>
 	&rawabs ( t* -- )
-		INC2 get-ref LDA2 !write-short
+		INC2 get-ref LDA2 !<write-short>
 	&litjci ( t* -- )
-		#20 write INC2 !write-call
+		#20 <write>
+		INC2 !<write-call>
 	&litjmi ( t* -- )
-		#40 write INC2 !write-call
+		#40 <write>
+		INC2 !<write-call>
 	&litjsi ( t* -- )
-		#60 write !write-call
+		#60 <write>
+		!<write-call>
 	&lithex ( t* -- )
-		INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] write !write-hex
+		INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] <write>
+		!<write-hex>
 	&rawstr ( t* -- )
-		INC2 !write-str
+		INC2 !<write-str>/
 	&opcode ( t* -- )
-		find-opcode !write
+		find-opcode !<write>
 	&inc ( t* -- )
 		INC2k ;memory/include STH2k <scpy>
 		<sclr>
@@ -205,43 +210,44 @@
 (
 @|primitives )
 
-@write-pad ( addr* -- dest* )
+@<write-pad> ( addr* -- dest* )
 	.head LDZ2 LTH2k ?&>no-pad
-		SUB2k NIP2 !write-fill
+		SUB2k NIP2 !<write-fill>
 		&>no-pad
 	DUP2 #0101 LTH2 ?&>no-err
 		;err/rewind set-error &>no-err
 	POP2 JMP2r
 
-@write-fill ( len* -- )
+@<write-fill> ( len* -- )
 	#0000 EQU2k ?&skip
 	&l ( -- )
-		#00 write INC2 GTH2k ?&l
+		#00 <write>
+		INC2 GTH2k ?&l
 	&skip ( -- )
 		POP2 POP2 JMP2r
 
-@write-str ( str* -- )
-	!&
+@<write-str> ( str* -- )
 	&w ( -- )
-		LDAk write INC2 & LDAk ?&w
+		LDAk <write>
+		INC2 & LDAk ?&w
 	POP2 JMP2r
 
-@write-hex ( str* -- )
+@<write-hex> ( str* -- )
 	DUP2 slen OVR2 get-hex SWP2 NIP DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 POP2 ;err/number !set-error
 	&byte ( str* value* length -- )
-		POP NIP2 NIP !write
+		POP NIP2 NIP !<write>
 	&short ( str* short* -- )
-		NIP2 !write-short
+		NIP2 !<write-short>
 
-@write-call ( str* -- )
+@<write-call> ( str* -- )
 	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
 
-@write-short ( short* -- )
-	SWP write
+@<write-short> ( short* -- )
+	SWP <write>
 
-@write ( byte -- )
+@<write> ( byte -- )
 	,&b STR
 	.head LDZ #00 EQU ?&zeropage
 	.scan LDZ ?&pass1
@@ -253,7 +259,7 @@
 		;err/zeropage set-error !<move-head>
 	&pass1 ( ~+ )
 		[ LIT &b $1 ] #00 EQU ?<move-head>
-		.head LDZ2 ,write/length STR2
+		.head LDZ2 ,<write>/length STR2
 
 @<move-head> ( -- )
 	.head LDZ2 INC2
@@ -306,7 +312,7 @@
 	;memory/symbols
 	&w ( -- )
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
-		scap INC2 INC2k INC2 INC2 LDA ?&w
+		scap/ INC2 INC2k INC2 INC2 LDA ?&w
 	POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
 		#0003 SUB2 JMP2r
@@ -372,24 +378,24 @@
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&>skip
 		LDAk LIT "( EQU ?&>skip
-			;dict/unused <print-err>
-			DUP2 <print-err>
+			;dict/unused <print-err>/
+			DUP2 <print-err>/
 			#0a19 DEO &>skip
-		scap INC2 GTH2k ?&l
+		scap/ INC2 GTH2k ?&l
 	POP2 POP2
 	( | result )
-	;dict/assembled <print-err>
-	;dst <print-err>
+	;dict/assembled <print-err>/
+	;dst <print-err>/
 	( | length )
-	;dict/in <print-err>
-	;write/length LDA2 #00ff SUB2 <print-dec>
-	;dict/bytes <print-err>
+	;dict/in <print-err>/
+	;<write>/length LDA2 #00ff SUB2 <print-dec>
+	;dict/bytes <print-err>/
 	;create-symbol/count LDA2 <print-dec>
-	;dict/labels <print-err>
-	;dict/end !<print-err>
+	;dict/labels <print-err>/
+	;dict/end !<print-err>/
 
 @save-symbols ( -- )
-	;dst DUP2 scap ;dict/sym-ext OVR2 <scpy>
+	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File1/name DEO2
 	;memory/symbols
 	&l ( -- )
@@ -411,13 +417,12 @@
 @|stdlib )
 
 @scap ( str* -- end* )
-	!&
 	&w ( -- )
 		INC2 & LDAk ?&w
 	JMP2r
 
 @slen ( str* -- len* )
-	DUP2 scap SWP2 SUB2 JMP2r
+	DUP2 scap/ SWP2 SUB2 JMP2r
 
 @skey ( key buf -- proc )
 	OVR #21 LTH ?&eval
@@ -441,7 +446,7 @@
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -- <val> )
-	LIT "0 SUB DUP #0a LTH ?&>end
+	[ LIT "0 ] SUB DUP #0a LTH ?&>end
 	#27 SUB DUP #10 LTH ?&>end
 		POP #ff &>end
 	JMP2r
@@ -449,7 +454,7 @@
 @shex ( str* -- val* )
 	[ LIT2r 0000 ]
 	&w ( -- )
-		[ LITr 40 ] SFT2r [ LITr 00 ] LDAk chex STH ADD2r INC2 LDAk ?&w
+		[ LITr 40 ] SFT2r LDAk chex [ LITr 00 ] STH ADD2r INC2 LDAk ?&w
 	POP2 STH2r JMP2r
 
 @<mclr> ( to* from* -- )
@@ -459,11 +464,11 @@
 	POP2 POP2 JMP2r
 
 @<sput> ( chr str* -- )
-	scap ROT #00 SWP2 STA2
+	scap/ ROT #00 SWP2 STA2
 	JMP2r
 
 @<scat> ( src* dst* -- )
-	scap
+	scap/
 
 @<scpy> ( src* dst* -- )
 	STH2
@@ -481,15 +486,13 @@
 	JMP2r
 
 @<print-line> ( str* -- )
-	!&
-	&w ( -- )
+	&w ( str* -- )
 		LDAk #18 DEO
 		INC2 & LDAk ?&w
 	POP2 #0a18 DEO
 	JMP2r
 
 @<print-err> ( str* -- )
-	!&
 	&w ( str* -- )
 		LDAk #19 DEO
 		INC2 & LDAk ?&w
