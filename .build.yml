@@ -11,9 +11,9 @@ tasks:
         cc src/uxnasm.c -o ../uxnasm
     - assemble: |
         cd drifblim
-        ../uxnasm src/drifblim.tal drifblim.rom
+        ../uxnasm src/drifblim.tal ../drifblim.rom
     - upload: |
-        tar -czf out.tar.gz drifblim/drifblim.rom
+        tar -czf out.tar.gz drifblim.rom
         acurl() {
             set +x
             curl -H "Authorization: Bearer ${OAUTH2_TOKEN}" "${@}"
