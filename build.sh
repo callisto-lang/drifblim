@@ -18,7 +18,6 @@ case "$*" in *--lint*) $lin $src ;; esac
 case "$*" in *--bal*) $bal $src ;; esac
 $asm $src $dst
 case "$*" in *--save*) cp $dst $roms_dir ;; esac
-$asm src/drifloon.tal bin/drifloon.rom
 $emu $dst $arg
 
 # Test with hello.rom

@@ -196,10 +196,10 @@
 		#60 <write>
 		!<write-call>
 	&lithex ( t* -- )
-		INC2 DUP2 slen NIP #02 SFT #a080 ROT [ JMP SWP POP ] <write>
+		INC2 DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
 		!<write-hex>
 	&rawstr ( t* -- )
-		INC2 !<write-str>/
+		INC2 !<write-str>
 	&inc ( t* -- )
 		INC2k ;memory/include STH2k <scpy>
 		<sclr>
@@ -227,19 +227,21 @@
 		POP2 POP2 JMP2r
 
 @<write-str> ( str* -- )
+	LDAk ?&w
+	POP2 ;err/token !set-error
 	&w ( -- )
 		LDAk <write>
-		INC2 & LDAk ?&w
+		INC2 LDAk ?&w
 	POP2 JMP2r
 
 @<write-hex> ( str* -- )
-	DUP2 slen OVR2 get-hex SWP2 NIP DUP #02 EQU ?&byte
+	DUP2 slen NIP DUP #02 EQU ?&byte
 	#04 EQU ?&short
-	POP2 POP2 ;err/number !set-error
-	&byte ( str* value* length -- )
-		POP NIP2 NIP !<write>
+	POP2 ;err/number !set-error
+	&byte ( str* length -- )
+		POP get-hex NIP !<write>
 	&short ( str* short* -- )
-		NIP2 !<write-short>
+		get-hex !<write-short>
 
 @<write-call> ( str* -- )
 	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
@@ -322,7 +324,7 @@
 
 @get-hex ( str* -- value* )
 	is-hex ?shex
-	get-ref/scan LDA2 JMP2r
+	;err/number !set-error
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
@@ -370,6 +372,25 @@
 		NIP STH ORAr INC2 LDAk ?&w
 	POP2 STHr JMP2r
 
+@save-symbols ( -- )
+	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
+	SWP2 .File1/name DEO2
+	;memory/symbols
+	&l ( -- )
+		( | addr )
+		#0002 .File1/length DEO2
+		DUP2 .File1/write DEO2
+		( | name )
+		#0003 ADD2 DUP2 slen INC2 STH2k .File1/length DEO2
+		DUP2 .File1/write DEO2
+		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&l
+	POP2 #00 ROT ROT STA
+	JMP2r
+
+@read-eof ( addr* -- f )
+	.File1/read DEO2
+	.File1/success DEI2 #0000 EQU2 JMP2r
+
 @<print-summary> ( -- )
 	.error-name LDZ2 #0000 EQU2 ?&>continue
 		JMP2r &>continue
@@ -393,25 +414,6 @@
 	;create-symbol/count LDA2 <print-dec>
 	;dict/labels <print-err>/
 	;dict/end !<print-err>/
-
-@save-symbols ( -- )
-	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
-	SWP2 .File1/name DEO2
-	;memory/symbols
-	&l ( -- )
-		( | addr )
-		#0002 .File1/length DEO2
-		DUP2 .File1/write DEO2
-		( | name )
-		#0003 ADD2 DUP2 slen INC2 STH2k .File1/length DEO2
-		DUP2 .File1/write DEO2
-		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&l
-	POP2 #00 ROT ROT STA
-	JMP2r
-
-@read-eof ( addr* -- f )
-	.File1/read DEO2
-	.File1/success DEI2 #0000 EQU2 JMP2r
 
 (
 @|stdlib )
