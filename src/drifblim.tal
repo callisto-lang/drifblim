@@ -105,9 +105,8 @@
 		;&c read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 	&end ( -- )
-		.head LDZ2 #0100 GTH2 ?&ok
-		;err/source set-error
-	&ok ( -- )
+		.head LDZ2 #0100 GTH2 ?&>no-err
+			;err/source set-error &>no-err
 		JMP2r
 
 @handle-char ( c -- )
@@ -139,7 +138,7 @@
 	POP2 POP2
 	( | non-runic )
 	is-hex ?<write-hex>
-	is-opcode ?lib/opcode
+	is-opcode ?parse-opcode
 	!lib/litjsi
 
 @parse-comment ( t* -- )
@@ -152,7 +151,7 @@
 			;err/nested set-error &>no-nested
 		DUP STH2kr <sput>
 		LIT ") NEQ ?&s
-	&end ( `ptr* -- )
+	&end ( ptr* -- )
 		#00 STH2kr <sput>
 		STH2r .scan LDZ ?<sclr>
 		DUP2 create-symbol/force !<sclr>
@@ -160,6 +159,9 @@
 @parse-runic ( t* a* b* -- )
 	NIP2 INC2 LDA2
 	( unsafe ) JMP2
+
+@parse-opcode ( t* -- )
+	find-opcode !<write>
 
 @lib
 	&padabs ( t* -- )
@@ -198,8 +200,6 @@
 		!<write-hex>
 	&rawstr ( t* -- )
 		INC2 !<write-str>/
-	&opcode ( t* -- )
-		find-opcode !<write>
 	&inc ( t* -- )
 		INC2k ;memory/include STH2k <scpy>
 		<sclr>
@@ -354,7 +354,7 @@
 		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
 		INC GTHk ?&l
 	POP2 POP2r #00 JMP2r
-	&on-found ( bounds* `name* -- byte )
+	&on-found ( bounds* name* -- byte )
 		NIP
 		( LITk ) DUP #00 EQU #70 SFT ADD STH2r #0003 ADD2 find-modes ADD JMP2r
 
@@ -433,11 +433,11 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&l ( a* `b* -- f )
+	&l ( a* b* -- f )
 		LDAk LDAkr STHr NEQk ?&d
 		DUP EOR EQUk ?&d
 		POP2 INC2 INC2r !&l
-	&d ( a* c1 c2 `b* -- f )
+	&d ( a* c1 c2 b* -- f )
 		NIP2 POP2r EQU JMP2r
 
 @scmp3 ( a* b* -- f )
@@ -454,7 +454,8 @@
 @shex ( str* -- val* )
 	[ LIT2r 0000 ]
 	&w ( -- )
-		[ LITr 40 ] SFT2r LDAk chex [ LITr 00 ] STH ADD2r INC2 LDAk ?&w
+		( sl ) [ LITr 40 ] SFT2r
+		( res ) LDAk chex [ LITr 00 ] STH ADD2r INC2 LDAk ?&w
 	POP2 STH2r JMP2r
 
 @<mclr> ( to* from* -- )
