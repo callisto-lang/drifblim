@@ -131,7 +131,7 @@
 	LDAk LIT "( EQU ?parse-comment
 	( | runic )
 	LDAk ,&rune STR
-	;runes/err ;runes
+	;runes/end ;runes
 	&l ( -- )
 		LDAk [ LIT &rune $1 ] EQU ?parse-runic
 		#0003 ADD2 GTH2k ?&l
@@ -251,15 +251,15 @@
 
 @<write> ( byte -- )
 	,&b STR
-	.head LDZ #00 EQU ?&zeropage
+	[ LIT2 00 -head ] LDZ EQU ?&zeropage
 	.scan LDZ ?&pass1
 	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?<move-head>
-	( cache ) ;&b .File2/write DEO2
+	;&b .File2/write DEO2
 	!<move-head>
 	&zeropage ( -- )
 		,&b LDR #00 EQU ?<move-head>
 		;err/zeropage set-error !<move-head>
-	&pass1 ( ~+ )
+	&pass1 ( -- )
 		[ LIT &b $1 ] #00 EQU ?<move-head>
 		.head LDZ2 ,<write>/length STR2
 
@@ -556,10 +556,10 @@
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
 	"~ =lib/inc ]
-	&err ( -- )
-
+	&end
 (
 @|memory )
+
 
 @memory ( buffers )
 	&comment $100
