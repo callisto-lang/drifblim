@@ -160,8 +160,7 @@
 
 @lib
 	&padabs ( t* -- )
-		INC2 get-hex <write-pad>
-		!<set-head>
+		INC2 get-hex .head LDZ2 SUB2 !<write-fill>
 	&padrel ( t* -- )
 		INC2 get-hex !<write-fill>
 	&toplab ( t* -- )
@@ -205,21 +204,18 @@
 (
 @|primitives )
 
-@<write-pad> ( addr* -- dest* )
-	.head LDZ2 LTH2k ?&>no-pad
-		SUB2k NIP2 !<write-fill>
-		&>no-pad
-	DUP2 #0101 LTH2 ?&>no-err
-		;err/rewind <set-error> &>no-err
-	POP2 JMP2r
-
 @<write-fill> ( len* -- )
+	OVR #80 AND ?&rewind
 	#0000 EQU2k ?&skip
 	&l ( -- )
 		#00 <write>
 		INC2 GTH2k ?&l
 	&skip ( -- )
 		POP2 POP2 JMP2r
+	&rewind ( len* -- )
+		.head LDZ2 #0101 LTH2 ?&>valid
+			;err/rewind <set-error> &>valid
+		.head LDZ2 ADD2 !<set-head>
 
 @<write-str> ( str* -- )
 	LDAk ?&w
