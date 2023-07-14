@@ -87,11 +87,6 @@
 		;scope/err <print-err>/
 		;dict/dot !<print-err>/
 
-@set-error ( name* -- )
-	.error-name STZ2
-	;token ;token/err <scpy>
-	;scope ;scope/err !<scpy>
-
 @handle-top ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
@@ -106,7 +101,7 @@
 		[ LIT &c $1 ] handle-char !&s
 	&end ( -- )
 		.head LDZ2 #0100 GTH2 ?&>no-err
-			;err/source set-error &>no-err
+			;err/source <set-error> &>no-err
 		JMP2r
 
 @handle-char ( c -- )
@@ -119,7 +114,7 @@
 		STZ
 		JMP2r
 	&error ( c zp -- )
-		POP2 ;err/token !set-error
+		POP2 ;err/token !<set-error>
 	&run ( t* -- )
 		DUP ,&ptr STR
 		DUP2 parse !<sclr>
@@ -148,7 +143,7 @@
 		;&c read-eof ?&end
 		;memory/comment slen POP ?&end
 		[ LIT &c $1 ] DUP LIT "( NEQ ?&>no-nested
-			;err/nested set-error &>no-nested
+			;err/nested <set-error> &>no-nested
 		DUP STH2kr <sput>
 		LIT ") NEQ ?&s
 	&end ( ptr* -- )
@@ -215,7 +210,7 @@
 		SUB2k NIP2 !<write-fill>
 		&>no-pad
 	DUP2 #0101 LTH2 ?&>no-err
-		;err/rewind set-error &>no-err
+		;err/rewind <set-error> &>no-err
 	POP2 JMP2r
 
 @<write-fill> ( len* -- )
@@ -228,7 +223,7 @@
 
 @<write-str> ( str* -- )
 	LDAk ?&w
-	POP2 ;err/token !set-error
+	POP2 ;err/token !<set-error>
 	&w ( -- )
 		LDAk <write>
 		INC2 LDAk ?&w
@@ -237,7 +232,7 @@
 @<write-hex> ( str* -- )
 	DUP2 slen NIP DUP #02 EQU ?&byte
 	#04 EQU ?&short
-	POP2 ;err/number !set-error
+	POP2 ;err/number !<set-error>
 	&byte ( str* length -- )
 		POP get-hex NIP !<write>
 	&short ( str* short* -- )
@@ -258,7 +253,8 @@
 	!<move-head>
 	&zeropage ( -- )
 		,&b LDR #00 EQU ?<move-head>
-		;err/zeropage set-error !<move-head>
+		;err/zeropage <set-error>
+		!<move-head>
 	&pass1 ( -- )
 		[ LIT &b $1 ] #00 EQU ?<move-head>
 		.head LDZ2 ,<write>/length STR2
@@ -270,6 +266,11 @@
 	.head STZ2
 	JMP2r
 
+@<set-error> ( name* -- )
+	.error-name STZ2
+	;token ;token/err <scpy>
+	;scope ;scope/err !<scpy>
+
 (
 @|labels )
 
@@ -278,7 +279,7 @@
 	LDAk LIT "& NEQ ?&>no-sub
 		INC2 make-sublabel &>no-sub
 	find-symbol INC2k ORA ?&>found
-		POP2 ;&fill ;err/reference !set-error
+		POP2 ;&fill ;err/reference !<set-error>
 		&>found
 	INC2k INC2 LDAk INC ROT ROT STA
 	JMP2r
@@ -299,9 +300,9 @@
 		( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 		( cache ) JMP2r
 	&invalid ( name* -- )
-		POP2 ;err/invalid !set-error
+		POP2 ;err/invalid !<set-error>
 	&not-unique ( name* -- )
-		POP2 ;err/duplicate !set-error
+		POP2 ;err/duplicate !<set-error>
 
 @make-sublabel ( name* -- sublabel* )
 	;scope ;memory/sublabel STH2k <scpy>
@@ -324,14 +325,14 @@
 
 @get-hex ( str* -- value* )
 	is-hex ?shex
-	;err/number !set-error
+	;err/number !<set-error>
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
 	LDA2k .head LDZ2 SUB2 #0003 SUB2 DUP2 #0080 ADD2 POP ?&fail
 	NIP2 NIP JMP2r
 	&fail ( label* distance* -- distance )
-		POP2 ;err/distance set-error
+		POP2 ;err/distance <set-error>
 	&fill ( -- )
 		POP2 #ff JMP2r
 
@@ -367,7 +368,7 @@
 		DUP ADD OVR LIT "r EQU ?&end
 		DUP ADD OVR LIT "k EQU ?&end
 		DUP ADD OVR #00 EQU ?&end
-		;err/opcode set-error
+		;err/opcode <set-error>
 	&end ( -- )
 		NIP STH ORAr INC2 LDAk ?&w
 	POP2 STHr JMP2r
