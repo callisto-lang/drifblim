@@ -19,7 +19,10 @@ echo "          Reference .missing in INIT."
 $emu $dst "tests/err-ref.tal" "bin/res.rom"
 
 echo "          Number #122325 in INIT."
-$emu $dst "tests/err-num.tal" "bin/res.rom"
+$emu $dst "tests/err-lithex.tal" "bin/res.rom"
+
+echo "          Number 122325 in INIT."
+$emu $dst "tests/err-rawhex.tal" "bin/res.rom"
 
 echo "          Distance ,label in INIT."
 $emu $dst "tests/err-dis.tal" "bin/res.rom"

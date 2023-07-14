@@ -284,7 +284,13 @@
 	INC2k INC2 LDAk INC ROT ROT STA
 	JMP2r
 	&scan POP2 ;&fill JMP2r
-	&fill ffff "[empty] $1
+	&fill ffff "? $1
+
+@make-sublabel ( name* -- sublabel* )
+	;scope ;memory/sublabel STH2k <scpy>
+	LIT "/ STH2kr <sput>
+	STH2kr <scat>
+	STH2r JMP2r
 
 @create-symbol ( name* -- )
 	.scan LDZ ?&>continue
@@ -304,21 +310,15 @@
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !<set-error>
 
-@make-sublabel ( name* -- sublabel* )
-	;scope ;memory/sublabel STH2k <scpy>
-	LIT "/ STH2kr <sput>
-	STH2kr <scat>
-	STH2r JMP2r
-
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;memory/symbols
-	&w ( -- )
+	;create-symbol/ptr LDA2 ;memory/symbols
+	&l ( -- )
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
-		scap/ INC2 INC2k INC2 INC2 LDA ?&w
-	POP2 #ffff JMP2r
+		scap/ INC2 GTH2k ?&l
+		POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
-		#0003 SUB2 JMP2r
+		#0003 SUB2 NIP2 JMP2r
 
 (
 @|helpers )
