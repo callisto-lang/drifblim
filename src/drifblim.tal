@@ -416,8 +416,8 @@
 
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
-	LDZk INC OVR STZ
-	#00 SWP INC <sput>
+	STH #00 STHkr LDZk ADD INC STZ2
+	STHr LDZk INC SWP STZ
 	#00 JMP2r
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
