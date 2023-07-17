@@ -387,6 +387,7 @@
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk LIT "A SUB #1a LTH ?&>skip
 		LDAk LIT "( EQU ?&>skip
+		DUP2 ;dict/reset scmp ?&>skip
 			;dict/unused <print-err>/
 			DUP2 <print-err>/
 			#0a19 DEO &>skip
@@ -425,7 +426,6 @@
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
 		JMP2r
-
 
 @scmp ( a* b* -- f )
 	STH2
@@ -517,7 +517,7 @@
 
 @dict &usage "usage: 20 "drifblim.rom 20 "input.tal 20 "output.rom 0a $1
 	&assembled "Assembled 20 $1
-	&reset "INIT $1
+	&reset "on-reset $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
 	&end ") &dot ". 0a $1
