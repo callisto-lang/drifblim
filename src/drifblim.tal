@@ -24,7 +24,7 @@
 		BRK
 	&await-src ( -> )
 		.Console/read DEI DUP LIT "^ EQU ?on-interactive
-		.src/buf zkey ?on-default
+		.src zkey ?on-default
 		BRK
 
 (
@@ -34,7 +34,7 @@
 	;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst/buf zkey ?&eval
+		.Console/read DEI .dst zkey ?&eval
 		BRK
 	&eval ( -> )
 		<assemble>
@@ -45,13 +45,13 @@
 	POP ;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst/buf zkey ?&capture-src
+		.Console/read DEI .dst zkey ?&capture-src
 		BRK
 	&capture-src ( -> )
 		;&await-src .Console/vector DEO2
 		BRK
 	&await-src ( -> )
-		.Console/read DEI .src/buf zkey ?&eval
+		.Console/read DEI .src zkey ?&eval
 		BRK
 	&eval ( -> )
 		<assemble>
@@ -105,7 +105,7 @@
 		JMP2r
 
 @handle-char ( c -- )
-	.token/buf zkey ?&eval-token
+	.token zkey ?&eval-token
 	JMP2r
 	&eval-token ( -- )
 		;token/buf LDAk ?&>no-null
@@ -414,11 +414,11 @@
 @slen ( str* -- len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
-@zkey ( key buf -- proc )
+@zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
-	#00 SWP <sput>
+	#00 SWP INC <sput>
 	#00 JMP2r
-	&eval ( key buf -- proc )
+	&eval ( key ztr -- proc )
 		POP2 #01 JMP2r
 
 @scmp ( a* b* -- f )
