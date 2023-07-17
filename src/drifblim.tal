@@ -6,13 +6,13 @@
 
 |0000
 
-	@src $30
-	@dst $30
-	@token $30
 	@scope $20
 	@scan $1
 	@head $2
 	@error &name $2 &scope $20 &token $20
+	@src &buf $30
+	@dst &buf $30
+	@token &buf $30
 
 |0100
 
@@ -24,7 +24,7 @@
 		BRK
 	&await-src ( -> )
 		.Console/read DEI DUP LIT "^ EQU ?on-interactive
-		.src skey ?on-default
+		.src/buf zkey ?on-default
 		BRK
 
 (
@@ -34,7 +34,7 @@
 	;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst skey ?&eval
+		.Console/read DEI .dst/buf zkey ?&eval
 		BRK
 	&eval ( -> )
 		<assemble>
@@ -45,18 +45,18 @@
 	POP ;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst skey ?&capture-src
+		.Console/read DEI .dst/buf zkey ?&capture-src
 		BRK
 	&capture-src ( -> )
 		;&await-src .Console/vector DEO2
 		BRK
 	&await-src ( -> )
-		.Console/read DEI .src skey ?&eval
+		.Console/read DEI .src/buf zkey ?&eval
 		BRK
 	&eval ( -> )
 		<assemble>
-		;dst <print-line>/
-		;src <sclr>
+		;dst/buf <print-line>/
+		;src/buf <sclr>
 		BRK
 
 (
@@ -64,7 +64,7 @@
 
 @<assemble> ( -- )
 	( | setup export )
-	;dst .File2/name DEO2
+	;dst/buf .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
 	( | clear memory )
@@ -91,7 +91,7 @@
 	.scan STZ
 	#0100 <set-head>
 	;dict/reset ;scope <scpy>
-	;src handle-file .error/name LDZ2 ORA JMP2r
+	;src/buf handle-file .error/name LDZ2 ORA JMP2r
 
 @handle-file ( f* -- )
 	.File1/name DEO2
@@ -105,7 +105,7 @@
 		JMP2r
 
 @handle-char ( c -- )
-	.token skey ?&eval-token
+	.token/buf zkey ?&eval-token
 	JMP2r
 	&eval-token ( -- )
 		;token LDAk ?&>no-null
@@ -363,7 +363,7 @@
 	POP2 STHr JMP2r
 
 @save-symbols ( -- )
-	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
+	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File2/name DEO2
 	;memory/symbols
 	&l ( -- )
@@ -394,7 +394,7 @@
 	POP2 POP2
 	( | result )
 	;dict/assembled <print-err>/
-	;dst <print-err>/
+	;dst/buf <print-err>/
 	( | length )
 	;dict/in <print-err>/
 	;<write>/length LDA2 #00ff SUB2 <print-dec>
@@ -414,7 +414,7 @@
 @slen ( str* -- len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
-@skey ( key buf -- proc )
+@zkey ( key buf -- proc )
 	OVR #21 LTH ?&eval
 	#00 SWP <sput>
 	#00 JMP2r
