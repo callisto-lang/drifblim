@@ -416,10 +416,12 @@
 
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
+	LDZk INC OVR STZ
 	#00 SWP INC <sput>
 	#00 JMP2r
 	&eval ( key ztr -- proc )
-		POP2 #01 JMP2r
+		NIP LDZk #00 ROT STZ
+		JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
