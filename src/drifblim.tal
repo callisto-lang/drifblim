@@ -416,12 +416,16 @@
 
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
-	STH #00 STHkr LDZk ADD INC STZ2
-	STHr LDZk INC SWP STZ
+	LDZk #30 EQU ?&overflow
+	( write char ) STH #00 STHkr LDZk ADD INC STZ2
+	( incr length ) STHr LDZk INC SWP STZ
 	#00 JMP2r
+	&overflow ( key ztr -- proc )
+		#00 OVR INC ;err/token <print-error>
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
 		JMP2r
+
 
 @scmp ( a* b* -- f )
 	STH2
@@ -499,6 +503,14 @@
 			INCr &>skip
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
+
+@<print-error> ( token* err* -- )
+	;err <print-err>
+	<print-err>
+	#2019 DEO
+	<print-err>
+	#0a19 DEO
+	JMP2r
 
 (
 @|assets )
