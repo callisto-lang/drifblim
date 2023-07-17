@@ -8,11 +8,11 @@
 
 	@src $30
 	@dst $30
-	@token $20 &cap $1 &err $20
-	@scope $20 &err $20
+	@token $20 &cap $1
+	@scope $20
 	@scan $1
 	@head $2
-	@error-name $2
+	@error &name $2 &scope $20 &token $20
 
 |0100
 
@@ -38,7 +38,7 @@
 		BRK
 	&eval ( -> )
 		<assemble>
-		[ LIT2 80 -error-name ] LDZ2 #0000 NEQ2 ORA #0f DEO
+		[ LIT2 80 -error/name ] LDZ2 #0000 NEQ2 ORA #0f DEO
 		BRK
 
 @on-interactive ( c -> )
@@ -70,7 +70,7 @@
 	( | clear memory )
 	;create-symbol/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
-	#0000 .error-name STZ2
+	#0000 .error/name STZ2
 	#0000 ;<write>/length STA2
 	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
@@ -80,18 +80,18 @@
 	&when-error ( -- )
 		[ LIT2 01 -File2/delete ] DEO
 		;err <print-err>/
-		.error-name LDZ2 <print-err>/
+		.error/name LDZ2 <print-err>/
 		#2019 DEO
-		;token/err <print-err>/
+		;error/token <print-err>/
 		;dict/in <print-err>/
-		;scope/err <print-err>/
+		;error/scope <print-err>/
 		;dict/dot !<print-err>/
 
 @handle-top ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
 	;dict/reset ;scope <scpy>
-	;src handle-file .error-name LDZ2 ORA JMP2r
+	;src handle-file .error/name LDZ2 ORA JMP2r
 
 @handle-file ( f* -- )
 	.File1/name DEO2
@@ -263,9 +263,9 @@
 	JMP2r
 
 @<set-error> ( name* -- )
-	.error-name STZ2
-	;token ;token/err <scpy>
-	;scope ;scope/err !<scpy>
+	.error/name STZ2
+	;token ;error/token <scpy>
+	;scope ;error/scope !<scpy>
 
 (
 @|labels )
