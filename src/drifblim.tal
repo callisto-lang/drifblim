@@ -10,9 +10,9 @@
 	@scan $1
 	@head $2
 	@error &name $2 &scope $20 &token $20
-	@src &buf $30
-	@dst &buf $30
-	@token &buf $30
+	@src $1 &buf $30
+	@dst $1 &buf $30
+	@token $1 &buf $30
 
 |0100
 
@@ -108,7 +108,7 @@
 	.token/buf zkey ?&eval-token
 	JMP2r
 	&eval-token ( -- )
-		;token LDAk ?&>no-null
+		;token/buf LDAk ?&>no-null
 			POP2 JMP2r &>no-null
 		DUP2 parse !<sclr>
 
@@ -257,7 +257,7 @@
 
 @<set-error> ( name* -- )
 	.error/name STZ2
-	;token ;error/token <scpy>
+	;token/buf ;error/token <scpy>
 	;scope ;error/scope !<scpy>
 
 (
