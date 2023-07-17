@@ -8,7 +8,7 @@
 
 	@src $30
 	@dst $30
-	@token $20 &cap $1
+	@token $30
 	@scope $20
 	@scan $1
 	@head $2
@@ -105,18 +105,11 @@
 		JMP2r
 
 @handle-char ( c -- )
-	DUP #20 GTH ?&append
-	POP ;token LDAk ?&run
-	POP2 JMP2r
-	&append ( c -- )
-		[ LIT &ptr -token ] INCk ,&ptr STR
-		DUP .token/cap EQU ?&error
-		STZ
-		JMP2r
-	&error ( c zp -- )
-		POP2 ;err/token !<set-error>
-	&run ( t* -- )
-		DUP ,&ptr STR
+	.token skey ?&eval-token
+	JMP2r
+	&eval-token ( -- )
+		;token LDAk ?&>no-null
+			POP2 JMP2r &>no-null
 		DUP2 parse !<sclr>
 
 (
