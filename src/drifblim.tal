@@ -13,7 +13,7 @@
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
-	@sublabel $1 &buf $30
+	@sublabel $30
 
 |0100
 
@@ -261,9 +261,9 @@
 
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
-	DUP2 ;sublabel <scpy>
-	LIT "/ ;sublabel <sput>
-	;sublabel scap/ ,make-sublabel/ptr STR2
+	DUP2 ;sublabel STH2k <scpy>
+	LIT "/ STH2kr <sput>
+	STH2r scap/ ,make-sublabel/ptr STR2
 	( >> )
 
 @create-symbol ( name* -- )
