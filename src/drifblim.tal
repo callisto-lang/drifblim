@@ -8,7 +8,7 @@
 
 	@scan $1
 	@head $2
-	@error $2
+	@qerror $1
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
@@ -37,7 +37,7 @@
 		BRK
 	&eval ( -> )
 		<assemble>
-		[ LIT2 80 -error ] LDZ2 #0000 NEQ2 ORA #0f DEO
+		[ LIT2 80 -qerror ] LDZ ORA #0f DEO
 		BRK
 
 @on-interactive ( c -> )
@@ -69,7 +69,7 @@
 	( | clear memory )
 	;create-symbol/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
-	#0000 .error STZ2
+	#00 .qerror STZ
 	#0000 ;<write>/length STA2
 	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
@@ -84,12 +84,13 @@
 	.scan STZ
 	#0100 <set-head>
 	;dict/reset <set-scope>
-	;src/buf handle-file .error LDZ2 ORA JMP2r
+	;src/buf handle-file .qerror LDZ JMP2r
 
 @handle-file ( f* -- )
 	.File1/name DEO2
 	#0001 .File1/length DEO2
 	&s ( -- )
+		.qerror LDZ ?&end
 		;&c read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 	&end ( -- )
@@ -246,8 +247,8 @@
 	JMP2r
 
 @<set-error> ( name* -- )
-	;token/buf OVR2 <print-error>
-	.error STZ2
+	<print-error>
+	[ LIT2 01 -qerror ] STZ
 	JMP2r
 
 (
@@ -496,11 +497,13 @@
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
 
-@<print-error> ( token* err* -- )
+@<print-error> ( err* -- )
 	;err <print-err>
 	<print-err>
 	#2019 DEO
-	<print-err>
+	;token/buf <print-err>
+	;dict/in <print-err>/
+	;memory/scope <print-err>/
 	#0a19 DEO
 	JMP2r
 
@@ -551,9 +554,9 @@
 	"# =lib/lithex "" =lib/rawstr
 	"~ =lib/inc ]
 	&end
-
 (
 @|memory )
+
 
 @memory ( buffers )
 	&scope $30
@@ -561,4 +564,5 @@
 	&sublabel $30
 	&comment $100
 	&symbols ( addr*, refs, name[], 00 )
+
 
