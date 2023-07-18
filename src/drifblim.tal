@@ -9,7 +9,7 @@
 	@scope $20
 	@scan $1
 	@head $2
-	@error &name $2
+	@error $2
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
@@ -38,7 +38,7 @@
 		BRK
 	&eval ( -> )
 		<assemble>
-		[ LIT2 80 -error/name ] LDZ2 #0000 NEQ2 ORA #0f DEO
+		[ LIT2 80 -error ] LDZ2 #0000 NEQ2 ORA #0f DEO
 		BRK
 
 @on-interactive ( c -> )
@@ -70,7 +70,7 @@
 	( | clear memory )
 	;create-symbol/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
-	#0000 .error/name STZ2
+	#0000 .error STZ2
 	#0000 ;<write>/length STA2
 	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
@@ -85,7 +85,7 @@
 	.scan STZ
 	#0100 <set-head>
 	;dict/reset ;scope <scpy>
-	;src/buf handle-file .error/name LDZ2 ORA JMP2r
+	;src/buf handle-file .error LDZ2 ORA JMP2r
 
 @handle-file ( f* -- )
 	.File1/name DEO2
@@ -249,7 +249,7 @@
 
 @<set-error> ( name* -- )
 	;token/buf OVR2 <print-error>
-	.error/name STZ2
+	.error STZ2
 	JMP2r
 
 (
