@@ -90,7 +90,6 @@
 	.File1/name DEO2
 	#0001 .File1/length DEO2
 	&s ( -- )
-		.qerror LDZ ?&end
 		;&c read-eof ?&end
 		[ LIT &c $1 ] handle-char !&s
 	&end ( -- )
