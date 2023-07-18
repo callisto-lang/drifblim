@@ -102,9 +102,7 @@
 	.token zkey ?&eval-token
 	JMP2r
 	&eval-token ( -- )
-		;token/buf LDAk ?&>no-null
-			POP2 JMP2r &>no-null
-		DUP2 parse !<sclr>
+		;token/buf DUP2 parse !<sclr>
 
 (
 @|tokenizer )
