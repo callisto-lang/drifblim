@@ -45,7 +45,7 @@ $emu $dst "tests/err-raw.tal" "bin/res.rom"
 echo "          Nested comment ( in INIT."
 $emu $dst "tests/err-com.tal" "bin/res.rom"
 
-echo "          Nested comment ( in INIT."
+echo "          Invalid token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in {on-reset}"
 $emu $dst "tests/err-toklen.tal" "bin/res.rom"
 
 echo "          Invalid token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

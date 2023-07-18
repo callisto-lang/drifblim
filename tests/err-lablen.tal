@@ -3,4 +3,5 @@
 
 @token-length-20-aaaaaaaaaaaaaaaa
 	&some-long-sublabel
+	;&some-long-sublabel
 
