@@ -9,7 +9,7 @@
 	@scope $20
 	@scan $1
 	@head $2
-	@error &name $2 &scope $20 &token $20
+	@error &name $2
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
@@ -79,13 +79,7 @@
 	save-symbols !<print-summary>
 	&when-error ( -- )
 		[ LIT2 01 -File2/delete ] DEO
-		;err <print-err>/
-		.error/name LDZ2 <print-err>/
-		#2019 DEO
-		;error/token <print-err>/
-		;dict/in <print-err>/
-		;error/scope <print-err>/
-		;dict/dot !<print-err>/
+		JMP2r
 
 @handle-top ( scan -- err )
 	.scan STZ
@@ -256,9 +250,9 @@
 	JMP2r
 
 @<set-error> ( name* -- )
+	;token/buf OVR2 <print-error>
 	.error/name STZ2
-	;token/buf ;error/token <scpy>
-	;scope ;error/scope !<scpy>
+	JMP2r
 
 (
 @|labels )
@@ -422,7 +416,7 @@
 	( incr length ) STHr LDZk INC SWP STZ
 	#00 JMP2r
 	&overflow ( key ztr -- proc )
-		#00 OVR INC ;err/token <print-error>
+		;err/token <set-error>
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
 		JMP2r
