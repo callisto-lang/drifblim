@@ -46,5 +46,8 @@ echo "          Nested comment ( in INIT."
 $emu $dst "tests/err-com.tal" "bin/res.rom"
 
 echo "          Nested comment ( in INIT."
-$emu $dst "tests/err-tok.tal" "bin/res.rom"
+$emu $dst "tests/err-toklen.tal" "bin/res.rom"
+
+echo "          Invalid token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+$emu $dst "tests/err-lablen.tal" "bin/res.rom"
 
