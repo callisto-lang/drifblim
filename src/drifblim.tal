@@ -257,13 +257,13 @@
 
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
+	DUP2 ;sublabel <scpy>
+	LIT "/ ;sublabel <sput>
+	;sublabel scap/ ;make-sublabel/ptr STA2
 	!create-symbol
 
 @make-sublabel ( name* -- sublabel* )
-	;scope ;sublabel STH2k <scpy>
-	LIT "/ STH2kr <sput>
-	STH2kr <scat>
-	STH2r JMP2r
+	[ LIT2 &ptr $2 ] <scpy> ;sublabel JMP2r
 
 @get-ref ( token* -- <label>* )
 	.scan LDZ ?&scan
@@ -459,9 +459,6 @@
 @<sput> ( chr str* -- )
 	scap/ ROT #00 SWP2 STA2
 	JMP2r
-
-@<scat> ( src* dst* -- )
-	scap/
 
 @<scpy> ( src* dst* -- )
 	STH2
