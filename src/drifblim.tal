@@ -255,27 +255,16 @@
 (
 @|labels )
 
+@make-sublabel ( name* -- sublabel* )
+	[ LIT2 &ptr $2 ] <scpy>
+	;sublabel JMP2r
+
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
 	DUP2 ;sublabel <scpy>
 	LIT "/ ;sublabel <sput>
-	;sublabel scap/ ;make-sublabel/ptr STA2
-	!create-symbol
-
-@make-sublabel ( name* -- sublabel* )
-	[ LIT2 &ptr $2 ] <scpy> ;sublabel JMP2r
-
-@get-ref ( token* -- <label>* )
-	.scan LDZ ?&scan
-	LDAk LIT "& NEQ ?&>no-sub
-		INC2 make-sublabel &>no-sub
-	find-symbol INC2k ORA ?&>found
-		POP2 ;&fill ;err/reference !<set-error>
-		&>found
-	INC2k INC2 LDAk INC ROT ROT STA
-	JMP2r
-	&scan POP2 ;&fill JMP2r
-	&fill ffff "? $1
+	;sublabel scap/ ,make-sublabel/ptr STR2
+	( >> )
 
 @create-symbol ( name* -- )
 	.scan LDZ ?&>continue
@@ -294,6 +283,18 @@
 		POP2 ;err/invalid !<set-error>
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !<set-error>
+
+@get-ref ( token* -- <label>* )
+	.scan LDZ ?&scan
+	LDAk LIT "& NEQ ?&>no-sub
+		INC2 make-sublabel &>no-sub
+	find-symbol INC2k ORA ?&>found
+		POP2 ;&fill ;err/reference !<set-error>
+		&>found
+	INC2k INC2 LDAk INC ROT ROT STA
+	JMP2r
+	&scan POP2 ;&fill JMP2r
+	&fill ffff "? $1
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
