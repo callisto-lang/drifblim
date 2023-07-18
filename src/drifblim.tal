@@ -6,7 +6,6 @@
 
 |0000
 
-	@scope $20
 	@scan $1
 	@head $2
 	@error $2
@@ -260,7 +259,7 @@
 	;sublabel JMP2r
 
 @<set-scope> ( t* -- )
-	DUP2 ;scope <scpy>
+	DUP2 ;memory/scope <scpy>
 	DUP2 ;sublabel STH2k <scpy>
 	LIT "/ STH2kr <sput>
 	STH2r scap/ ,make-sublabel/ptr STR2
@@ -553,13 +552,13 @@
 	"# =lib/lithex "" =lib/rawstr
 	"~ =lib/inc ]
 	&end
+
 (
 @|memory )
 
-
 @memory ( buffers )
-	&comment $100
+	&scope $30
 	&include $30
+	&comment $100
 	&symbols ( addr*, refs, name[], 00 )
-
 
