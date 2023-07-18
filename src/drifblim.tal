@@ -85,7 +85,7 @@
 @handle-top ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
-	;dict/reset ;scope <scpy>
+	;dict/reset <set-scope>
 	;src/buf handle-file .error LDZ2 ORA JMP2r
 
 @handle-file ( f* -- )
@@ -150,8 +150,7 @@
 	&padrel ( t* -- )
 		INC2 get-hex !<write-fill>
 	&toplab ( t* -- )
-		INC2 DUP2 ;scope <scpy>
-		!create-symbol
+		INC2 !<set-scope>
 	&sublab ( t* -- )
 		INC2 make-sublabel !create-symbol
 	&litrel ( t* -- )
@@ -256,6 +255,16 @@
 (
 @|labels )
 
+@<set-scope> ( t* -- )
+	DUP2 ;scope <scpy>
+	!create-symbol
+
+@make-sublabel ( name* -- sublabel* )
+	;scope ;sublabel STH2k <scpy>
+	LIT "/ STH2kr <sput>
+	STH2kr <scat>
+	STH2r JMP2r
+
 @get-ref ( token* -- <label>* )
 	.scan LDZ ?&scan
 	LDAk LIT "& NEQ ?&>no-sub
@@ -267,12 +276,6 @@
 	JMP2r
 	&scan POP2 ;&fill JMP2r
 	&fill ffff "? $1
-
-@make-sublabel ( name* -- sublabel* )
-	;scope ;sublabel STH2k <scpy>
-	LIT "/ STH2kr <sput>
-	STH2kr <scat>
-	STH2r JMP2r
 
 @create-symbol ( name* -- )
 	.scan LDZ ?&>continue
@@ -510,7 +513,7 @@
 
 @dict &usage "usage: 20 "drifblim.rom 20 "input.tal 20 "output.rom 0a $1
 	&unused "-- 20 "Unused 20 "label: 20 $1
-	&reset "on-reset $1
+	&reset "{on-reset} $1
 	&assembled "Assembled 20 $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
