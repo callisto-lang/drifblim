@@ -12,7 +12,6 @@
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
-	@sublabel $30
 
 |0100
 
@@ -256,11 +255,11 @@
 
 @make-sublabel ( name* -- sublabel* )
 	[ LIT2 &ptr $2 ] <scpy>
-	;sublabel JMP2r
+	;memory/sublabel JMP2r
 
 @<set-scope> ( t* -- )
 	DUP2 ;memory/scope <scpy>
-	DUP2 ;sublabel STH2k <scpy>
+	DUP2 ;memory/sublabel STH2k <scpy>
 	LIT "/ STH2kr <sput>
 	STH2r scap/ ,make-sublabel/ptr STR2
 	( >> )
@@ -559,6 +558,7 @@
 @memory ( buffers )
 	&scope $30
 	&include $30
+	&sublabel $30
 	&comment $100
 	&symbols ( addr*, refs, name[], 00 )
 
