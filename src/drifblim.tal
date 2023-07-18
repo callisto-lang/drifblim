@@ -54,8 +54,8 @@
 		BRK
 	&eval ( -> )
 		<assemble>
-		;dst/buf <print-line>/
-		;src/buf <sclr>
+		;dst/buf DUP2 <print-line>/
+		<sclr>
 		BRK
 
 (
@@ -509,9 +509,9 @@
 (
 @|assets )
 
-@dict &usage "usage: 20 "drifblim.rom 20 "input.tal 20 "output.rom 0a $1
-	&unused "-- 20 "Unused 20 "label: 20 $1
-	&reset "{on-reset} $1
+@dict &usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
+	&unused "-- 20 "Unused: 20 $1
+	&reset "// $1
 	&assembled "Assembled 20 $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
@@ -530,7 +530,7 @@
 	&token "Invalid 20 "token $1
 	&rewind "Rewind $1
 	&opcode "Opcode $1
-	&nested "Nested 20 "comment $1
+	&nested "Nested $1
 	&zeropage "Zero-page $1
 
 @opcodes
