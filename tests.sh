@@ -12,6 +12,9 @@ mkdir -p bin
 
 $asm $src $dst
 
+echo "          File project.tal"
+$emu $dst "tests/err-file.tal" "bin/res.rom"
+
 echo "          Duplicate &sub in label."
 $emu $dst "tests/err-dup.tal" "bin/res.rom"
 

@@ -94,7 +94,7 @@
 		[ LIT &c $1 ] handle-char !&s
 	&end ( -- )
 		.head LDZ2 #0100 GTH2 ?&>no-err
-			;err/source <set-error> &>no-err
+			;err/file <set-error> &>no-err
 		JMP2r
 
 @handle-char ( c -- )
@@ -202,7 +202,7 @@
 
 @<write-str> ( str* -- )
 	LDAk ?&w
-	POP2 ;err/token !<set-error>
+	POP2 ;err/string !<set-error>
 	&w ( -- )
 		LDAk <write>
 		INC2 LDAk ?&w
@@ -278,7 +278,7 @@
 		( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
 		( cache ) JMP2r
 	&invalid ( name* -- )
-		POP2 ;err/invalid !<set-error>
+		POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !<set-error>
 
@@ -521,13 +521,14 @@
 
 @err
 	"!! 20 "Error: 20 $1
-	&source "Empty 20 "file $1
+	&file "File $1
 	&duplicate "Duplicate $1
 	&number "Number $1
 	&reference "Reference $1
 	&distance "Distance $1
-	&invalid "Invalid 20 "label $1
-	&token "Invalid 20 "token $1
+	&symbol "Symbol $1
+	&token "Token $1
+	&string "String $1
 	&rewind "Rewind $1
 	&opcode "Opcode $1
 	&nested "Nested $1
