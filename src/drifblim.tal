@@ -70,7 +70,7 @@
 	;create-symbol/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
 	#00 .qerror STZ
-	#0000 ;<write>/length STA2
+	#0000 ;<write>/len STA2
 	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
 	( scan pass ) #01 handle-top ?&when-error
@@ -89,11 +89,13 @@
 @handle-file ( f* -- )
 	.File1/name DEO2
 	#0001 .File1/length DEO2
-	&s ( -- )
+	#0000
+	&s ( len* -- )
 		;&c read-eof ?&end
-		[ LIT &c $1 ] handle-char !&s
-	&end ( -- )
-		.head LDZ2 #0100 GTH2 ?&>no-err
+		INC2 [ LIT &c $1 ] handle-char !&s
+	&end ( len* -- )
+		ORA ?&>no-err
+			;memory/include ;token/buf <scpy>
 			;err/file <set-error> &>no-err
 		JMP2r
 
@@ -212,7 +214,7 @@
 	DUP2 slen NIP DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 ;err/number !<set-error>
-	&byte ( str* length -- )
+	&byte ( str* len -- )
 		POP get-hex NIP !<write>
 	&short ( str* short* -- )
 		get-hex !<write-short>
@@ -227,7 +229,7 @@
 	,&b STR
 	[ LIT2 00 -head ] LDZ EQU ?&zeropage
 	.scan LDZ ?&pass1
-	[ LIT2 &length $2 ] .head LDZ2 LTH2 ?<move-head>
+	[ LIT2 &len $2 ] .head LDZ2 LTH2 ?<move-head>
 	;&b .File2/write DEO2
 	!<move-head>
 	&zeropage ( -- )
@@ -236,7 +238,7 @@
 		!<move-head>
 	&pass1 ( -- )
 		[ LIT &b $1 ] #00 EQU ?<move-head>
-		.head LDZ2 ,<write>/length STR2
+		.head LDZ2 ,<write>/len STR2
 
 @<move-head> ( -- )
 	.head LDZ2 INC2
@@ -393,7 +395,7 @@
 	;dst/buf <print-err>/
 	( | length )
 	;dict/in <print-err>/
-	;<write>/length LDA2 #00ff SUB2 <print-dec>
+	;<write>/len LDA2 #00ff SUB2 <print-dec>
 	;dict/bytes <print-err>/
 	;create-symbol/count LDA2 <print-dec>
 	;dict/labels <print-err>/
@@ -414,7 +416,7 @@
 	OVR #21 LTH ?&eval
 	LDZk #30 EQU ?&overflow
 	( write char ) STH #00 STHkr LDZk ADD INC STZ2
-	( incr length ) STHr LDZk INC SWP STZ
+	( incr len ) STHr LDZk INC SWP STZ
 	#00 JMP2r
 	&overflow ( key ztr -- proc )
 		;err/token <set-error>
