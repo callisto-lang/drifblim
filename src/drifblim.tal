@@ -407,7 +407,7 @@
 
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
-	LDZk #30 EQU ?&overflow
+	LDZk #2f EQU ?&overflow
 	( write char ) STH #00 STHkr LDZk ADD INC STZ2
 	( incr len ) STHr LDZk INC SWP STZ
 	#00 JMP2r
@@ -506,7 +506,7 @@
 
 @dict &usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&unused "-- 20 "Unused: 20 $1
-	&reset "// $1
+	&reset "reset $1
 	&assembled "Assembled 20 $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1

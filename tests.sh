@@ -12,43 +12,43 @@ mkdir -p bin
 
 $asm $src $dst
 
-echo "          File project.tal"
+echo "          File project.tal in reset"
 $emu $dst "tests/err-file.tal" "bin/res.rom"
 
 echo "          Duplicate &sub in label."
 $emu $dst "tests/err-dup.tal" "bin/res.rom"
 
-echo "          Reference .missing in INIT."
+echo "          Reference .missing in reset."
 $emu $dst "tests/err-ref.tal" "bin/res.rom"
 
-echo "          Number #122325 in INIT."
+echo "          Number #122325 in reset."
 $emu $dst "tests/err-lithex.tal" "bin/res.rom"
 
-echo "          Number 122325 in INIT."
+echo "          Number 122325 in reset."
 $emu $dst "tests/err-rawhex.tal" "bin/res.rom"
 
-echo "          Distance ,label in INIT."
+echo "          Distance ,label in reset."
 $emu $dst "tests/err-dis.tal" "bin/res.rom"
 
-echo "          Zero-page #12 in INIT."
+echo "          Zero-page #12 in reset."
 $emu $dst "tests/err-zep.tal" "bin/res.rom"
 
-echo "          Rewind |0100 in INIT."
+echo "          Rewind |0100 in reset."
 $emu $dst "tests/err-rew.tal" "bin/res.rom"
 
-echo "          Invalid label @1234 in 1234."
+echo "          Symbol @1234 in 1234."
 $emu $dst "tests/err-hex.tal" "bin/res.rom"
 
-echo "          Opcode ADD2q in INIT."
+echo "          Opcode ADD2q in reset."
 $emu $dst "tests/err-opc.tal" "bin/res.rom"
 
-echo "          Number 1234567 in INIT."
+echo "          Number 1234567 in reset."
 $emu $dst "tests/err-raw.tal" "bin/res.rom"
 
-echo "          Nested comment ( in INIT."
+echo "          Nested ( in reset."
 $emu $dst "tests/err-com.tal" "bin/res.rom"
 
-echo "          Invalid token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in {on-reset}"
+echo "          Token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in reset"
 $emu $dst "tests/err-toklen.tal" "bin/res.rom"
 
 echo "          Invalid token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
