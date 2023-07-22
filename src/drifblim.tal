@@ -259,8 +259,8 @@
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
 	DUP2 ;sublabel STHk <scpy>
-	[ LIT2 "/ 00 ] STHkr zcap/ STZ2
-	#00 STHr zcap/ ,make-sublabel/ptr STR2
+	[ LIT2 "/ 00 ] STHr zcap/ STHk STZ2
+	#00 STHr INC ,make-sublabel/ptr STR2
 	( >> )
 
 @create-symbol ( name* -- )
