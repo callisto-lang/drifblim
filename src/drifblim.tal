@@ -71,7 +71,7 @@
 	( | clear memory )
 	;create-symbol/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
-	#00 .qerror STZ
+	[ LIT2 00 -qerror ] STZ
 	#0000 ;<write>/len STA2
 	;memory/symbols ;create-symbol/ptr STA2
 	#0000 ;create-symbol/count STA2
@@ -111,7 +111,7 @@
 @|tokenizer )
 
 @parse ( t* -- )
-	LDAk [ LIT "( ] EQU ?parse-comment
+	LDAk [ LIT 28 ] EQU ?parse-comment
 	( | runic )
 	LDAk ,&rune STR
 	;runes/end ;runes
@@ -126,7 +126,7 @@
 
 @parse-comment ( t* -- )
 	;&c read-eof ?<sclr>
-	[ LIT2 &c $1 "( ] NEQk ?&>no-nested
+	[ LIT2 &c $1 28 ] NEQk ?&>no-nested
 		;err/nested <set-error> &>no-nested
 	INC NEQ ?parse-comment
 	!<sclr>
@@ -284,11 +284,10 @@
 	.scan LDZ ?&scan
 	LDAk [ LIT "& ] NEQ ?&>no-sub
 		INC2 make-sublabel &>no-sub
-	find-symbol INC2k ORA ?&>found
-		POP2 ;&fill ;err/reference !<set-error>
-		&>found
+	find-symbol INC2k #0000 EQU2 ?&missing
 	INC2k INC2 LDAk INC ROT ROT STA
 	JMP2r
+	&missing ;err/reference <set-error>
 	&scan POP2 ;&fill JMP2r
 	&fill ffff "? $1
 
@@ -328,8 +327,7 @@
 
 @is-opcode ( str* -- str* f )
 	DUP2 find-opcode ?&pass
-	DUP2 ;opcodes/brk scmp3 ?&pass
-	#00 JMP2r
+	DUP2 ;opcodes/brk scmp3 JMP2r
 	&pass ( str* -- str* f )
 		#01 JMP2r
 
@@ -379,7 +377,7 @@
 	&l ( -- )
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
-		LDAk [ LIT "( ] EQU ?&>skip
+		LDAk [ LIT 28 ] EQU ?&>skip
 		DUP2 ;dict/reset scmp ?&>skip
 			;dict/unused <print-err>/
 			DUP2 <print-err>/
