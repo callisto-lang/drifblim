@@ -334,12 +334,9 @@
 		INC GTHk ?&l
 	POP2 POP2r #00 JMP2r
 	&on-found ( `name* bounds* -- byte )
-		NIP
-		( add keep mode to LIT ) DUP #00 EQU #70 SFT ADD
-		( move to modes ) STH2r #0003 ADD2 find-modes ADD JMP2r
-
-@find-modes ( mode* -- byte )
-	[ LITr 00 ]
+		( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
+		( move to modes ) STH2r #0003 ADD2
+		( keep flag ) [ LITr 00 ]
 	&w ( -- )
 		LDAk #20 OVR [ LIT "2 ] EQU ?&>end
 		DUP ADD OVR [ LIT "r ] EQU ?&>end
@@ -347,7 +344,7 @@
 		DUP ADD OVR #00 EQU ?&>end
 			;err/opcode <set-error> &>end
 		NIP STH ORAr INC2 LDAk ?&w
-	POP2 STHr JMP2r
+	POP2 STHr ADD JMP2r
 
 @save-symbols ( -- )
 	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
