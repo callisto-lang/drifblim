@@ -12,6 +12,8 @@
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
+	@scope $30
+	@sublabel $30
 
 |0100
 
@@ -123,19 +125,11 @@
 	!lib/litjsi
 
 @parse-comment ( t* -- )
-	LDA ;memory/comment STH2k <sput>
-	#20 STH2kr <sput>
-	&s ( -- )
-		;&c read-eof ?&end
-		;memory/comment slen POP ?&end
-		[ LIT &c $1 ] DUP LIT "( NEQ ?&>no-nested
-			;err/nested <set-error> &>no-nested
-		DUP STH2kr <sput>
-		LIT ") NEQ ?&s
-	&end ( ptr* -- )
-		#00 STH2kr <sput>
-		STH2r .scan LDZ ?<sclr>
-		DUP2 create-symbol/force !<sclr>
+	;&c read-eof ?<sclr>
+	[ LIT2 &c $1 "( ] NEQk ?&>no-nested
+		;err/nested <set-error> &>no-nested
+	INC NEQ ?parse-comment
+	!<sclr>
 
 @parse-runic ( t* a* b* -- )
 	NIP2 INC2 LDA2
@@ -257,11 +251,11 @@
 
 @make-sublabel ( name* -- sublabel* )
 	[ LIT2 &ptr $2 ] <scpy>
-	;memory/sublabel JMP2r
+	;sublabel JMP2r
 
 @<set-scope> ( t* -- )
-	DUP2 ;memory/scope <scpy>
-	DUP2 ;memory/sublabel STH2k <scpy>
+	DUP2 ;scope <scpy>
+	DUP2 ;sublabel STH2k <scpy>
 	LIT "/ STH2kr <sput>
 	STH2r scap/ ,make-sublabel/ptr STR2
 	( >> )
@@ -272,13 +266,12 @@
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
-	&force ( name* -- )
-		( save addr ) .head LDZ2 [ LIT2 &ptr =memory/symbols ] STH2k STA2
-		( move ) INC2r INC2r INC2r
-		( save name ) DUP2 STH2kr <scpy>
-		( move ) slen STH2r ADD2 INC2 ,&ptr STR2
-		( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
-		( cache ) JMP2r
+	( save addr ) .head LDZ2 [ LIT2 &ptr =memory/symbols ] STH2k STA2
+	( move ) INC2r INC2r INC2r
+	( save name ) DUP2 STH2kr <scpy>
+	( move ) slen STH2r ADD2 INC2 ,&ptr STR2
+	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
+	( cache ) JMP2r
 	&invalid ( name* -- )
 		POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
@@ -504,7 +497,7 @@
 	#2019 DEO
 	;token/buf <print-err>
 	;dict/in <print-err>/
-	;memory/scope <print-err>/
+	;scope <print-err>/
 	#0a19 DEO
 	JMP2r
 
@@ -561,10 +554,7 @@
 
 
 @memory ( buffers )
-	&scope $30
 	&include $30
-	&sublabel $30
-	&comment $100
 	&symbols ( addr*, refs, name[], 00 )
 
 
