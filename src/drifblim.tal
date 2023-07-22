@@ -169,7 +169,7 @@
 		INC2 DUP zlen #04 EQU #50 SFT #80 ORA <write>
 		!<write-hex>
 	&rawstr ( t* -- )
-		INC2 !<write-str>
+		INC2 !<write-str>/
 	&inc ( t* -- )
 		INC2k ;memory/include STH2k <scpy>
 		<sclr>
@@ -194,11 +194,9 @@
 		.head LDZ2 ADD2 !<set-head>
 
 @<write-str> ( str* -- )
-	LDAk ?&w
-	POP2 ;err/string !<set-error>
 	&w ( -- )
 		LDAk <write>
-		INC2 LDAk ?&w
+		INC2 & LDAk ?&w
 	POP2 JMP2r
 
 @<write-hex> ( str* -- )
@@ -325,7 +323,7 @@
 
 @is-opcode ( str* -- str* f )
 	DUP2 find-opcode ?&pass
-	DUP2 ;opcodes/brk scmp3 JMP2r
+	DUP2 ;opcodes/brk !scmp3
 	&pass ( str* -- str* f )
 		#01 JMP2r
 
@@ -527,7 +525,6 @@
 	&symbol "Symbol $1
 	&token "Token $1
 	&sublabel "Sublabel $1
-	&string "String $1
 	&rewind "Rewind $1
 	&opcode "Opcode $1
 	&nested "Nested $1
