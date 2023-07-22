@@ -160,14 +160,11 @@
 	&rawabs ( t* -- )
 		INC2 get-ref LDA2 !<write-short>
 	&litjci ( t* -- )
-		#20 <write>
-		INC2 !<write-call>
+		INC2 #20 !<write-call>
 	&litjmi ( t* -- )
-		#40 <write>
-		INC2 !<write-call>
+		INC2 #40 !<write-call>
 	&litjsi ( t* -- )
-		#60 <write>
-		!<write-call>
+		#60 !<write-call>
 	&lithex ( t* -- )
 		INC2 DUP zlen #04 EQU #50 SFT #80 ORA <write>
 		!<write-hex>
@@ -213,7 +210,8 @@
 	&short ( str* short* -- )
 		get-hex !<write-short>
 
-@<write-call> ( str* -- )
+@<write-call> ( str* opc -- )
+	<write>
 	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
 
 @<write-short> ( short* -- )
