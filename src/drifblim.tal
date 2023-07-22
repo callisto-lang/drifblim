@@ -250,8 +250,11 @@
 @|labels )
 
 @make-sublabel ( name* -- sublabel* )
+	DUP2 slen NIP ;sublabel slen NIP ADD #2f GTH ?&overflow
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
+	&overflow ( name* -- sublabel* )
+		;err/sublabel !<set-error>
 
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
@@ -397,14 +400,6 @@
 (
 @|stdlib )
 
-@scap ( str* -- end* )
-	&w ( -- )
-		INC2 & LDAk ?&w
-	JMP2r
-
-@slen ( str* -- len* )
-	DUP2 scap/ SWP2 SUB2 JMP2r
-
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
 	LDZk #2f EQU ?&overflow
@@ -416,6 +411,14 @@
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
 		JMP2r
+
+@scap ( str* -- end* )
+	&w ( -- )
+		INC2 & LDAk ?&w
+	JMP2r
+
+@slen ( str* -- len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
 
 @scmp ( a* b* -- f )
 	STH2
@@ -523,6 +526,7 @@
 	&distance "Distance $1
 	&symbol "Symbol $1
 	&token "Token $1
+	&sublabel "Sublabel $1
 	&string "String $1
 	&rewind "Rewind $1
 	&opcode "Opcode $1

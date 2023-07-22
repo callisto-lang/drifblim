@@ -51,6 +51,6 @@ $emu $dst "tests/err-com.tal" "bin/res.rom"
 echo "          Token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in reset"
 $emu $dst "tests/err-toklen.tal" "bin/res.rom"
 
-echo "          Invalid token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+echo "          Sublabel &some-long-sublabel in token-length-20-aaaaaaaaaaaaaaaa"
 $emu $dst "tests/err-lablen.tal" "bin/res.rom"
 
