@@ -169,7 +169,7 @@
 		#60 <write>
 		!<write-call>
 	&lithex ( t* -- )
-		INC2 DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
+		INC2 DUP zlen #04 EQU #50 SFT #80 ORA <write>
 		!<write-hex>
 	&rawstr ( t* -- )
 		INC2 !<write-str>
@@ -205,7 +205,7 @@
 	POP2 JMP2r
 
 @<write-hex> ( str* -- )
-	DUP2 slen NIP DUP #02 EQU ?&byte
+	DUP zlen DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 ;err/number !<set-error>
 	&byte ( str* len -- )
@@ -250,7 +250,7 @@
 @|labels )
 
 @make-sublabel ( name* -- sublabel* )
-	DUP2 slen NIP ;sublabel slen NIP ADD #2f GTH ?&overflow
+	DUP zlen .sublabel zlen ADD #2f GTH ?&overflow
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 	&overflow ( name* -- sublabel* )
@@ -258,9 +258,9 @@
 
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
-	DUP2 ;sublabel STH2k <scpy>
-	LIT "/ STH2kr <sput>
-	STH2r scap/ ,make-sublabel/ptr STR2
+	DUP2 ;sublabel STHk <scpy>
+	[ LIT2 "/ 00 ] STHkr zcap/ STZ2
+	#00 STHr zcap/ ,make-sublabel/ptr STR2
 	( >> )
 
 @create-symbol ( name* -- )
@@ -412,6 +412,14 @@
 		NIP LDZk #00 ROT STZ
 		JMP2r
 
+@zcap ( ztr/buf -- ztr/cap )
+	&w ( -- )
+		INC & LDZk ?&w
+	JMP2r
+
+@zlen ( ztr/buf -- len )
+	DUP zcap/ SWP SUB JMP2r
+
 @scap ( str* -- end* )
 	&w ( -- )
 		INC2 & LDAk ?&w
@@ -452,10 +460,6 @@
 		#0000 OVR2 STA2
 		INC2 INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
-
-@<sput> ( chr str* -- )
-	scap/ ROT #00 SWP2 STA2
-	JMP2r
 
 @<scpy> ( src* dst* -- )
 	STH2
