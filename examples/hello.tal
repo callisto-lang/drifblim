@@ -2,17 +2,28 @@
 
 |0100 @program
 
-	{ "hello $1 } print-str
-	{ 01 02 03 04 05 } { LIT "0 ADD #18 DEO } foreach
+	( nested lambda )
+	{ { "hello 0a $1 } !print-str } JSR2
 
+	( function application )
+	{ 01 02 03 04 05 } { LIT "0 ADD #18 DEO #0a18 DEO JMP2r } foreach
+
+	( get lambda length )
+	{ "Dindeldums $1 } get-lambda-length <print-dec> #0a18 DEO
+
+	( allocated string )
 	;hello-word print-str
-
+	
 	#800f DEO
 
 BRK
 
+@get-lambda-length ( lambda* -- length* )
+	#0002 SUB2 LDA2
+JMP2r
+
 @print-str ( str* -- )
-	&while
+	&while ( -- )
 		( send ) LDAk #18 DEO
 		( loop ) INC2 LDAk ?&while
 	POP2
@@ -29,6 +40,15 @@ JMP2r
 		INC2 NEQ2k ?&l
 	POP2 POP2 POP2r
 JMP2r
+
+@<print-dec> ( short* -- )
+	#2710 [ LIT2r 00fb ]
+	&w ( -- )
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&>skip
+			DUP [ LIT "0 ] ADD #19 DEO
+			INCr &>skip
+		POP2 #000a DIV2 SWPr INCr STHkr ?&w
+	POP2r POP2 POP2 JMP2r
 
 $100 @label2
 

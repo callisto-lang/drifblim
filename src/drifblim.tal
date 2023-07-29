@@ -192,7 +192,6 @@
 	&pop ( -- )
 		,&ptr LDR2 #0001 SUB2 LDAk LIT "0 ADD ,&id STR
 		,&ptr STR2
-		#6c <write>
 		;&sym <create-symbol>
 		#6f !<write>
 	&sym "la &id "0 $1
