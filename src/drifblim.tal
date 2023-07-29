@@ -183,15 +183,15 @@
 		POP2 JMP2r
 
 @lambda &ptr =memory/lambda
-	&push ( id -- )
+	&push ( -- )
 		[ LIT &count $1 ] INCk ,&count STR
 		DUP ,&ptr LDR2 INC2k ,&ptr STR2
 		STA
 		LIT "0 ADD ,&id STR
 		;&sym #60 !<write-call>
-	&pop ( -- id )
-		,&ptr LDR2 #0001 SUB2 DUP2 ,&ptr STR2
-		LDA LIT "0 ADD ;&id STA
+	&pop ( -- )
+		,&ptr LDR2 #0001 SUB2 LDAk LIT "0 ADD ,&id STR
+		,&ptr STR2
 		#6c <write>
 		;&sym <create-symbol>
 		#6f !<write>

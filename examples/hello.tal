@@ -7,7 +7,6 @@
 
 	;hello-word print-str
 
-	#010e DEO
 	#800f DEO
 
 BRK
