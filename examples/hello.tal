@@ -33,7 +33,7 @@ JMP2r
 @foreach ( arr* fn* -- )
 	STH2
 	DUP2
-	DUP2 #0002 SUB2 LDA2 ADD2 #0001 SUB2
+	DUP2 #0002 SUB2 LDA2 ADD2
 	SWP2
 	&l
 		LDAk STH2kr JSR2
