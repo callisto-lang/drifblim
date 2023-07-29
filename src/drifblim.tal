@@ -69,12 +69,12 @@
 	[ LIT2 01 -File2/delete ] DEO
 	#0001 .File2/length DEO2
 	( | clear memory )
-	;create-symbol/ptr LDA2 ;memory <mclr>
+	;<create-symbol>/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
 	[ LIT2 00 -qerror ] STZ
 	#0000 ;<write>/len STA2
-	;memory/symbols ;create-symbol/ptr STA2
-	#0000 ;create-symbol/count STA2
+	;memory/symbols ;<create-symbol>/ptr STA2
+	#0000 ;<create-symbol>/count STA2
 	( scan pass ) #01 handle-top ?&when-error
 	( write pass ) #00 handle-top ?&when-error
 	save-symbols !<print-summary>
@@ -85,6 +85,7 @@
 @handle-top ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
+	#00 ;lambda-push/count STA
 	;dict/reset <set-scope>
 	;src/buf handle-file .qerror LDZ JMP2r
 
@@ -146,7 +147,7 @@
 	&toplab ( t* -- )
 		INC2 !<set-scope>
 	&sublab ( t* -- )
-		INC2 make-sublabel !create-symbol
+		INC2 make-sublabel !<create-symbol>
 	&litrel ( t* -- )
 		#80 <write>
 	&rawrel ( t* -- )
@@ -170,12 +171,41 @@
 		!<write-hex>
 	&rawstr ( t* -- )
 		INC2 !<write-str>/
+	&lampus ( t* -- )
+		POP2 !lambda-push
+	&lampop ( t* -- )
+		POP2 !lambda-pop
 	&inc ( t* -- )
 		INC2k ;memory/include STH2k <scpy>
 		<sclr>
 		STH2r !handle-file
 	&ignore ( t* -- )
 		POP2 JMP2r
+
+@lambda-push ( -- )
+	[ LIT &count $1 ]
+	( ) INCk ,&count STR
+	( ) DUP stack/push
+	( ) LIT "0 ADD ,&id STR
+	;&sym #60 !<write-call>
+	&sym "la &id "0 $1
+
+@lambda-pop ( -- )
+	stack/pop LIT "0 ADD ;&id STA
+	#6c <write>
+	;&sym <create-symbol>
+	#6f <write>
+	JMP2r
+	&sym "la &id "0 $1
+
+@stack &ptr =memory/lambda
+	&push ( id -- )
+		,&ptr LDR2 INC2k ,&ptr STR2
+		STA
+		JMP2r
+	&pop ( -- id )
+		,&ptr LDR2 #0001 SUB2 DUP2 ,&ptr STR2
+		LDA JMP2r
 
 (
 @|primitives )
@@ -259,7 +289,7 @@
 	#00 STHr INC ,make-sublabel/ptr STR2
 	( >> )
 
-@create-symbol ( name* -- )
+@<create-symbol> ( name* -- )
 	.scan LDZ ?&>continue
 		POP2 JMP2r &>continue
 	( not hex ) is-hex ?&invalid
@@ -289,7 +319,7 @@
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;create-symbol/ptr LDA2 ;memory/symbols
+	;<create-symbol>/ptr LDA2 ;memory/symbols
 	&l ( -- )
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
 		scap/ INC2 GTH2k ?&l
@@ -366,7 +396,7 @@
 	.File1/success DEI2 #0000 EQU2 JMP2r
 
 @<print-summary> ( -- )
-	;create-symbol/ptr LDA2 ;memory/symbols
+	;<create-symbol>/ptr LDA2 ;memory/symbols
 	&l ( -- )
 		INC2k INC2 LDA ?&>skip
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
@@ -384,7 +414,7 @@
 	;dict/in <print-err>/
 	;<write>/len LDA2 #00ff SUB2 <print-dec>
 	;dict/bytes <print-err>/
-	;create-symbol/count LDA2 <print-dec>
+	;<create-symbol>/count LDA2 <print-dec>
 	;dict/labels <print-err>/
 	;dict/end !<print-err>/
 
@@ -544,6 +574,7 @@
 	"; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
+	"{ =lib/lampus "} =lib/lampop
 	"# =lib/lithex "" =lib/rawstr
 	"~ =lib/inc ]
 	&end
@@ -553,6 +584,7 @@
 
 @memory ( buffers )
 	&include $30
+	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
 
 

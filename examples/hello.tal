@@ -2,18 +2,33 @@
 
 |0100 @program
 
+	{ "hello $1 } print-str
+	{ 01 02 03 04 05 } { LIT "0 ADD #18 DEO } foreach
+
 	;hello-word print-str
+
+	#010e DEO
 	#800f DEO
 
 BRK
 
 @print-str ( str* -- )
-
 	&while
 		( send ) LDAk #18 DEO
 		( loop ) INC2 LDAk ?&while
 	POP2
 
+JMP2r
+
+@foreach ( arr* fn* -- )
+	STH2
+	DUP2
+	DUP2 #0002 SUB2 LDA2 ADD2 #0001 SUB2
+	SWP2
+	&l
+		LDAk STH2kr JSR2
+		INC2 NEQ2k ?&l
+	POP2 POP2 POP2r
 JMP2r
 
 $100 @label2
