@@ -187,14 +187,16 @@
 		[ LIT &count $1 ] INCk ,&count STR
 		DUP ,&ptr LDR2 INC2k ,&ptr STR2
 		STA
-		LIT "0 ADD ,&id STR
-		;&sym #60 !<write-call>
+		lambda/name #60 !<write-call>
 	&pop ( -- )
-		[ LIT2 &ptr =memory/lambda ] #0001 SUB2 LDAk LIT "0 ADD ,&id STR
+		[ LIT2 &ptr =memory/lambda ] #0001 SUB2 LDAk lambda/name <create-symbol>
 		,&ptr STR2
-		;&sym <create-symbol>
 		#6f !<write>
-		&sym "la &id "0 $1
+	&name ( id -- str* )
+		( x0 ) DUP #04 SFT LIT "0 ADD
+		( 0x ) SWP #0f AND LIT "0 ADD ,&id STR2
+		;&sym JMP2r
+		&sym "lambda &id "00 $1
 
 (
 @|primitives )
