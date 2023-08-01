@@ -525,7 +525,7 @@
 
 @dict &usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&unused "-- 20 "Unused: 20 $1
-	&reset "reset $1
+	&reset "RESET $1
 	&assembled "Assembled 20 $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
