@@ -151,7 +151,7 @@
 	&litrel ( t* -- )
 		#80 <write>
 	&rawrel ( t* -- )
-		INC2 get-ref get-rel INC !<write>
+		INC2 get-ref get-rel !<write>
 	&litzep ( t* -- )
 		#80 <write>
 	&rawzep ( t* -- )
@@ -327,10 +327,11 @@
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
-	LDA2k .head LDZ2 SUB2 #0003 SUB2 DUP2 #0080 ADD2 POP ?&fail
-	NIP2 NIP JMP2r
+	LDA2 .head LDZ2 SUB2 #0002 SUB2
+	( bounds ) DUP2 #0080 ADD2 POP ?&fail
+	NIP JMP2r
 	&fail ( label* distance* -- distance )
-		POP2 ;err/distance <set-error>
+		;err/distance <set-error>
 	&fill ( -- )
 		POP2 #ff JMP2r
 
