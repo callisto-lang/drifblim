@@ -97,15 +97,13 @@
 		;&c read-eof ?&end
 		INC2 [ LIT &c $1 ] handle-char !&s
 	&end ( len* -- )
-		ORA ?&>no-err
+		ORA ?{
 			;memory/include ;token/buf <scpy>
-			;err/file <set-error> &>no-err
+			;err/file <set-error> }
 		JMP2r
 
 @handle-char ( c -- )
-	.token zkey ?&eval-token
-	JMP2r
-	&eval-token ( -- )
+	.token zkey ?{ JMP2r }
 		;token/buf DUP2 parse !<sclr>
 
 (
@@ -127,8 +125,8 @@
 
 @parse-comment ( t* -- )
 	;&c read-eof ?<sclr>
-	[ LIT2 &c $1 28 ] NEQk ?&>no-nested
-		;err/nested <set-error> &>no-nested
+	[ LIT2 &c $1 28 ] NEQk ?{
+		;err/nested <set-error> }
 	INC NEQ ?parse-comment
 	!<sclr>
 
@@ -208,8 +206,8 @@
 	&skip ( -- )
 		POP2 POP2 JMP2r
 	&rewind ( len* -- )
-		.head LDZ2 #0101 LTH2 ?&>valid
-			;err/rewind <set-error> &>valid
+		.head LDZ2 #0101 LTH2 ?{
+			;err/rewind <set-error> }
 		.head LDZ2 ADD2 !<set-head>
 
 @<write-str> ( str* -- )
@@ -279,8 +277,7 @@
 	( >> )
 
 @<create-symbol> ( name* -- )
-	.scan LDZ ?&>continue
-		POP2 JMP2r &>continue
+	.scan LDZ ?{ POP2 JMP2r }
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
@@ -296,15 +293,12 @@
 		POP2 ;err/duplicate !<set-error>
 
 @get-ref ( token* -- <label>* )
-	LDAk [ LIT "{ ] NEQ ?&>no-lambda
-		lambda/push &>no-lambda
+	LDAk [ LIT "{ ] NEQ ?{ lambda/push }
 	.scan LDZ ?&scan
-	LDAk [ LIT "& ] NEQ ?&>no-sub
-		INC2 make-sublabel &>no-sub
-	find-symbol INC2k #0000 EQU2 ?&missing
-	INC2k INC2 LDAk INC ROT ROT STA
-	JMP2r
-	&missing ;err/reference <set-error>
+	LDAk [ LIT "& ] NEQ ?{ INC2 make-sublabel }
+	find-symbol INC2k #0000 EQU2 ?{
+		INC2k INC2 LDAk INC ROT ROT STA
+		JMP2r } ;err/reference <set-error>
 	&scan POP2 ;&fill JMP2r
 	&fill ffff "? $1
 
@@ -338,8 +332,7 @@
 @is-hex ( str* -- str* f )
 	DUP2
 	&w ( -- )
-		LDAk chex INC ?&>valid
-			POP2 #00 JMP2r &>valid
+		LDAk chex INC ?{ POP2 #00 JMP2r }
 		INC2 LDAk ?&w
 	POP2 #01 JMP2r
 
@@ -451,8 +444,8 @@
 		NIP2 POP2r EQU JMP2r
 
 @scmp3 ( a* b* -- f )
-	STH2 LDAkr LDAk STHr NEQ ?&>end
-		INC2r INC2 &>end
+	STH2 LDAkr LDAk STHr NEQ ?{
+		INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -- <val> )
@@ -505,9 +498,9 @@
 @<print-dec> ( short* -- )
 	#2710 [ LIT2r 00fb ]
 	&w ( -- )
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?&>skip
+		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
 			DUP [ LIT "0 ] ADD #19 DEO
-			INCr &>skip
+			INCr }
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
 
