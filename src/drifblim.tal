@@ -103,8 +103,7 @@
 		JMP2r
 
 @handle-char ( c -- )
-	.token zkey ?{
-		JMP2r }
+	.token zkey ?{ JMP2r }
 	;token/buf DUP2 parse !<sclr>
 
 (
@@ -126,8 +125,7 @@
 
 @parse-comment ( t* -- )
 	;&c read-eof ?<sclr>
-	[ LIT2 &c $1 28 ] NEQk ?{
-		;err/nested <set-error> }
+	[ LIT2 &c $1 28 ] NEQk ?{ ;err/nested <set-error> }
 	INC NEQ ?parse-comment
 	!<sclr>
 
@@ -191,8 +189,7 @@
 	&skip ( -- )
 		POP2 POP2 JMP2r
 	&rewind ( len* -- )
-		.head LDZ2 #0101 LTH2 ?{
-			;err/rewind <set-error> }
+		.head LDZ2 #0101 LTH2 ?{ ;err/rewind <set-error> }
 		.head LDZ2 ADD2 !<set-head>
 
 @<write-str> ( str* -- )
@@ -262,8 +259,7 @@
 	( >> )
 
 @<create-symbol> ( name* -- )
-	.scan LDZ ?{
-		POP2 JMP2r }
+	.scan LDZ ?{ POP2 JMP2r }
 	( not hex ) is-hex ?&invalid
 	( not opc ) is-opcode ?&invalid
 	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
@@ -279,11 +275,9 @@
 		POP2 ;err/duplicate !<set-error>
 
 @get-ref ( token* -- <label>* )
-	LDAk [ LIT "{ ] NEQ ?{
-		lambda/push }
+	LDAk [ LIT "{ ] NEQ ?{ lambda/push }
 	.scan LDZ ?&scan
-	LDAk [ LIT "& ] NEQ ?{
-		INC2 make-sublabel }
+	LDAk [ LIT "& ] NEQ ?{ INC2 make-sublabel }
 	find-symbol INC2k #0000 EQU2 ?{
 		INC2k INC2 LDAk INC ROT ROT STA
 		JMP2r }
@@ -337,8 +331,7 @@
 @is-hex ( str* -- str* f )
 	DUP2
 	&w ( -- )
-		LDAk chex INC ?{
-			POP2 #00 JMP2r }
+		LDAk chex INC ?{ POP2 #00 JMP2r }
 		INC2 LDAk ?&w
 	POP2 #01 JMP2r
 
@@ -450,8 +443,7 @@
 		NIP2 POP2r EQU JMP2r
 
 @scmp3 ( a* b* -- f )
-	STH2 LDAkr LDAk STHr NEQ ?{
-		INC2r INC2 }
+	STH2 LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -- <val> )
