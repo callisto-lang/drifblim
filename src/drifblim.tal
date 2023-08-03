@@ -171,9 +171,7 @@
 		!<write-hex>
 	&rawstr ( t* -- )
 		INC2 !<write-str>/
-	&lampus ( t* -- )
-		POP2 !lambda/push
-	&lampop ( t* -- )
+	&lambda ( t* -- )
 		POP2 !lambda/pop
 	&inc ( t* -- )
 		INC2k ;memory/include STH2k <scpy>
@@ -183,15 +181,15 @@
 		POP2 JMP2r
 
 @lambda
-	&push ( -- )
+	&push ( -- name* )
 		[ LIT &count $1 ] INCk ,&count STR
 		DUP [ LIT2 &ptr =memory/lambda ] INC2k ,&ptr STR2
 		STA
-		lambda/name #60 !<write-call>
+		!lambda/name
 	&pop ( -- )
 		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
 		,&ptr STR2
-		#6f !<write>
+		JMP2r
 	&name ( id -- str* )
 		( x0 ) DUP #04 SFT LIT "0 ADD
 		( 0x ) SWP #0f AND LIT "0 ADD ,&id STR2
@@ -298,6 +296,8 @@
 		POP2 ;err/duplicate !<set-error>
 
 @get-ref ( token* -- <label>* )
+	LDAk [ LIT "{ ] NEQ ?&>no-lambda
+		lambda/push &>no-lambda
 	.scan LDZ ?&scan
 	LDAk [ LIT "& ] NEQ ?&>no-sub
 		INC2 make-sublabel &>no-sub
@@ -566,9 +566,8 @@
 	"; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
-	"{ =lib/lampus "} =lib/lampop
-	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inc ]
+	"} =lib/lambda "# =lib/lithex
+	"" =lib/rawstr "~ =lib/inc ]
 	&end
 (
 @|memory )
