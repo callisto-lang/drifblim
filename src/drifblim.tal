@@ -59,17 +59,15 @@
 	( | setup export )
 	;dst/buf .File2/name DEO2
 	[ LIT2 01 -File2/delete ] DEO
-	#0001 .File2/length DEO2
 	( | clear memory )
 	;<create-symbol>/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
 	[ LIT2 00 -qerror ] STZ
-	#0000 ;<write>/len STA2
 	;memory/symbols ;<create-symbol>/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	( scan pass ) #01 handle-top ?&when-error
 	( write pass ) #00 handle-top ?&when-error
-	save-symbols !<print-summary>
+	save-result save-symbols !<print-summary>
 	&when-error ( -- )
 		[ LIT2 01 -File2/delete ] DEO
 		JMP2r
@@ -130,9 +128,9 @@
 
 @lib
 	&padabs ( t* -- )
-		INC2 get-hex .head LDZ2 SUB2 !<write-fill>
+		INC2 get-hex !<set-head>
 	&padrel ( t* -- )
-		INC2 get-hex !<write-fill>
+		INC2 get-hex .head LDZ2 ADD2 !<set-head>
 	&toplab ( t* -- )
 		INC2 !<set-scope>
 	&sublab ( t* -- )
@@ -172,18 +170,6 @@
 (
 @|primitives )
 
-@<write-fill> ( len* -- )
-	OVR #80 AND ?&rewind
-	#0000 EQU2k ?&skip
-	&l ( -- )
-		#00 <write>
-		INC2 GTH2k ?&l
-	&skip ( -- )
-		POP2 POP2 JMP2r
-	&rewind ( len* -- )
-		.head LDZ2 #0101 LTH2 ?{ ;err/rewind <set-error> }
-		.head LDZ2 ADD2 !<set-head>
-
 @<write-str> ( str* -- )
 	&w ( -- )
 		LDAk <write>
@@ -207,19 +193,7 @@
 	SWP <write>
 
 @<write> ( byte -- )
-	,&b STR
-	[ LIT2 00 -head ] LDZ EQU ?&zeropage
-	.scan LDZ ?&pass1
-	[ LIT2 &len $2 ] .head LDZ2 LTH2 ?<move-head>
-	;&b .File2/write DEO2
-	!<move-head>
-	&zeropage ( -- )
-		,&b LDR #00 EQU ?<move-head>
-		;err/zeropage <set-error>
-		!<move-head>
-	&pass1 ( -- )
-		[ LIT &b $1 ] #00 EQU ?<move-head>
-		.head LDZ2 ,<write>/len STR2
+	.head LDZ2 ;memory/result ADD2 STA 
 
 @<move-head> ( -- )
 	.head LDZ2 INC2
@@ -321,6 +295,13 @@
 	&fill ( -- )
 		POP2 #ff JMP2r
 
+@get-len ( -- length* )
+	;rom #ffff OVR2 STH2k
+	&l ( -- )
+		LDAk #00 EQU ?{ POP2r STH2k }
+		INC2 GTH2k ?&l
+	POP2 POP2 STH2r SWP2 SUB2 INC2 JMP2r
+
 @is-hex ( str* -- str* f )
 	DUP2
 	&w ( -- )
@@ -366,6 +347,12 @@
 	POP2 #00 ROT ROT STA
 	JMP2r
 
+@save-result ( -- )
+	;dst/buf .File2/name DEO2
+	get-len .File2/length DEO2
+	;rom .File2/write DEO2
+	JMP2r
+
 @read-eof ( addr* -- f )
 	.File1/read DEO2
 	.File1/success DEI2 #0000 EQU2 JMP2r
@@ -387,7 +374,7 @@
 	;dst/buf <print-err>/
 	( | length )
 	;dict/in <print-err>/
-	;<write>/len LDA2 #00ff SUB2 <print-dec>
+	get-len <print-dec>
 	;dict/bytes <print-err>/
 	;<create-symbol>/count LDA2 <print-dec>
 	;dict/labels <print-err>/
@@ -555,5 +542,10 @@
 	&include $30
 	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
+
+
+|8000 &result $100
+
+@rom
 
 
