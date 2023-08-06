@@ -18,11 +18,9 @@
 |0100
 
 @on-reset ( -> )
-	.Console/type DEI ?&has-args
-	;dict/usage <print-err>/
-	&has-args ( -- )
-		;&await-src .Console/vector DEO2
-		BRK
+	.Console/type DEI ?{ ;dict/usage <print-err>/ }
+	;&await-src .Console/vector DEO2
+	BRK
 	&await-src ( -> )
 		.Console/read DEI DUP [ LIT "^ ] EQU ?on-interactive
 		.src zkey ?on-default
@@ -35,9 +33,7 @@
 	;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst zkey ?&eval
-		BRK
-	&eval ( -> )
+		.Console/read DEI .dst zkey ?{ BRK }
 		<assemble>
 		[ LIT2 80 -qerror ] LDZ ORA #0f DEO
 		BRK
@@ -46,15 +42,11 @@
 	POP ;&await-dst .Console/vector DEO2
 	BRK
 	&await-dst ( -> )
-		.Console/read DEI .dst zkey ?&capture-src
-		BRK
-	&capture-src ( -> )
+		.Console/read DEI .dst zkey ?{ BRK }
 		;&await-src .Console/vector DEO2
 		BRK
 	&await-src ( -> )
-		.Console/read DEI .src zkey ?&eval
-		BRK
-	&eval ( -> )
+		.Console/read DEI .src zkey ?{ BRK }
 		<assemble>
 		;dst/buf DUP2 <print-line>/
 		<sclr>
@@ -245,11 +237,10 @@
 @|labels )
 
 @make-sublabel ( name* -- sublabel* )
-	DUP zlen .sublabel zlen ADD #2f GTH ?&overflow
-	[ LIT2 &ptr $2 ] <scpy>
-	;sublabel JMP2r
-	&overflow ( name* -- sublabel* )
-		;err/sublabel !<set-error>
+	DUP zlen .sublabel zlen ADD #2f GTH ?{
+		[ LIT2 &ptr $2 ] <scpy>
+		;sublabel JMP2r }
+	;err/sublabel !<set-error>
 
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
@@ -315,8 +306,12 @@
 @|helpers )
 
 @get-hex ( str* -- value* )
-	is-hex ?shex
-	;err/number !<set-error>
+	is-hex ?{ ;err/number !<set-error> }
+	[ LIT2r 0000 ]
+	&w ( -- )
+		( acc ) [ LITr 40 ] SFT2r
+		( res ) LDAk chex [ LITr 00 ] STH ADD2r INC2 LDAk ?&w
+	POP2 STH2r JMP2r
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
@@ -336,10 +331,8 @@
 	POP2 #01 JMP2r
 
 @is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?&pass
-	DUP2 ;opcodes/brk !scmp3
-	&pass ( str* -- str* f )
-		#01 JMP2r
+	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
+	#01 JMP2r
 
 @find-opcode ( name* -- byte )
 	STH2 #2000
@@ -454,13 +447,6 @@
 
 @hexc ( id -- char )
 	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD JMP2r
-
-@shex ( str* -- val* )
-	[ LIT2r 0000 ]
-	&w ( -- )
-		( sl ) [ LITr 40 ] SFT2r
-		( res ) LDAk chex [ LITr 00 ] STH ADD2r INC2 LDAk ?&w
-	POP2 STH2r JMP2r
 
 @<mclr> ( to* from* -- )
 	&l ( -- )
