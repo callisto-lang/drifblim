@@ -8,6 +8,7 @@
 
 	@scan $1
 	@head $2
+	@length $2
 	@qerror $1
 	@src $1 &buf $30
 	@dst $1 &buf $30
@@ -193,8 +194,8 @@
 	SWP <write>
 
 @<write> ( byte -- )
-	.head LDZ2 INC2k STH2 ;memory/result ADD2 STA
-	STH2r
+	DUP .head LDZ2 INC2k STH2 ;memory/result ADD2 STA
+	record-length STH2r
 
 @<set-head> ( v* -- )
 	.head STZ2
@@ -203,6 +204,12 @@
 @<set-error> ( name* -- )
 	<print-error>
 	[ LIT2 01 -qerror ] STZ
+	JMP2r
+
+@record-length ( byte -- )
+	.scan LDZ ?{ POP JMP2r }
+	?{ JMP2r }
+	.head LDZ2 .length STZ2
 	JMP2r
 
 (
@@ -293,13 +300,6 @@
 	&fill ( -- )
 		POP2 #ff JMP2r
 
-@get-len ( -- length* )
-	;rom #ffff OVR2 STH2k
-	&l ( -- )
-		LDAk #00 EQU ?{ POP2r STH2k }
-		INC2 GTH2k ?&l
-	POP2 POP2 STH2r SWP2 SUB2 INC2 JMP2r
-
 @is-hex ( str* -- str* f )
 	DUP2
 	&w ( -- )
@@ -347,7 +347,7 @@
 
 @save-result ( -- )
 	;dst/buf .File2/name DEO2
-	get-len .File2/length DEO2
+	.length LDZ2 #00ff SUB2 .File2/length DEO2
 	;rom .File2/write DEO2
 	JMP2r
 
@@ -372,7 +372,7 @@
 	;dst/buf <print-err>/
 	( | length )
 	;dict/in <print-err>/
-	get-len <print-dec>
+	.length LDZ2 #00ff SUB2 <print-dec>
 	;dict/bytes <print-err>/
 	;<create-symbol>/count LDA2 <print-dec>
 	;dict/labels <print-err>/
