@@ -194,7 +194,7 @@
 	SWP <write>
 
 @<write> ( byte -- )
-	DUP .head LDZ2 INC2k STH2 ;memory/result ADD2 STA
+	DUP .head LDZ2 INC2k STH2 ;rom ADD2 STA
 	record-length STH2r
 
 @<set-head> ( v* -- )
@@ -349,7 +349,7 @@
 @save-result ( -- )
 	;dst/buf .File2/name DEO2
 	.length LDZ2 #00ff SUB2 .File2/length DEO2
-	;rom .File2/write DEO2
+	;rom/output .File2/write DEO2
 	JMP2r
 
 @read-eof ( addr* -- f )
@@ -532,18 +532,18 @@
 	"} =lib/lambda "# =lib/lithex
 	"" =lib/rawstr "~ =lib/inc ]
 	&end
+
 (
 @|memory )
-
 
 @memory ( buffers )
 	&include $30
 	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
 
+|8000
 
-|8000 &result $100
-
-@rom
-
+@rom ( output )
+	&zeropage $100
+	&output
 
