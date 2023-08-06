@@ -190,13 +190,14 @@
 	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
 
 @<write-short> ( short* -- )
-	SWP <write>
+	.head LDZ2 INC2k INC2 .head STZ2
+	;memory/result ADD2 STA2
+	JMP2r
 
 @<write> ( byte -- )
-	.head LDZ2 ;memory/result ADD2 STA 
-
-@<move-head> ( -- )
-	.head LDZ2 INC2
+	.head LDZ2 INC2k .head STZ2
+	;memory/result ADD2 STA
+	JMP2r
 
 @<set-head> ( v* -- )
 	.head STZ2
@@ -509,7 +510,6 @@
 	&symbol "Symbol $1
 	&token "Token $1
 	&sublabel "Sublabel $1
-	&rewind "Rewind $1
 	&opcode "Opcode $1
 	&nested "Nested $1
 	&zeropage "Zero-page $1
