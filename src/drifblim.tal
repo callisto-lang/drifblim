@@ -1,7 +1,7 @@
 ( usage: drifblim.rom input.tal output.rom )
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
-|a0 @File1 &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
 |0000
 
@@ -57,8 +57,8 @@
 
 @<assemble> ( -- )
 	( | setup export )
-	;dst/buf .File1/name DEO2
-	[ LIT2 01 -File1/delete ] DEO
+	;dst/buf .File/name DEO2
+	[ LIT2 01 -File/delete ] DEO
 	( | clear memory )
 	;<create-symbol>/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
@@ -69,7 +69,7 @@
 	( write pass ) #00 handle-top ?&when-error
 	save-result save-symbols !<print-summary>
 	&when-error ( -- )
-		[ LIT2 01 -File1/delete ] DEO
+		[ LIT2 01 -File/delete ] DEO
 		JMP2r
 
 @handle-top ( scan -- err )
@@ -80,8 +80,8 @@
 	;src/buf handle-file .qerror LDZ JMP2r
 
 @handle-file ( f* -- )
-	.File1/name DEO2
-	#0001 .File1/length DEO2
+	.File/name DEO2
+	#0001 .File/length DEO2
 	#0000
 	&s ( len* -- )
 		;&c read-eof ?&end
@@ -332,28 +332,28 @@
 
 @save-symbols ( -- )
 	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
-	SWP2 .File1/name DEO2
+	SWP2 .File/name DEO2
 	;memory/symbols
 	&w ( -- )
 		( | addr )
-		#0002 .File1/length DEO2
-		DUP2 .File1/write DEO2
+		#0002 .File/length DEO2
+		DUP2 .File/write DEO2
 		( | name )
-		#0003 ADD2 DUP2 slen INC2 STH2k .File1/length DEO2
-		DUP2 .File1/write DEO2
+		#0003 ADD2 DUP2 slen INC2 STH2k .File/length DEO2
+		DUP2 .File/write DEO2
 		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&w
 	POP2 #00 ROT ROT STA
 	JMP2r
 
 @save-result ( -- )
-	;dst/buf .File1/name DEO2
-	.length LDZ2 #00ff SUB2 .File1/length DEO2
-	;rom/output .File1/write DEO2
+	;dst/buf .File/name DEO2
+	.length LDZ2 #00ff SUB2 .File/length DEO2
+	;rom/output .File/write DEO2
 	JMP2r
 
 @read-eof ( addr* -- f )
-	.File1/read DEO2
-	.File1/success DEI2 #0000 EQU2 JMP2r
+	.File/read DEO2
+	.File/success DEI2 #0000 EQU2 JMP2r
 
 @<print-summary> ( -- )
 	;<create-symbol>/ptr LDA2 ;memory/symbols
