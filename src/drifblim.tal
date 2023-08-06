@@ -375,8 +375,7 @@
 	.length LDZ2 #00ff SUB2 <print-dec>
 	;dict/bytes <print-err>/
 	;<create-symbol>/count LDA2 <print-dec>
-	;dict/labels <print-err>/
-	;dict/end !<print-err>/
+	;dict/labels !<print-err>/
 
 (
 @|stdlib )
@@ -493,8 +492,7 @@
 	&assembled "Assembled 20 $1
 	&in 20 "in 20 $1
 	&bytes 20 "bytes( $1
-	&labels 20 "labels $1
-	&end "). 0a $1
+	&labels 20 "labels). 0a $1
 	&sym-ext ".sym $1
 
 @err
