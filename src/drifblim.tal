@@ -136,7 +136,7 @@
 	&toplab ( t* -- )
 		INC2 !<set-scope>
 	&sublab ( t* -- )
-		INC2 make-sublabel !<create-symbol>
+		INC2 get-sublabel !<create-symbol>
 	&litrel ( t* -- )
 		#80 <write>
 	&rawrel ( t* -- )
@@ -236,45 +236,32 @@
 (
 @|labels )
 
-@make-sublabel ( name* -- sublabel* )
-	DUP zlen .sublabel zlen ADD #2f GTH ?{
-		[ LIT2 &ptr $2 ] <scpy>
-		;sublabel JMP2r }
-	;err/sublabel !<set-error>
+@get-sublabel ( name* -- sublabel* )
+	DUP zlen .sublabel zlen ADD #30 LTH ?{ ;err/sublabel !<set-error> }
+	[ LIT2 &ptr $2 ] <scpy>
+	;sublabel JMP2r
 
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
 	DUP2 ;sublabel STHk <scpy>
 	[ LIT2 "/ 00 ] STHr zcap/ STHk STZ2
-	#00 STHr INC ,make-sublabel/ptr STR2
+	#00 STHr INC ,get-sublabel/ptr STR2
 	( >> )
 
 @<create-symbol> ( name* -- )
 	.scan LDZ ?{ POP2 JMP2r }
-	( not hex ) is-hex ?&invalid
-	( not opc ) is-opcode ?&invalid
-	( not dup ) DUP2 find-symbol INC2 ORA ?&not-unique
-	( save addr ) .head LDZ2 [ LIT2 &ptr =memory/symbols ] STH2k STA2
-	( move ) INC2r INC2r INC2r
-	( save name ) DUP2 STH2kr <scpy>
-	( move ) slen STH2r ADD2 INC2 ,&ptr STR2
-	( stats ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( cache ) JMP2r
+	is-hex ?&invalid
+	is-opcode ?&invalid
+	DUP2 find-symbol INC2 ORA ?&not-unique
+	.head LDZ2 [ LIT2 &ptr =memory/symbols ] STH2k STA2
+	INC2r INC2r INC2r DUP2 STH2kr <scpy>
+	slen STH2r ADD2 INC2 ,&ptr STR2
+	[ LIT2 &count $2 ] INC2 ,&count STR2
+	JMP2r
 	&invalid ( name* -- )
 		POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !<set-error>
-
-@get-ref ( token* -- <label>* )
-	LDAk [ LIT "{ ] NEQ ?{ lambda/push }
-	.scan LDZ ?&scan
-	LDAk [ LIT "& ] NEQ ?{ INC2 make-sublabel }
-	find-symbol INC2k #0000 EQU2 ?{
-		INC2k INC2 LDAk INC ROT ROT STA
-		JMP2r }
-	;err/reference <set-error>
-	&scan POP2 ;&fill JMP2r
-	&fill ffff "? $1
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
@@ -285,6 +272,17 @@
 	POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
 		#0003 SUB2 NIP2 JMP2r
+
+@get-ref ( token* -- <label>* )
+	LDAk [ LIT "{ ] NEQ ?{ lambda/push }
+	.scan LDZ ?&scan
+	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	find-symbol INC2k #0000 EQU2 ?{
+		INC2k INC2 LDAk INC ROT ROT STA
+		JMP2r }
+	;err/reference <set-error>
+	&scan POP2 ;&fill JMP2r
+	&fill ffff "? $1
 
 @lambda
 	&push ( -- name* )
