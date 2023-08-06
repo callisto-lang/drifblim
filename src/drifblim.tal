@@ -5,10 +5,10 @@
 
 |0000
 
+	@halt $1
 	@scan $1
 	@head $2
 	@length $2
-	@qerror $1
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@token $1 &buf $30
@@ -35,7 +35,7 @@
 	&await-dst ( -> )
 		.Console/read DEI .dst zkey ?{ BRK }
 		<assemble>
-		[ LIT2 80 -qerror ] LDZ ORA #0f DEO
+		[ LIT2 80 -halt ] LDZ ORA #0f DEO
 		BRK
 
 @on-interactive ( c -> )
@@ -62,7 +62,7 @@
 	( | clear memory )
 	;<create-symbol>/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
-	[ LIT2 00 -qerror ] STZ
+	[ LIT2 00 -halt ] STZ
 	;memory/symbols ;<create-symbol>/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	( scan pass ) #01 handle-top ?&when-error
@@ -77,7 +77,7 @@
 	#0100 <set-head>
 	#00 ;lambda/count STA
 	;dict/reset <set-scope>
-	;src/buf handle-file .qerror LDZ JMP2r
+	;src/buf handle-file .halt LDZ JMP2r
 
 @handle-file ( f* -- )
 	.File/name DEO2
@@ -202,7 +202,7 @@
 
 @<set-error> ( name* -- )
 	<print-error>
-	[ LIT2 01 -qerror ] STZ
+	[ LIT2 01 -halt ] STZ
 	JMP2r
 
 @record-length ( byte -- )
