@@ -207,9 +207,10 @@
 	JMP2r
 
 @record-length ( byte -- )
-	.scan LDZ ?{ POP JMP2r }
 	?{ JMP2r }
-	.head LDZ2 .length STZ2
+	.scan LDZ ?{ JMP2r }
+	.head LDZ2 OVR ?{ ;err/zeropage <set-error> }
+	.length STZ2
 	JMP2r
 
 (
