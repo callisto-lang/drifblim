@@ -57,18 +57,18 @@
 
 @<assemble> ( -- )
 	( | setup export )
-	;dst/buf .File/name DEO2
-	[ LIT2 01 -File/delete ] DEO
+	<assemble>/clean
 	( | clear memory )
 	;<create-symbol>/ptr LDA2 ;memory <mclr>
 	( | cleanup cache )
 	[ LIT2 00 -halt ] STZ
 	;memory/symbols ;<create-symbol>/ptr STA2
 	#0000 ;<create-symbol>/count STA2
-	( scan pass ) #01 handle-top ?&when-error
-	( write pass ) #00 handle-top ?&when-error
+	( scan pass ) #01 handle-top ?&clean
+	( write pass ) #00 handle-top ?&clean
 	save-result save-symbols !<print-summary>
-	&when-error ( -- )
+	&clean ( -- )
+		;dst/buf .File/name DEO2
 		[ LIT2 01 -File/delete ] DEO
 		JMP2r
 
