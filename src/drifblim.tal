@@ -18,6 +18,7 @@
 |0100
 
 @on-reset ( -> )
+	;meta #06 DEO2
 	.Console/type DEI ?{ ;dict/usage <print-err>/ }
 	;&await-src .Console/vector DEO2
 	BRK
@@ -25,6 +26,14 @@
 		.Console/read DEI DUP [ LIT "^ ] EQU ?on-interactive
 		.src zkey ?on-default
 		BRK
+
+@meta
+	00
+	( name ) "Drifblim 0a
+	( desc ) "Uxntal 20 "Assembler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "12 20 "Aug 20 "2023 $1
+	( exts ) 00
 
 (
 @|modes )
@@ -529,7 +538,6 @@
 	"} =lib/lambda "# =lib/lithex
 	"" =lib/rawstr "~ =lib/inc ]
 	&end
-
 (
 @|memory )
 
