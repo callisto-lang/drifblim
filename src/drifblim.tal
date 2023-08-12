@@ -262,7 +262,7 @@
 		#0003 SUB2 NIP2 JMP2r
 
 @get-ref ( token* -- <label>* )
-	LDAk [ LIT "{ ] NEQ ?{ lambda/push }
+	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
 	.scan LDZ ?&scan
 	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	find-symbol INC2k #0000 EQU2 ?{
