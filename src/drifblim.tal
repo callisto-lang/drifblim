@@ -57,8 +57,7 @@
 	&await-src ( -> )
 		.Console/read DEI .src zkey ?{ BRK }
 		<assemble>
-		;dst/buf DUP2 <print-line>/
-		<sclr>
+		;dst/buf <print-line>/
 		BRK
 
 (
@@ -541,10 +540,12 @@
 (
 @|memory )
 
+
 @memory ( buffers )
 	&include $30
 	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
+
 
 |8000
 
