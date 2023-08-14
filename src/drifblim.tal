@@ -5,12 +5,12 @@
 
 |0000
 
+	@src $1 &buf $30
+	@dst $1 &buf $30
 	@halt $1
 	@scan $1
 	@head $2
 	@length $2
-	@src $1 &buf $30
-	@dst $1 &buf $30
 	@token $1 &buf $30
 	@scope $30
 	@sublabel $30
@@ -32,7 +32,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Aug 20 "2023 $1
+	( date ) "14 20 "Aug 20 "2023 $1
 	( exts ) 00
 
 (
@@ -56,6 +56,9 @@
 		BRK
 	&await-src ( -> )
 		.Console/read DEI .src zkey ?{ BRK }
+		( | clear memory )
+		[ LIT2 00 -halt ] STZ
+		<create-symbol>/reset
 		<assemble>
 		;dst/buf <print-line>/
 		BRK
@@ -66,12 +69,6 @@
 @<assemble> ( -- )
 	( | setup export )
 	<assemble>/clean
-	( | clear memory )
-	;<create-symbol>/ptr LDA2 ;memory <mclr>
-	( | cleanup cache )
-	[ LIT2 00 -halt ] STZ
-	;memory/symbols ;<create-symbol>/ptr STA2
-	#0000 ;<create-symbol>/count STA2
 	( scan pass ) #01 handle-top ?&clean
 	( write pass ) #00 handle-top ?&clean
 	save-result save-symbols !<print-summary>
@@ -249,6 +246,11 @@
 		POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !<set-error>
+	&reset ( -- )
+		,&ptr LDR2 ;memory <mclr>
+		;memory/symbols ,&ptr STR2
+		#0000 ,&count STR2
+		JMP2r
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
