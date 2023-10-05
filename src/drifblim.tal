@@ -19,65 +19,44 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	.Console/type DEI ?{ ;dict/usage <print-err>/ }
-	;&await-src .Console/vector DEO2
-	BRK
-	&await-src ( -> )
-		.Console/read DEI DUP [ LIT "^ ] EQU ?on-interactive
-		.src zkey ?on-default
+	;&on-src !next-vector
+	&on-src ( -> )
+		.Console/read DEI .src zkey ?{ BRK }
+		;&on-dst !next-vector
+	&on-dst ( -> )
+		.Console/read DEI .dst zkey ?{ BRK }
+		<assemble>
+		[ LIT2 80 -halt ] LDZ ORA #0f DEO
 		BRK
+
+@next-vector ( vec* -- )
+	.Console/type DEI #03 AND ?{
+		;dict/usage <print-err>/
+		#010f DEO }
+	.Console/vector DEO2
+	BRK
 
 @meta
 	00
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Aug 20 "2023 $1
+	( date ) "5 20 "Oct 20 "2023 $1
 	( exts ) 00
-
-(
-@|modes )
-
-@on-default ( -> )
-	;&await-dst .Console/vector DEO2
-	BRK
-	&await-dst ( -> )
-		.Console/read DEI .dst zkey ?{ BRK }
-		<assemble>
-		[ LIT2 80 -halt ] LDZ ORA #0f DEO
-		BRK
-
-@on-interactive ( c -> )
-	POP ;&await-dst .Console/vector DEO2
-	BRK
-	&await-dst ( -> )
-		.Console/read DEI .dst zkey ?{ BRK }
-		;&await-src .Console/vector DEO2
-		BRK
-	&await-src ( -> )
-		.Console/read DEI .src zkey ?{ BRK }
-		( | clear memory )
-		[ LIT2 00 -halt ] STZ
-		<create-symbol>/reset
-		<assemble>
-		;dst/buf <print-line>/
-		BRK
 
 (
 @|generics )
 
 @<assemble> ( -- )
-	( | setup export )
-	<assemble>/clean
-	( scan pass ) #01 handle-top ?&clean
-	( write pass ) #00 handle-top ?&clean
+	( scan pass ) #01 handle-pass ?&clean
+	( write pass ) #00 handle-pass ?&clean
 	save-result save-symbols !<print-summary>
 	&clean ( -- )
 		;dst/buf .File/name DEO2
 		[ LIT2 01 -File/delete ] DEO
 		JMP2r
 
-@handle-top ( scan -- err )
+@handle-pass ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
 	#00 ;lambda/count STA
@@ -246,11 +225,6 @@
 		POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
 		POP2 ;err/duplicate !<set-error>
-	&reset ( -- )
-		,&ptr LDR2 ;memory <mclr>
-		;memory/symbols ,&ptr STR2
-		#0000 ,&count STR2
-		JMP2r
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
@@ -340,6 +314,16 @@
 		NIP STH ORAr INC2 LDAk ?&w
 	POP2 STHr ADD JMP2r
 
+@read-eof ( addr* -- f )
+	.File/read DEO2
+	.File/success DEI2 #0000 EQU2 JMP2r
+
+@save-result ( -- )
+	;dst/buf .File/name DEO2
+	.length LDZ2 #00ff SUB2 .File/length DEO2
+	;rom/output .File/write DEO2
+	JMP2r
+
 @save-symbols ( -- )
 	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File/name DEO2
@@ -354,16 +338,6 @@
 		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&w
 	POP2 #00 ROT ROT STA
 	JMP2r
-
-@save-result ( -- )
-	;dst/buf .File/name DEO2
-	.length LDZ2 #00ff SUB2 .File/length DEO2
-	;rom/output .File/write DEO2
-	JMP2r
-
-@read-eof ( addr* -- f )
-	.File/read DEO2
-	.File/success DEI2 #0000 EQU2 JMP2r
 
 @<print-summary> ( -- )
 	;<create-symbol>/ptr LDA2 ;memory/symbols
@@ -440,12 +414,6 @@
 @hexc ( id -- char )
 	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD JMP2r
 
-@<mclr> ( to* from* -- )
-	&l ( -- )
-		#0000 OVR2 STA2
-		INC2 INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
-
 @<scpy> ( src* dst* -- )
 	STH2
 	&w ( -- )
@@ -459,13 +427,6 @@
 		STAk
 		INC2 LDAk ?&w
 	STA
-	JMP2r
-
-@<print-line> ( str* -- )
-	&w ( str* -- )
-		LDAk #18 DEO
-		INC2 & LDAk ?&w
-	POP2 #0a18 DEO
 	JMP2r
 
 @<print-err> ( str* -- )
@@ -519,16 +480,14 @@
 	&nested "Nested $1
 	&zeropage "Zero-page $1
 
-@opcodes
-	[
+@opcodes [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	&brk "BRK ]
 
-@runes
-	[
+@runes [
 	"| =lib/padabs "$ =lib/padrel
 	"@ =lib/toplab "& =lib/sublab
 	", =lib/litrel "_ =lib/rawrel
@@ -551,7 +510,6 @@
 
 |8000
 
-@rom ( output )
-	&zeropage $100
+@rom $100
 	&output
 

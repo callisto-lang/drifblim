@@ -22,16 +22,6 @@ If do not wish to assemble it yourself, you can download [drifblim.rom](https://
 
 [![builds.sr.ht status](https://builds.sr.ht/~rabbits/drifblim.svg)](https://builds.sr.ht/~rabbits/drifblim?)
 
-## Interactive Mode
-
-Drifblim allows for interactive reassembly. To use this feature, you need to launch drifblim with the output path prefixed with a caret(`^`):
-
-```
-uxncli drifblim.rom ^bin/output.rom
-```
-
-In this mode, each file path sent through the console, will be assembled to `bin/output.rom`. This was created to be used with the [Left](https://git.sr.ht/~rabbits/left) text editor.
-
 _Drifblim is strong enough to lift Pokemon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
 
 ## Support

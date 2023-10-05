@@ -12,6 +12,15 @@ mkdir -p bin
 
 $asm $src $dst
 
+# Usage(missing src)
+$emu $dst
+
+# Usage(missing dst)
+$emu $dst examples/hello.tal
+
+echo "          File missing.tal in reset"
+$emu $dst missing.tal "bin/res.rom"
+
 echo "          File project.tal in reset"
 $emu $dst "tests/err-file.tal" "bin/res.rom"
 
