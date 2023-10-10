@@ -218,7 +218,8 @@
 
 @<write> ( byte -- )
 	DUP .head LDZ2 INC2k STH2 ;rom ADD2 STA
-	record-length STH2r
+	<set-length>
+	STH2r
 	( >> )
 
 @<set-head> ( v* -- )
@@ -230,7 +231,7 @@
 	[ LIT2 01 -halt ] STZ
 	JMP2r
 
-@record-length ( byte -- )
+@<set-length> ( byte -- )
 	?{ JMP2r }
 	.scan LDZ ?{ JMP2r }
 	.head LDZ2 OVR ?{ ;err/zeropage <set-error> }
@@ -499,10 +500,12 @@
 (
 @|memory )
 
+
 @memory ( buffers )
 	&include $30
 	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
+
 
 |8000
 
