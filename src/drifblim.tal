@@ -160,7 +160,7 @@
 	&litrel ( t* -- )
 		#80 <write>
 	&rawrel ( t* -- )
-		INC2 get-ref get-rel !<write>
+		INC2 get-rel !<write>
 	&litzep ( t* -- )
 		#80 <write>
 	&rawzep ( t* -- )
@@ -318,12 +318,12 @@
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
-	LDA2 .head LDZ2 INC2 INC2 SUB2
+	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
 	( bounds ) DUP2 #0080 ADD2 POP ?&fail
 	NIP JMP2r
 	&fail ( label* distance* -- distance )
 		;err/distance <set-error>
-	&fill ( -- )
+	&fill ( label* -- distance )
 		POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
