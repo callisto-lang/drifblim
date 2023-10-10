@@ -127,7 +127,9 @@
 	LDAk ,&rune STR
 	;runes/end ;runes
 	&l ( -- )
-		LDAk [ LIT &rune $1 ] EQU ?parse-runic
+		LDAk [ LIT &rune $1 ] NEQ ?{
+			NIP2 INC2 LDA2
+			( * ) JMP2 }
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( | non-runic )
@@ -140,10 +142,6 @@
 	[ LIT2 &c $1 28 ] NEQk ?{ ;err/nested <set-error> }
 	INC NEQ ?parse-comment
 	!<sclr>
-
-@parse-runic ( t* a* b* -- )
-	NIP2 INC2 LDA2
-	( unsafe ) JMP2
 
 @lib
 	&padabs ( t* -- )
