@@ -41,7 +41,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "5 20 "Oct 20 "2023 $1
+	( date ) "9 20 "Oct 20 "2023 $1
 	( exts ) 00
 
 (
@@ -318,7 +318,7 @@
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
-	LDA2 .head LDZ2 SUB2 #0002 SUB2
+	LDA2 .head LDZ2 INC2 INC2 SUB2
 	( bounds ) DUP2 #0080 ADD2 POP ?&fail
 	NIP JMP2r
 	&fail ( label* distance* -- distance )
