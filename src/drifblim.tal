@@ -68,7 +68,7 @@
 	#0001 .File/length DEO2
 	#0000
 	&s ( len* -- )
-		;&c read-eof ?&end
+		;&c feof ?&end
 		INC2 [ LIT &c $1 ] handle-char !&s
 	&end ( len* -- )
 		ORA ?{
@@ -78,7 +78,7 @@
 
 @handle-char ( c -- )
 	.token zkey ?{ JMP2r }
-	;token/buf DUP2 parse !<sclr>
+	;token/buf DUP2 parse-token !<sclr>
 
 @<write-output> ( -- )
 	( | rom )
@@ -121,7 +121,7 @@
 (
 @|tokenizer )
 
-@parse ( t* -- )
+@parse-token ( t* -- )
 	LDAk [ LIT 28 ] EQU ?parse-comment
 	( | runic )
 	LDAk ,&rune STR
@@ -132,11 +132,11 @@
 	POP2 POP2
 	( | non-runic )
 	is-hex ?<write-hex>
-	is-opcode ?parse-opcode
+	is-opcode ?<write-opcode>
 	!lib/litjsi
 
 @parse-comment ( t* -- )
-	;&c read-eof ?<sclr>
+	;&c feof ?<sclr>
 	[ LIT2 &c $1 28 ] NEQk ?{ ;err/nested <set-error> }
 	INC NEQ ?parse-comment
 	!<sclr>
@@ -144,9 +144,6 @@
 @parse-runic ( t* a* b* -- )
 	NIP2 INC2 LDA2
 	( unsafe ) JMP2
-
-@parse-opcode ( t* -- )
-	find-opcode !<write>
 
 @lib
 	&padabs ( t* -- )
@@ -197,6 +194,9 @@
 		LDAk <write>
 		INC2 & LDAk ?&w
 	POP2 JMP2r
+
+@<write-opcode> ( str* -- )
+	find-opcode !<write>
 
 @<write-hex> ( str* -- )
 	DUP zlen DUP #02 EQU ?&byte
@@ -356,12 +356,12 @@
 		NIP STH ORAr INC2 LDAk ?&w
 	POP2 STHr ADD JMP2r
 
-@read-eof ( addr* -- f )
-	.File/read DEO2
-	.File/success DEI2 #0000 EQU2 JMP2r
-
 (
 @|stdlib )
+
+@feof ( addr* -- f )
+	.File/read DEO2
+	.File/success DEI2 #0000 EQU2 JMP2r
 
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
