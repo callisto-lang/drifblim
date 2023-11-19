@@ -36,12 +36,11 @@
 	.Console/vector DEO2
 	BRK
 
-@meta
-	00
+@meta $1
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Oct 20 "2023 $1
+	( date ) "19 20 "Nov 20 "2023 $1
 	( exts ) 00
 
 (
@@ -232,7 +231,9 @@
 @<set-length> ( byte -- )
 	?{ JMP2r }
 	.scan LDZ ?{ JMP2r }
-	.head LDZ2 OVR ?{ ;err/zeropage <set-error> }
+	.head LDZ2
+	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
+	( ) #8000 LTH2 ?{ ;err/length <set-error> }
 	.length STZ2
 	JMP2r
 
@@ -421,8 +422,7 @@
 @<sclr> ( str* -- )
 	#00 ROT ROT
 	&w ( -- )
-		STAk
-		INC2 LDAk ?&w
+		STAk INC2 LDAk ?&w
 	STA
 	JMP2r
 
@@ -468,6 +468,7 @@
 	&file "File $1
 	&duplicate "Duplicate $1
 	&number "Number $1
+	&length "Length $1
 	&reference "Reference $1
 	&distance "Distance $1
 	&symbol "Symbol $1
