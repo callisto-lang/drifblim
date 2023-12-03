@@ -144,9 +144,9 @@
 
 @lib
 	&padabs ( t* -- )
-		INC2 get-hex !<set-head>
+		INC2 get-any !<set-head>
 	&padrel ( t* -- )
-		INC2 get-hex .head LDZ2 ADD2 !<set-head>
+		INC2 get-any .head LDZ2 ADD2 !<set-head>
 	&toplab ( t* -- )
 		INC2 !<set-scope>
 	&sublab ( t* -- )
@@ -158,11 +158,11 @@
 	&litzep ( t* -- )
 		#80 <write>
 	&rawzep ( t* -- )
-		INC2 get-ref LDA2 NIP !<write>
+		INC2 get-ref NIP !<write>
 	&litabs ( t* -- )
 		#a0 <write>
 	&rawabs ( t* -- )
-		INC2 get-ref LDA2 !<write-short>
+		INC2 get-ref !<write-short>
 	&litjci ( t* -- )
 		INC2 #20 !<write-call>
 	&litjmi ( t* -- )
@@ -206,7 +206,7 @@
 
 @<write-call> ( str* opc -- )
 	<write>
-	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
+	get-ref .head LDZ2 INC2 INC2 SUB2
 	( >> )
 
 @<write-short> ( short* -- )
@@ -278,16 +278,19 @@
 	&found ( symbols* -- <addr>* )
 		#0003 SUB2 NIP2 JMP2r
 
-@get-ref ( token* -- <label>* )
+@get-any ( str* -- value* )
+	DUP2 is-hex ?get-hex
+	!get-ref/eager
+
+@get-ref ( token* -- addr* )
 	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
 	.scan LDZ ?&scan
-	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	find-symbol INC2k #0000 EQU2 ?{
 		INC2k INC2 LDAk INC ROT ROT STA
-		JMP2r }
+		LDA2 JMP2r }
 	;err/reference <set-error>
-	&scan POP2 ;&fill JMP2r
-	&fill ffff "? $1
+	&scan JMP2r
 
 @lambda
 	&push ( -- name* )
@@ -319,7 +322,7 @@
 
 @get-rel ( label* -- distance )
 	.scan LDZ ?&fill
-	get-ref LDA2 .head LDZ2 INC2 INC2 SUB2
+	get-ref .head LDZ2 INC2 INC2 SUB2
 	( bounds ) DUP2 #0080 ADD2 POP ?&fail
 	NIP JMP2r
 	&fail ( label* distance* -- distance )
