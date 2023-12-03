@@ -40,7 +40,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "19 20 "Nov 20 "2023 $1
+	( date ) "3 20 "Dec 20 "2023 $1
 	( exts ) 00
 
 (
@@ -214,7 +214,8 @@
 	( >> )
 
 @<write> ( byte -- )
-	DUP .head LDZ2 INC2k STH2 ;rom ADD2 STA
+	DUP .head LDZ2 INC2k STH2
+	;rom ADD2 STA
 	<set-length>
 	STH2r
 	( >> )
@@ -312,7 +313,8 @@
 	[ LIT2r 0000 ]
 	&w ( -- )
 		( acc ) [ LITr 40 ] SFT2r
-		( res ) LDAk chex [ LITr 00 ] STH ADD2r INC2 LDAk ?&w
+		( res ) LDAk chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&w
 	POP2 STH2r JMP2r
 
 @get-rel ( label* -- distance )
@@ -337,7 +339,8 @@
 	#01 JMP2r
 
 @find-opcode ( name* -- byte )
-	STH2 #2000
+	STH2
+	#2000
 	&l ( -- )
 		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
 		INC GTHk ?&l
@@ -352,7 +355,8 @@
 		DUP ADD OVR [ LIT "k ] EQU ?&>end
 		DUP ADD OVR #00 EQU ?&>end
 			;err/opcode <set-error> &>end
-		NIP STH ORAr INC2 LDAk ?&w
+		NIP STH
+		ORAr INC2 LDAk ?&w
 	POP2 STHr ADD JMP2r
 
 (
@@ -365,7 +369,8 @@
 @zkey ( key ztr -- proc )
 	OVR #21 LTH ?&eval
 	LDZk #2f EQU ?&overflow
-	( write char ) STH #00 STHkr LDZk ADD INC STZ2
+	( write char ) STH
+	#00 STHkr LDZk ADD INC STZ2
 	( incr len ) STHr LDZk INC SWP STZ
 	#00 JMP2r
 	&overflow ( key ztr -- proc )
@@ -400,7 +405,8 @@
 		NIP2 POP2r EQU JMP2r
 
 @scmp3 ( a* b* -- f )
-	STH2 LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -- <val> )
