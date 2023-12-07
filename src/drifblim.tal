@@ -7,10 +7,10 @@
 
 	@src $1 &buf $30
 	@dst $1 &buf $30
-	@halt $1
 	@live $1
 	@scan $1
 	@head $2
+	@halt $1
 	@length $2
 	@token $1 &buf $30
 	@scope $30
@@ -43,6 +43,14 @@
 @on-live ( -> )
 	.Console/read DEI .src zkey ?{ BRK }
 	<assemble>
+	( | cleanup )
+	#00 .halt STZ
+	#0000 .length STZ2
+	;memory/symbols ;<create-symbol>/ptr LDA2 <mclr>
+	;memory/symbols ;<create-symbol>/ptr STA2
+	;memory/lambda ;lambda/ptr LDA2 <mclr>
+	;memory/lambda ;lambda/ptr STA2
+	#0000 ;<create-symbol>/count STA2
 	BRK
 
 @meta $1
@@ -455,6 +463,12 @@
 		STAk INC2 LDAk ?&w
 	STA
 	JMP2r
+
+@<mclr> ( from* to* -- )
+	&l ( -- )
+		STH2k #00 STH2r STA
+		INC2 GTH2k ?&l
+	POP2 POP2 JMP2r
 
 @<perr> ( str* -- )
 	&w ( str* -- )
