@@ -8,6 +8,7 @@
 	@src $1 &buf $30
 	@dst $1 &buf $30
 	@halt $1
+	@live $1
 	@scan $1
 	@head $2
 	@length $2
@@ -19,21 +20,29 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;&on-src !next-vector
+	.Console/type DEI ?{
+		;dict/live-start <perr>
+		#01 .live STZ }
+	;&on-src .Console/vector DEO2
+	BRK
 	&on-src ( -> )
 		.Console/read DEI .src zkey ?{ BRK }
-		;&on-dst !next-vector
+		;&on-dst .Console/vector DEO2
+		BRK
 	&on-dst ( -> )
 		.Console/read DEI .dst zkey ?{ BRK }
 		<assemble>
-		[ LIT2 80 -halt ] LDZ ORA #0f DEO
+		.live LDZ ?{
+			[ LIT2 80 -halt ] LDZ ORA #0f DEO
+			BRK }
+		;dict/live-ready <perr>
+		;on-live .Console/vector DEO2
+		#0000 .src STZ2
 		BRK
 
-@next-vector ( vec* -- )
-	.Console/type DEI #03 AND ?{
-		;dict/usage <print-err>/
-		#010f DEO }
-	.Console/vector DEO2
+@on-live ( -> )
+	.Console/read DEI .src zkey ?{ BRK }
+	<assemble>
 	BRK
 
 @meta $1
@@ -98,10 +107,10 @@
 	is-opcode ?<write-opcode>
 	!lib/litjsi
 
-@parse-comment ( t* -- )
+@walk-comment ( t* -- )
 	;&c feof ?<sclr>
 	[ LIT2 &c $1 28 ] NEQk ?{ ;err/nested <set-error> }
-	INC NEQ ?parse-comment
+	INC NEQ ?walk-comment
 	!<sclr>
 
 @lib
@@ -187,7 +196,13 @@
 	JMP2r
 
 @<set-error> ( name* -- )
-	<print-error>
+	;err <perr>
+	<perr>
+	#2019 DEO
+	;token/buf <perr>
+	;dict/in <perr>/
+	;scope <perr>/
+	#0a19 DEO
 	[ LIT2 01 -halt ] STZ
 	JMP2r
 
@@ -230,20 +245,20 @@
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
 		LDAk [ LIT 28 ] EQU ?&>skip
 		DUP2 ;dict/reset scmp ?&>skip
-			;dict/unused <print-err>/
-			DUP2 <print-err>/
+			;dict/unused <perr>/
+			DUP2 <perr>/
 			#0a19 DEO &>skip
 		scap/ INC2 GTH2k ?&l
 	POP2 POP2
 	( | result )
-	;dict/assembled <print-err>/
-	;dst/buf <print-err>/
+	;dict/assembled <perr>/
+	;dst/buf <perr>/
 	( | length )
-	;dict/in <print-err>/
-	.length LDZ2 #00ff SUB2 <print-dec>
-	;dict/bytes <print-err>/
-	;<create-symbol>/count LDA2 <print-dec>
-	;dict/labels !<print-err>/
+	;dict/in <perr>/
+	.length LDZ2 #00ff SUB2 <pdec>
+	;dict/bytes <perr>/
+	;<create-symbol>/count LDA2 <pdec>
+	;dict/labels !<perr>/
 
 (
 @|labels )
@@ -441,13 +456,13 @@
 	STA
 	JMP2r
 
-@<print-err> ( str* -- )
+@<perr> ( str* -- )
 	&w ( str* -- )
 		LDAk #19 DEO
 		INC2 & LDAk ?&w
 	POP2 JMP2r
 
-@<print-dec> ( short* -- )
+@<pdec> ( short* -- )
 	#2710 [ LIT2r 00fb ]
 	&w ( -- )
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
@@ -455,16 +470,6 @@
 			INCr }
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
-
-@<print-error> ( err* -- )
-	;err <print-err>
-	<print-err>
-	#2019 DEO
-	;token/buf <print-err>
-	;dict/in <print-err>/
-	;scope <print-err>/
-	#0a19 DEO
-	JMP2r
 
 (
 @|assets )
@@ -477,6 +482,8 @@
 	&bytes 20 "bytes( $1
 	&labels 20 "labels). 0a $1
 	&sym-ext ".sym $1
+	&live-start "[started] 0a $1
+	&live-ready "[ready] 0a $1
 
 @err
 	"!! 20 "Error: 20 $1
@@ -502,7 +509,7 @@
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
-	"} =lib/lambda "( =parse-comment
+	"} =lib/lambda "( =walk-comment
 	"@ =lib/toplab "& =lib/sublab
 	", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep
