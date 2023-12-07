@@ -45,9 +45,7 @@
 	( | cleanup )
 	[ LIT2 00 -halt ] STZ
 	#0000 .length STZ2
-	;mem/symbols ;<create-symbol>/ptr LDA2 <mclr>
 	;mem/symbols ;<create-symbol>/ptr STA2
-	;mem/lambda ;lambda/ptr LDA2 <mclr>
 	;mem/lambda ;lambda/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	<assemble>
@@ -329,15 +327,15 @@
 		[ LIT &count $1 ] INCk ,&count STR
 		DUP [ LIT2 &ptr =mem/lambda ] INC2k ,&ptr STR2
 		STA
-		!lambda/name
-	&pop ( -- )
-		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
-		,&ptr STR2
-		JMP2r
+		( >> )
 	&name ( id -- str* )
 		( x0 ) DUP #04 SFT hexc
 		( 0x ) SWP hexc ,&id STR2
 		;&sym JMP2r
+	&pop ( -- )
+		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
+		,&ptr STR2
+		JMP2r
 		&sym "lambda &id "00 $1
 
 (
@@ -465,12 +463,6 @@
 		STAk INC2 LDAk ?&w
 	STA
 	JMP2r
-
-@<mclr> ( from* to* -- )
-	&l ( -- )
-		STH2k #00 STH2r STA
-		INC2 GTH2k ?&l
-	POP2 POP2 JMP2r
 
 @<perr> ( str* -- )
 	&w ( str* -- )
