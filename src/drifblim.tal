@@ -49,7 +49,9 @@
 @<assemble> ( -- )
 	( scan pass ) #01 handle-pass ?&clean
 	( write pass ) #00 handle-pass ?&clean
-	!<write-output>
+	<write-rom>
+	<write-sym>
+	!<print-summary>
 	&clean ( -- )
 		;dst/buf .File/name DEO2
 		[ LIT2 01 -File/delete ] DEO
@@ -78,44 +80,6 @@
 @handle-char ( c -- )
 	.token zkey ?{ JMP2r }
 	;token/buf DUP2 parse-token !<sclr>
-
-@<write-output> ( -- )
-	( | rom )
-	;dst/buf .File/name DEO2
-	.length LDZ2 #00ff SUB2 .File/length DEO2
-	;rom/output .File/write DEO2
-	( | sym )
-	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
-	SWP2 .File/name DEO2
-	;memory/symbols
-	&w ( -- )
-		( addr ) #0002 .File/length DEO2
-		DUP2 .File/write DEO2
-		( name ) #0003 ADD2 DUP2 slen INC2 STH2k .File/length DEO2
-		DUP2 .File/write DEO2
-		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&w
-	POP2 #00 ROT ROT STA
-	( | Print summary )
-	;<create-symbol>/ptr LDA2 ;memory/symbols
-	&l ( -- )
-		INC2k INC2 LDA ?&>skip
-		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
-		LDAk [ LIT 28 ] EQU ?&>skip
-		DUP2 ;dict/reset scmp ?&>skip
-			;dict/unused <print-err>/
-			DUP2 <print-err>/
-			#0a19 DEO &>skip
-		scap/ INC2 GTH2k ?&l
-	POP2 POP2
-	( | result )
-	;dict/assembled <print-err>/
-	;dst/buf <print-err>/
-	( | length )
-	;dict/in <print-err>/
-	.length LDZ2 #00ff SUB2 <print-dec>
-	;dict/bytes <print-err>/
-	;<create-symbol>/count LDA2 <print-dec>
-	;dict/labels !<print-err>/
 
 (
 @|tokenizer )
@@ -237,6 +201,51 @@
 	( ) #8000 LTH2 ?{ ;err/length <set-error> }
 	.length STZ2
 	JMP2r
+
+(
+@|output )
+
+@<write-rom> ( -- )
+	;dst/buf .File/name DEO2
+	.length LDZ2 #00ff SUB2 .File/length DEO2
+	;rom/output .File/write DEO2
+	JMP2r
+
+@<write-sym> ( -- )
+	;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
+	SWP2 .File/name DEO2
+	;memory/symbols
+	&w ( -- )
+		( addr ) #0002 .File/length DEO2
+		DUP2 .File/write DEO2
+		( name ) #0003 ADD2 DUP2 slen INC2 STH2k .File/length DEO2
+		DUP2 .File/write DEO2
+		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&w
+	POP2 #00 ROT ROT STA
+	JMP2r
+
+@<print-summary> ( -- )
+	( | Print summary )
+	;<create-symbol>/ptr LDA2 ;memory/symbols
+	&l ( -- )
+		INC2k INC2 LDA ?&>skip
+		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
+		LDAk [ LIT 28 ] EQU ?&>skip
+		DUP2 ;dict/reset scmp ?&>skip
+			;dict/unused <print-err>/
+			DUP2 <print-err>/
+			#0a19 DEO &>skip
+		scap/ INC2 GTH2k ?&l
+	POP2 POP2
+	( | result )
+	;dict/assembled <print-err>/
+	;dst/buf <print-err>/
+	( | length )
+	;dict/in <print-err>/
+	.length LDZ2 #00ff SUB2 <print-dec>
+	;dict/bytes <print-err>/
+	;<create-symbol>/count LDA2 <print-dec>
+	;dict/labels !<print-err>/
 
 (
 @|labels )
