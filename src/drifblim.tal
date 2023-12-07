@@ -37,18 +37,24 @@
 	.live LDZ ?{
 		[ LIT2 80 -halt ] LDZ ORA #0f DEO
 		BRK }
+	;dict/live <perr>
 	;on-live .Console/vector DEO2
 	BRK
 
 @on-live ( -> )
 	.Console/read DEI .src zkey ?{ BRK }
 	( | cleanup )
+	[ LIT2 00 -Console/type ] DEO
 	[ LIT2 00 -halt ] STZ
 	#0000 .length STZ2
 	;mem/symbols ;<create-symbol>/ptr STA2
 	;mem/lambda ;lambda/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	<assemble>
+	.halt LDZ ?{
+		[ LIT2 ff -Console/type ] DEO
+		;src/buf <pstr>/
+		#0a18 DEO }
 	BRK
 
 @meta $1
@@ -470,6 +476,12 @@
 		INC2 & LDAk ?&w
 	POP2 JMP2r
 
+@<pstr> ( str* -- )
+	&w ( str* -- )
+		LDAk #18 DEO
+		INC2 & LDAk ?&w
+	POP2 JMP2r
+
 @<pdec> ( short* -- )
 	#2710 [ LIT2r 00fb ]
 	&w ( -- )
@@ -490,6 +502,7 @@
 	&bytes 20 "bytes( $1
 	&labels 20 "labels). 0a $1
 	&sym-ext ".sym $1
+	&live "Listening.. 0a $1
 
 @err
 	"!! 20 "Error: 20 $1
