@@ -85,8 +85,6 @@
 @|tokenizer )
 
 @parse-token ( t* -- )
-	LDAk [ LIT 28 ] EQU ?parse-comment
-	( | runic )
 	LDAk ,&rune STR
 	;runes/end ;runes
 	&l ( -- )
@@ -321,7 +319,6 @@
 @|helpers )
 
 @get-hex ( str* -- value* )
-	is-hex ?{ ;err/number !<set-error> }
 	[ LIT2r 0000 ]
 	&w ( -- )
 		( acc ) [ LITr 40 ] SFT2r
@@ -505,14 +502,15 @@
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
+	"} =lib/lambda "( =parse-comment
 	"@ =lib/toplab "& =lib/sublab
 	", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep
 	"; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
-	"} =lib/lambda "# =lib/lithex
-	"" =lib/rawstr "~ =lib/inc ]
+	"# =lib/lithex "" =lib/rawstr
+	"~ =lib/inc ]
 	&end
 (
 @|memory )
