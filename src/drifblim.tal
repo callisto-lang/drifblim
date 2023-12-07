@@ -23,21 +23,22 @@
 	.Console/type DEI ?{
 		;dict/usage <perr>
 		#01 .live STZ }
-	;&on-src .Console/vector DEO2
+	;on-init-src .Console/vector DEO2
 	BRK
-	&on-src ( -> )
-		.Console/read DEI .src zkey ?{ BRK }
-		;&on-dst .Console/vector DEO2
-		BRK
-	&on-dst ( -> )
-		.Console/read DEI .dst zkey ?{ BRK }
-		<assemble>
-		.live LDZ ?{
-			[ LIT2 80 -halt ] LDZ ORA #0f DEO
-			BRK }
-		;on-live .Console/vector DEO2
-		#0000 .src STZ2
-		BRK
+
+@on-init-src ( -> )
+	.Console/read DEI .src zkey ?{ BRK }
+	;on-init-dst .Console/vector DEO2
+	BRK
+
+@on-init-dst ( -> )
+	.Console/read DEI .dst zkey ?{ BRK }
+	<assemble>
+	.live LDZ ?{
+		[ LIT2 80 -halt ] LDZ ORA #0f DEO
+		BRK }
+	;on-live .Console/vector DEO2
+	BRK
 
 @on-live ( -> )
 	.Console/read DEI .src zkey ?{ BRK }
