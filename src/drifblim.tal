@@ -40,7 +40,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "3 20 "Dec 20 "2023 $1
+	( date ) "7 20 "Dec 20 "2023 $1
 	( exts ) 00
 
 (
@@ -279,7 +279,7 @@
 		#0003 SUB2 NIP2 JMP2r
 
 @get-any ( str* -- value* )
-	DUP2 is-hex ?get-hex
+	is-hex ?get-hex
 	!get-ref/eager
 
 @get-ref ( token* -- addr* )
