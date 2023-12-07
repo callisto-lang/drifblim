@@ -21,7 +21,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	.Console/type DEI ?{
-		;dict/live-start <perr>
+		;dict/usage <perr>
 		#01 .live STZ }
 	;&on-src .Console/vector DEO2
 	BRK
@@ -35,14 +35,12 @@
 		.live LDZ ?{
 			[ LIT2 80 -halt ] LDZ ORA #0f DEO
 			BRK }
-		;dict/live-ready <perr>
 		;on-live .Console/vector DEO2
 		#0000 .src STZ2
 		BRK
 
 @on-live ( -> )
 	.Console/read DEI .src zkey ?{ BRK }
-	<assemble>
 	( | cleanup )
 	#00 .halt STZ
 	#0000 .length STZ2
@@ -51,6 +49,7 @@
 	;memory/lambda ;lambda/ptr LDA2 <mclr>
 	;memory/lambda ;lambda/ptr STA2
 	#0000 ;<create-symbol>/count STA2
+	<assemble>
 	BRK
 
 @meta $1
@@ -302,9 +301,10 @@
 	,&t STR2
 	;<create-symbol>/ptr LDA2 ;memory/symbols
 	&l ( -- )
+		EQU2k ?&end
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
 		scap/ INC2 GTH2k ?&l
-	POP2 POP2 #ffff JMP2r
+	&end POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
 		#0003 SUB2 NIP2 JMP2r
 
@@ -496,8 +496,6 @@
 	&bytes 20 "bytes( $1
 	&labels 20 "labels). 0a $1
 	&sym-ext ".sym $1
-	&live-start "[started] 0a $1
-	&live-ready "[ready] 0a $1
 
 @err
 	"!! 20 "Error: 20 $1
