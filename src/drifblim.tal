@@ -21,7 +21,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	.Console/type DEI ?{
-		;dict/usage <perr>
+		;dict/usage <pstr>
 		[ LIT2 01 -live ] STZ }
 	;on-init-src .Console/vector DEO2
 	BRK
@@ -37,7 +37,7 @@
 	.live LDZ ?{
 		[ LIT2 80 -halt ] LDZ ORA #0f DEO
 		BRK }
-	;dict/live <perr>
+	;dict/live <pstr>
 	;on-live .Console/vector DEO2
 	BRK
 
@@ -50,9 +50,6 @@
 	;mem/lambda ;lambda/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	<assemble>
-	.halt LDZ ?{
-		;src/buf <pstr>/
-		#0a18 DEO }
 	BRK
 
 @meta $1
@@ -206,13 +203,13 @@
 	JMP2r
 
 @<set-error> ( name* -- )
-	;err <perr>
-	<perr>
-	#2019 DEO
-	;token/buf <perr>
-	;dict/in <perr>/
-	;scope <perr>/
-	#0a19 DEO
+	;err <pstr>
+	<pstr>
+	#2018 DEO
+	;token/buf <pstr>
+	;dict/in <pstr>/
+	;scope <pstr>/
+	#0a18 DEO
 	[ LIT2 01 -halt ] STZ
 	JMP2r
 
@@ -255,20 +252,20 @@
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
 		LDAk [ LIT 28 ] EQU ?&>skip
 		DUP2 ;dict/reset scmp ?&>skip
-			;dict/unused <perr>/
-			DUP2 <perr>/
-			#0a19 DEO &>skip
+			;dict/unused <pstr>/
+			DUP2 <pstr>/
+			#0a18 DEO &>skip
 		scap/ INC2 GTH2k ?&l
 	POP2 POP2
 	( | result )
-	;dict/assembled <perr>/
-	;dst/buf <perr>/
+	;dict/assembled <pstr>/
+	;dst/buf <pstr>/
 	( | length )
-	;dict/in <perr>/
+	;dict/in <pstr>/
 	.length LDZ2 #00ff SUB2 <pdec>
-	;dict/bytes <perr>/
+	;dict/bytes <pstr>/
 	;<create-symbol>/count LDA2 <pdec>
-	;dict/labels !<perr>/
+	;dict/labels !<pstr>/
 
 (
 @|labels )
@@ -468,12 +465,6 @@
 	STA
 	JMP2r
 
-@<perr> ( str* -- )
-	&w ( str* -- )
-		LDAk #19 DEO
-		INC2 & LDAk ?&w
-	POP2 JMP2r
-
 @<pstr> ( str* -- )
 	&w ( str* -- )
 		LDAk #18 DEO
@@ -484,7 +475,7 @@
 	#2710 [ LIT2r 00fb ]
 	&w ( -- )
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
-			DUP [ LIT "0 ] ADD #19 DEO
+			DUP [ LIT "0 ] ADD #18 DEO
 			INCr }
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
