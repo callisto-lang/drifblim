@@ -44,7 +44,6 @@
 @on-live ( -> )
 	.Console/read DEI .src zkey ?{ BRK }
 	( | cleanup )
-	[ LIT2 00 -Console/type ] DEO
 	[ LIT2 00 -halt ] STZ
 	#0000 .length STZ2
 	;mem/symbols ;<create-symbol>/ptr STA2
@@ -52,7 +51,6 @@
 	#0000 ;<create-symbol>/count STA2
 	<assemble>
 	.halt LDZ ?{
-		[ LIT2 ff -Console/type ] DEO
 		;src/buf <pstr>/
 		#0a18 DEO }
 	BRK
