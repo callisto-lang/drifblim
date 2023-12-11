@@ -22,6 +22,9 @@
 
 BRK
 
+( raw lambda length )
+_{ 01 02 03 }
+
 @get-lambda-length ( lambda* -- length* )
 	#0002 SUB2 LDA2
 JMP2r

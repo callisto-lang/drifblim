@@ -56,7 +56,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "7 20 "Dec 20 "2023 $1
+	( date ) "11 20 "Dec 20 "2023 $1
 	( exts ) 00
 
 (
@@ -351,11 +351,11 @@
 	POP2 STH2r JMP2r
 
 @get-rel ( label* -- distance )
-	.scan LDZ ?&fill
 	get-ref .head LDZ2 INC2 INC2 SUB2
 	( bounds ) DUP2 #0080 ADD2 POP ?&fail
 	NIP JMP2r
 	&fail ( label* distance* -- distance )
+		.scan LDZ ?&fill
 		;err/distance <set-error>
 	&fill ( label* -- distance )
 		POP2 #ff JMP2r
