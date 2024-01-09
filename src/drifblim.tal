@@ -351,13 +351,9 @@
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
-	( bounds ) DUP2 #0080 ADD2 POP ?&fail
-	NIP JMP2r
-	&fail ( label* distance* -- distance )
-		.scan LDZ ?&fill
-		;err/distance <set-error>
-	&fill ( label* -- distance )
-		POP2 #ff JMP2r
+	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
+	( ) .scan LDZ ?{ ;err/distance <set-error> }
+	POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
 	DUP2
