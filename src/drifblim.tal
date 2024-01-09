@@ -73,7 +73,7 @@
 		[ LIT2 01 -File/delete ] DEO
 		JMP2r
 
-@handle-pass ( scan -- err )
+@handle-pass ( scan -: err )
 	.scan STZ
 	#0100 <set-head>
 	#00 ;lambda/count STA
@@ -164,13 +164,12 @@
 (
 @|primitives )
 
-@<write-str> ( str* -- )
-	&w ( -- )
-		LDAk <write>
-		INC2 & LDAk ?&w
+@<write-str> ( str* -: )
+	LDAk <write>
+	INC2 & LDAk ?<write-str>
 	POP2 JMP2r
 
-@<write-opcode> ( str* -- )
+@<write-opcode> ( str* -: )
 	find-opcode !<write>
 
 @<write-hex> ( str* -- )
@@ -182,23 +181,23 @@
 	&short ( str* short* -- )
 		get-hex !<write-short>
 
-@<write-call> ( str* opc -- )
+@<write-call> ( str* opc -: )
 	<write>
 	get-ref .head LDZ2 INC2 INC2 SUB2
 	( >> )
 
-@<write-short> ( short* -- )
+@<write-short> ( short* -: )
 	SWP <write>
 	( >> )
 
-@<write> ( byte -- )
+@<write> ( byte -: )
 	DUP .head LDZ2 INC2k STH2
 	;rom ADD2 STA
 	<set-length>
 	STH2r
 	( >> )
 
-@<set-head> ( v* -- )
+@<set-head> ( v* -: )
 	.head STZ2
 	JMP2r
 
@@ -225,7 +224,7 @@
 (
 @|output )
 
-@<write-rom> ( -- )
+@<write-rom> ( -: )
 	;dst/buf .File/name DEO2
 	.length LDZ2 #00ff SUB2 .File/length DEO2
 	;rom/output .File/write DEO2
@@ -342,9 +341,9 @@
 (
 @|helpers )
 
-@get-hex ( str* -- value* )
+@get-hex ( str* -: value* )
 	[ LIT2r 0000 ]
-	&w ( -- )
+	&w ( `i* -- )
 		( acc ) [ LITr 40 ] SFT2r
 		( res ) LDAk chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&w
@@ -395,7 +394,7 @@
 (
 @|stdlib )
 
-@feof ( addr* -- f )
+@feof ( addr* -: f )
 	.File/read DEO2
 	.File/success DEI2 #0000 EQU2 JMP2r
 
@@ -412,20 +411,18 @@
 		NIP LDZk #00 ROT STZ
 		JMP2r
 
-@zcap ( ztr/buf -- ztr/cap )
-	&w ( -- )
-		INC & LDZk ?&w
+@zcap ( ztr/buf -: ztr/cap )
+	INC & LDZk ?zcap
 	JMP2r
 
-@zlen ( ztr/buf -- len )
+@zlen ( ztr/buf -: len )
 	DUP zcap/ SWP SUB JMP2r
 
-@scap ( str* -- end* )
-	&w ( -- )
-		INC2 & LDAk ?&w
+@scap ( str* -: end* )
+	INC2 & LDAk ?scap
 	JMP2r
 
-@slen ( str* -- len* )
+@slen ( str* -: len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
 @scmp ( a* b* -- f )
@@ -441,18 +438,18 @@
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
 
-@chex ( c -- <val> )
+@chex ( c -: <val> )
 	[ LIT "0 ] SUB DUP #0a LTH ?&>end
 	#27 SUB DUP #10 LTH ?&>end
 		POP #ff &>end
 	JMP2r
 
-@hexc ( id -- char )
-	#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD JMP2r
+@hexc ( id -: char )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD JMP2r
 
-@<scpy> ( src* dst* -- )
+@<scpy> ( src* dst* -: )
 	STH2
-	&w ( -- )
+	&w ( src* `dst* -- )
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&w
 	POP2 POP2r JMP2r
@@ -464,10 +461,9 @@
 	STA
 	JMP2r
 
-@<pstr> ( str* -- )
-	&w ( str* -- )
-		LDAk #18 DEO
-		INC2 & LDAk ?&w
+@<pstr> ( str* -: )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
 	POP2 JMP2r
 
 @<pdec> ( short* -- )

@@ -2,6 +2,7 @@ ID=drifblim
 DIR=~/roms
 ASM=uxnasm
 LIN=uxncli ${DIR}/uxnlin.rom
+BAL=uxncli ${DIR}/uxnbal.rom
 EMU=uxncli
 ROM=bin/${ID}.rom
 
@@ -11,6 +12,8 @@ clean:
 	@ rm -f ${ROM} ${ROM}.sym
 lint:
 	@ ${LIN} src/${ID}.tal
+bal:
+	@ ${BAL} src/${ID}.tal
 run: ${ROM}
 	@ ${EMU} ${ROM} src/${ID}.tal ${ROM}
 	@ ${EMU} ${ROM} examples/hello.tal bin/hello.rom
