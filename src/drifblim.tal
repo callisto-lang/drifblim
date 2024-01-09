@@ -430,12 +430,11 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&l ( a* b* -- f )
-		LDAk LDAkr STHr NEQk ?&d
-		DUP EOR EQUk ?&d
-		POP2 INC2 INC2r !&l
-	&d ( a* c1 c2 b* -- f )
-		NIP2 POP2r EQU JMP2r
+	&l ( -- )
+		LDAk ?{
+			&d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+	INC2 INC2r !&l
 
 @scmp3 ( a* b* -- f )
 	STH2
