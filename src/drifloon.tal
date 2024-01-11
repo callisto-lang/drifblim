@@ -35,7 +35,9 @@
 	JMP2r
 
 @<append> ( chr -- )
-	#00 [ LIT2 &ptr =tal ] STA2k INC2 ,&ptr STR2
+	( join ) [ LIT &last 20 ] OVR ,&last STR
+	( skip ) DUP2 #2020 NEQ2 ?{ POP2 JMP2r }
+	POP #00 [ LIT2 &ptr =tal ] STA2k INC2 ,&ptr STR2
 	POP2 JMP2r
 
 @<assemble> ( -- )
