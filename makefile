@@ -1,4 +1,4 @@
-ID=drifblim
+ID=drifloon
 DIR=~/roms
 ASM=uxnasm
 LIN=uxncli ${DIR}/uxnlin.rom
@@ -14,11 +14,12 @@ lint:
 	@ ${LIN} src/${ID}.tal
 bal:
 	@ ${BAL} src/${ID}.tal
-run: ${ROM}
-	@ ${EMU} ${ROM} src/${ID}.tal ${ROM}
-	@ ${EMU} ${ROM} examples/hello.tal bin/hello.rom
-	@ ${EMU} bin/hello.rom
-install: ${ROM}
+run: all
+#	@ ${EMU} ${ROM} src/${ID}.tal ${ROM}
+#	@ ${EMU} ${ROM} examples/hello.tal bin/hello.rom
+#	@ ${EMU} bin/hello.rom
+	@ cat examples/hello.tal | ${EMU} ${ROM}
+install: all
 	@ cp ${ROM} ${DIR}
 uninstall:
 	@ rm -f ${DIR}/${ID}.rom

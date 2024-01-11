@@ -1,0 +1,52 @@
+( usage: cat file.tal | drifloon.rom > output.rom )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
+|0000
+
+|0100
+
+@on-reset ( -> )
+	;on-console .Console/vector DEO2
+	BRK
+
+@on-console ( -> )
+	.Console/read DEI DUP ?{ <assemble>
+		BRK }
+	<append>
+	BRK
+
+@<append> ( chr -- )
+	( normalize ) #20 GTHk [ JMP SWP POP ]
+	( join ) [ LIT &last 20 ] OVR ,&last STR
+	( skip ) DUP2 #2020 NEQ2 ?{ POP2 JMP2r }
+	( token )
+	#20 NEQ ?{ 
+		
+	}
+
+
+	( append ) #00 [ LIT2 &ptr =tal ] STA2k
+	( move ) INC2 ,&ptr STR2
+	POP2 JMP2r
+
+@<assemble> ( -- )
+	;tal <pstr>
+	JMP2r
+
+@<pstr> ( str* -- )
+	LDAk #18 DEO
+	INC2 & LDAk ?<pstr>
+	POP2 JMP2r
+
+@<phex> ( short* -- )
+	SWP <phex>/b
+	&b ( -- )
+		DUP #04 SFT <phex>/c
+	&c ( -- )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
+
+@tal
+
+
