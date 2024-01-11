@@ -11,27 +11,36 @@
 	BRK
 
 @on-console ( -> )
-	.Console/read DEI DUP ?{ <assemble>
+	.Console/read DEI DUP ?{
+		POP <assemble>
+		#010e DEO
 		BRK }
-	<append>
+	<read>
 	BRK
 
-@<append> ( chr -- )
+@<read> ( chr -- )
 	( normalize ) #20 GTHk [ JMP SWP POP ]
 	( join ) [ LIT &last 20 ] OVR ,&last STR
 	( skip ) DUP2 #2020 NEQ2 ?{ POP2 JMP2r }
-	( token )
-	#20 NEQ ?{ 
-		
-	}
+	#20 NEQ ?{
+		DUP [ LIT "[ ] EQU ?&skip
+		DUP [ LIT "] ] EQU ?&skip
+		DUP [ LIT "( ] EQU ?toggle-mute
+		DUP [ LIT ") ] EQU ?toggle-mute }
+	[ LIT &mute 00 ] ?{ &skip POP JMP2r }
+	!<append>
 
+@toggle-mute ( chr -- )
+	[ LIT "( ] SUB ;<read>/mute STA
+	JMP2r
 
-	( append ) #00 [ LIT2 &ptr =tal ] STA2k
-	( move ) INC2 ,&ptr STR2
+@<append> ( chr -- )
+	#00 [ LIT2 &ptr =tal ] STA2k INC2 ,&ptr STR2
 	POP2 JMP2r
 
 @<assemble> ( -- )
 	;tal <pstr>
+	#0a18 DEOk DEO
 	JMP2r
 
 @<pstr> ( str* -- )
