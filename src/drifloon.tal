@@ -16,6 +16,9 @@
 	<read>
 	BRK
 
+(
+@|loader )
+
 @<read> ( chr -- )
 	( normalize ) #20 GTHk [ JMP SWP POP ]
 	( join ) [ LIT &last-a 20 ] OVR ,&last-a STR
@@ -28,7 +31,7 @@
 	[ LIT &mute 00 ] ?{ &skip POP JMP2r }
 	( join ) [ LIT &last-b 20 ] OVR ,&last-b STR
 	( skip ) DUP2 #2020 EQU2 ?&end
-	POP #00 [ LIT2 &ptr =tal ] STA2k INC2 ,&ptr STR2
+	POP #00 [ LIT2 &ptr =mem ] STA2k INC2 ,&ptr STR2
 	&end ( chr last -- )
 		POP2 JMP2r
 
@@ -40,12 +43,33 @@
 @|assembly )
 
 @<assemble> ( -- )
-	( explode ) ;tal <sexp>
-	<print-source>
-	( <create-dictionary> ) JMP2r
+	( explode ) ;mem <sexp>
+	<record-symbols>
+	( <print-source> ) JMP2r
+
+@<record-symbols> ( -- )
+	;mem
+	&w ( -- )
+		LDAk [ LIT "@ ] NEQ ?{ <record-label> }
+		LDAk [ LIT "& ] NEQ ?{ <record-sublabel> }
+		scap/ INC2 LDAk ?&w
+	POP2 JMP2r
+
+@<record-label> ( token* -- token* )
+	INC2k <pstr>
+	#0a18 DEO
+	JMP2r
+
+@<record-sublabel> ( token* -- token* )
+	INC2k <pstr>
+	#0a18 DEO
+	JMP2r
+
+(
+@|helpers )
 
 @<print-source> ( -- )
-	;tal
+	;mem
 	&w ( -- )
 		LDAk #20 GTHk [ JMP SWP POP ] #18 DEO
 		&resume INC2 LDA2k ORA ?&w
@@ -54,6 +78,10 @@
 
 (
 @|stdlib )
+
+@scap ( str* -: end* )
+	INC2 & LDAk ?scap
+	JMP2r
 
 @<sexp> ( str* -- )
 	#00 ROT ROT
@@ -79,6 +107,6 @@
 (
 @|memory )
 
-@tal
+@mem
 
 
