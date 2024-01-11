@@ -2,6 +2,11 @@
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
+|0000
+
+	@pc $2
+	@scope $2
+
 |0100
 
 @on-reset ( -> )
@@ -44,29 +49,109 @@
 
 @<assemble> ( -- )
 	( explode ) ;mem <sexp>
-	<record-symbols>
+	<pass1>
 	( <print-source> ) JMP2r
 
-@<record-symbols> ( -- )
+@<pass1> ( -- )
+	#0100 <set-pc>
+	;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2
 	;mem
 	&w ( -- )
-		LDAk [ LIT "@ ] NEQ ?{ <record-label> }
-		LDAk [ LIT "& ] NEQ ?{ <record-sublabel> }
+		<parse-token>
 		scap/ INC2 LDAk ?&w
 	POP2 JMP2r
 
-@<record-label> ( token* -- token* )
-	INC2k <pstr>
-	#0a18 DEO
+@<parse-token> ( token* -- token* )
+	LDAk [ LIT "@ ] EQU ?<create-label>
+	LDAk [ LIT "& ] EQU ?<create-sublabel>
+	LDAk [ LIT "? ] EQU ?&move-3
+	LDAk [ LIT "! ] EQU ?&move-3
+	LDAk [ LIT "; ] EQU ?&move-3
+	LDAk [ LIT "= ] EQU ?&move-2
+	LDAk [ LIT ". ] EQU ?&move-2
+	LDAk [ LIT ", ] EQU ?&move-2
+	LDAk [ LIT "- ] EQU ?&move-1
+	LDAk [ LIT "_ ] EQU ?&move-1
+	LDAk [ LIT "" ] EQU ?&string
+	LDAk [ LIT "# ] EQU ?&lithex
+	is-hex ?&rawhex
+	is-opcode ?&move-1
+	&move-3 ( t* -- t* )
+		#0003 !<move-pc>
+	&move-2 ( t* -- t* )
+		#0002 !<move-pc>
+	&move-1 ( t* -- t* )
+		#0001 !<move-pc>
+	&string ( t* -- t* )
+		INC2k slen !<move-pc>
+	&lithex ( t* -- t* )
+		INC2k slen #01 SFT2 INC2 !<move-pc>
+	&rawhex ( t* -- t* )
+		DUP2 slen #01 SFT2 !<move-pc>
+
+@<move-pc> ( offset* -- )
+	.pc LDZ2 ADD2
+	( >> )
+
+@<set-pc> ( addr* -- )
+	.pc STZ2
 	JMP2r
 
-@<record-sublabel> ( token* -- token* )
-	INC2k <pstr>
+@<create-label> ( token* -- token* )
+	INC2k !<create-symbol>
+
+@<create-sublabel> ( token* -- token* )
+	DUP2
+
+@<create-symbol> ( t* -- )
+	( | print )
+	.pc LDZ2 <phex>
+	#2018 DEO
+	DUP2 <pstr>
 	#0a18 DEO
+	( | records: name* addr* refs )
+	[ LIT2 &ptr $2 ] STH2k STA2
+	.pc LDZ2 INC2r INC2r STH2kr STA2
+	#00 STH2r STA
+	JMP2r
+
+@<set-scope> ( t* -- )
+	.scope STZ2
 	JMP2r
 
 (
 @|helpers )
+
+@is-hex ( str* -- str* f )
+	DUP2
+	&w ( -- )
+		LDAk chex INC ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&w
+	POP2 #01 JMP2r
+
+@is-opcode ( str* -- str* f )
+	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
+	#01 JMP2r
+
+@find-opcode ( name* -- byte )
+	STH2
+	#2000
+	&l ( -- )
+		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
+		INC GTHk ?&l
+	POP2 POP2r #00 JMP2r
+	&on-found ( `name* bounds* -- byte )
+		( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
+		( move to modes ) STH2r #0003 ADD2
+		( keep flag ) [ LITr 00 ]
+	&w ( -- )
+		LDAk #20 OVR [ LIT "2 ] EQU ?&>end
+		DUP ADD OVR [ LIT "r ] EQU ?&>end
+		DUP ADD OVR [ LIT "k ] EQU ?&>end
+			&>end
+		NIP STH
+		ORAr INC2 LDAk ?&w
+	POP2 STHr ADD JMP2r
 
 @<print-source> ( -- )
 	;mem
@@ -79,9 +164,23 @@
 (
 @|stdlib )
 
+@chex ( c -: <val> )
+	[ LIT "0 ] SUB DUP #0a LTH ?&>end
+	#27 SUB DUP #10 LTH ?&>end
+		POP #ff &>end
+	JMP2r
+
+@scmp3 ( a* b* -- f )
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
+
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
 	JMP2r
+
+@slen ( str* -: len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
 
 @<sexp> ( str* -- )
 	#00 ROT ROT
@@ -106,6 +205,13 @@
 
 (
 @|memory )
+
+@opcodes [
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	&brk "BRK ]
 
 @mem
 
