@@ -2,8 +2,6 @@
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
-|0000
-
 |0100
 
 @on-reset ( -> )
@@ -20,30 +18,34 @@
 
 @<read> ( chr -- )
 	( normalize ) #20 GTHk [ JMP SWP POP ]
-	( join ) [ LIT &last 20 ] OVR ,&last STR
-	( skip ) DUP2 #2020 NEQ2 ?{ POP2 JMP2r }
+	( join ) [ LIT &last-a 20 ] OVR ,&last-a STR
+	( skip ) DUP2 #2020 EQU2 ?&end
 	#20 NEQ ?{
 		DUP [ LIT "[ ] EQU ?&skip
 		DUP [ LIT "] ] EQU ?&skip
-		DUP [ LIT "( ] EQU ?toggle-mute
-		DUP [ LIT ") ] EQU ?toggle-mute }
+		DUP [ LIT "( ] EQU ?<toggle-mute>
+		DUP [ LIT ") ] EQU ?<toggle-mute> }
 	[ LIT &mute 00 ] ?{ &skip POP JMP2r }
-	!<append>
+	( join ) [ LIT &last-b 20 ] OVR ,&last-b STR
+	( skip ) DUP2 #2020 EQU2 ?&end
+	POP #00 [ LIT2 &ptr =tal ] STA2k INC2 ,&ptr STR2
+	&end ( chr last -- )
+		POP2 JMP2r
 
-@toggle-mute ( chr -- )
+@<toggle-mute> ( chr -- )
 	[ LIT "( ] SUB ;<read>/mute STA
 	JMP2r
 
-@<append> ( chr -- )
-	( join ) [ LIT &last 20 ] OVR ,&last STR
-	( skip ) DUP2 #2020 NEQ2 ?{ POP2 JMP2r }
-	POP #00 [ LIT2 &ptr =tal ] STA2k INC2 ,&ptr STR2
-	POP2 JMP2r
+(
+@|assembly )
 
 @<assemble> ( -- )
 	;tal <pstr>
 	#0a18 DEOk DEO
 	JMP2r
+
+(
+@|stdlib )
 
 @<pstr> ( str* -- )
 	LDAk #18 DEO
@@ -57,6 +59,9 @@
 	&c ( -- )
 		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 		JMP2r
+
+(
+@|memory )
 
 @tal
 
