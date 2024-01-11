@@ -40,12 +40,28 @@
 @|assembly )
 
 @<assemble> ( -- )
-	;tal <pstr>
-	#0a18 DEOk DEO
+	( explode ) ;tal <sexp>
+	<print-source>
+	( <create-dictionary> ) JMP2r
+
+@<print-source> ( -- )
+	;tal
+	&w ( -- )
+		LDAk #20 GTHk [ JMP SWP POP ] #18 DEO
+		&resume INC2 LDA2k ORA ?&w
+	POP2 #0a18 DEOk DEO
 	JMP2r
 
 (
 @|stdlib )
+
+@<sexp> ( str* -- )
+	#00 ROT ROT
+	&w ( -- )
+		LDAk #20 GTH ?{ STAk }
+		INC2 LDAk ?&w
+	STA
+	JMP2r
 
 @<pstr> ( str* -- )
 	LDAk #18 DEO
