@@ -6,6 +6,8 @@
 
 	@pc $2
 	@scope $2
+	@scan $1
+	@head $2
 
 |0100
 
@@ -48,13 +50,16 @@
 @|assembly )
 
 @<assemble> ( -- )
-	( explode ) ;mem <sexp>
-	<pass1>
-	( <print-source> ) JMP2r
-
-@<pass1> ( -- )
-	#0100 <set-pc>
 	;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2
+	( explode ) ;mem <sexp>
+	( scan pass ) #01 <handle-pass>
+	( write pass ) #00 <handle-pass>
+	JMP2r
+
+@<handle-pass> ( scan -- )
+	.scan STZ
+	#0100 <set-head>
+	;Dict/reset <set-scope>
 	;mem
 	&w ( -- )
 		<parse-token>
@@ -95,6 +100,10 @@
 
 @<set-pc> ( addr* -- )
 	.pc STZ2
+	JMP2r
+
+@<set-head> ( addr* -- )
+	.head STZ2
 	JMP2r
 
 @<create-label> ( token* -- token* )
@@ -205,6 +214,8 @@
 
 (
 @|memory )
+
+@Dict &reset "ON-RESET $1
 
 @opcodes [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
