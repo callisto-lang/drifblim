@@ -12,6 +12,7 @@
 	@head $2
 	@halt $1
 	@length $2
+	@token $2
 
 |0100
 
@@ -63,10 +64,14 @@
 @<handle-pass> ( scan -- )
 	.scan STZ
 	#0100 <set-head>
+	#00 ;lambda/count STA
 	;dict/reset <set-scope>
 	;input
 	&w ( -- )
-		<parse-token>
+		DUP2 .token STZ2
+		DUP2 <pstr>
+		#0a18 DEO
+		DUP2 <parse-token>
 		scap/ INC2 LDAk ?&w
 	POP2 JMP2r
 
@@ -166,6 +171,7 @@
 	;err <pstr>
 	<pstr>
 	#2018 DEO
+	.token LDZ2 <pstr>/
 	;dict/in <pstr>/
 	;scope <pstr>/
 	#0a18 DEO
@@ -383,6 +389,14 @@
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
 
+@<phex> ( short* -- )
+	SWP <phex>/b
+	&b ( -- )
+		DUP #04 SFT <phex>/c
+	&c ( -- )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
+
 (
 @|assets )
 
@@ -434,6 +448,7 @@
 	&include $30
 	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
+
 
 |8000
 
