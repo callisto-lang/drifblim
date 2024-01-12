@@ -20,11 +20,7 @@
 
 @on-console ( -> )
 	.Console/read DEI DUP ?{
-		POP ;<read>/ptr LDA2 INC2
-		( ) DUP2 ;<create-symbol>/ptr STA2
-		( ) ;find-symbol/ptr STA2
-		;input-buf <sexp>
-		<assemble>
+		POP <assemble>
 		#010e DEO
 		BRK }
 	<read>
@@ -57,16 +53,36 @@
 @|assembly )
 
 @<assemble> ( -- )
-	( scan ) #01 handle-pass ?&crash
-	( write ) #00 handle-pass ?&crash
+	;<read>/ptr LDA2 INC2
+	( ) DUP2 ;<create-symbol>/ptr STA2
+	( ) ;find-symbol/ptr STA2
+	;input-buf <sexp>
+	#01 handle-pass ?crash
+	#00 handle-pass ?crash
+
+@write-rom ( -- )
 	;rom .length LDZ2 INC2 ADD2 ;rom/output
 	&l ( -- )
 		LDAk #18 DEO
 		INC2 NEQ2k ?&l
+	POP2 POP2
+	( >> )
+
+@print-unused ( -- )
+	;<create-symbol>/ptr LDA2 ;find-symbol/ptr LDA2
+	&l ( -- )
+		INC2k INC2 LDA ?&>skip
+		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&>skip
+		DUP2 ;dict/reset scmp ?&>skip
+			;dict/unused <pstr>/
+			DUP2 <pstr>/
+			#0a19 DEO &>skip
+		scap/ INC2 GTH2k ?&l
 	POP2 POP2 JMP2r
-	&crash ( -- )
-		#800f DEO
-		JMP2r
+
+@crash ( -- )
+	#800f DEO
+	JMP2r
 
 @handle-pass ( scan -- err )
 	.scan STZ
