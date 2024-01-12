@@ -4,9 +4,8 @@
 
 |0000
 
-	@scope $30
+	@scope $2
 	@sublabel $30
-	@live $1
 	@scan $1
 	@head $2
 	@halt $1
@@ -179,7 +178,7 @@
 	#2019 DEO
 	.token LDZ2 <pstr>/
 	;dict/in <pstr>/
-	;scope <pstr>/
+	.scope LDZ2 <pstr>/
 	#0a19 DEO
 	[ LIT2 01 -halt ] STZ
 	JMP2r
@@ -202,9 +201,9 @@
 	;sublabel JMP2r
 
 @<set-scope> ( t* -- )
-	DUP2 ;scope <scpy>
-	DUP2 ;sublabel STHk <scpy>
-	[ LIT2 "/ 00 ] STHr #00 SWP scap/ NIP STHk STZ2
+	DUP2 .scope STZ2
+	DUP2 ;sublabel STH2k <scpy>
+	[ LIT2 "/ 00 ] STH2r scap/ NIP STHk STZ2
 	#00 STHr INC ,get-sublabel/ptr STR2
 	( >> )
 
