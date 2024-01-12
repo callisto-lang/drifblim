@@ -296,16 +296,16 @@
 	#01 JMP2r
 
 @find-opcode ( name* -- byte )
-	STH2
+	DUP2 ,&t STR2
 	#2000
 	&l ( -- )
-		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
+		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?&on-found
 		INC GTHk ?&l
-	POP2 POP2r #00 JMP2r
-	&on-found ( `name* bounds* -- byte )
-		( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
-		( move to modes ) STH2r #0003 ADD2
-		( keep flag ) [ LITr 00 ]
+	POP2 POP2 #00 JMP2r
+	&on-found ( name* bounds* -- byte )
+		( LITk ) NIP DUP #00 EQU #70 SFT ORA STH
+		( modes ) #0003 ADD2 STHr
+		( flag ) [ LITr 00 ]
 	&w ( -- )
 		LDAk #20 OVR [ LIT "2 ] EQU ?&>end
 		DUP ADD OVR [ LIT "r ] EQU ?&>end
