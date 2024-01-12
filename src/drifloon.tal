@@ -192,8 +192,8 @@
 @<set-scope> ( t* -- )
 	DUP2 .scope STZ2
 	DUP2 ;sublabel STH2k <scpy>
-	[ LIT2 "/ 00 ] STH2r scap/ NIP STHk STZ2
-	#00 STHr INC ,get-sublabel/ptr STR2
+	[ LIT2 "/ 00 ] STH2r scap/ STH2k STA2
+	STH2r INC ,get-sublabel/ptr STR2
 	( >> )
 
 @<create-symbol> ( name* -- )
@@ -217,11 +217,11 @@
 	;<create-symbol>/ptr LDA2 [ LIT2 &origin $2 ]
 	&l ( -- )
 		EQU2k ?&end
-		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
+		DUP2 #0003 ADD2 [ LIT2 &t $2 ] scmp ?&found
 		scap/ INC2 GTH2k ?&l
 	&end POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
-		#0003 SUB2 NIP2 JMP2r
+		NIP2 JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
