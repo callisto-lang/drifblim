@@ -5,22 +5,20 @@ LIN=uxncli ${DIR}/uxnlin.rom
 BAL=uxncli ${DIR}/uxnbal.rom
 EMU=uxncli
 ROM=bin/${ID}.rom
+SRC=src/${ID}.tal
 
 all: ${ROM}
 
 clean:
 	@ rm -f ${ROM} ${ROM}.sym
 lint:
-	@ ${LIN} src/${ID}.tal
+	@ ${LIN} ${SRC}
 bal:
-	@ ${BAL} src/${ID}.tal
+	@ ${BAL} ${SRC}
 run: all
-	@ uxnasm examples/coverage.tal bin/a.rom
-	@ uxncli ~/roms/hx.rom bin/a.rom
-	@ uxncli bin/a.rom
-	@ cat examples/coverage.tal | ${EMU} ${ROM} > bin/b.rom
-	@ uxncli ~/roms/hx.rom bin/b.rom
-	@ uxncli bin/b.rom
+	@ cat ${SRC} | ${EMU} ${ROM} > bin/drifloon-bootstrap.rom
+	@ cat examples/coverage.tal | ${EMU} bin/drifloon-bootstrap.rom > bin/res.rom
+	@ ${EMU} bin/res.rom
 install: all
 	@ cp ${ROM} ${DIR}
 uninstall:
@@ -28,5 +26,6 @@ uninstall:
 
 .PHONY: all clean lint run install uninstall
 
-${ROM}: src/${ID}.tal
-	@ mkdir -p bin && ${ASM} src/${ID}.tal ${ROM}
+${ROM}: ${SRC}
+	@ mkdir -p bin
+	@ ${ASM} ${SRC} ${ROM}

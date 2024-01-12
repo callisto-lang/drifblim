@@ -4,13 +4,13 @@
 
 |0000
 
-	@scope $2
 	@sublabel $80
-	@scan $1
 	@head $2
-	@halt $1
+	@scope $2
 	@length $2
 	@token $2
+	@halt $1
+	@scan $1
 
 |0100
 
@@ -19,9 +19,7 @@
 	BRK
 
 @on-console ( -> )
-	.Console/read DEI DUP ?{
-		POP <assemble>
-		#010e DEO
+	.Console/read DEI DUP ?{ POP <assemble>
 		BRK }
 	<read>
 	BRK
