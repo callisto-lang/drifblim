@@ -20,8 +20,10 @@ run: all
 #	@ ${EMU} bin/hello.rom
 	@ uxnasm examples/hello.tal bin/a.rom
 	@ uxncli ~/roms/hx.rom bin/a.rom
+	@ uxncli bin/a.rom
 	@ cat examples/hello.tal | ${EMU} ${ROM} > bin/b.rom
 	@ uxncli ~/roms/hx.rom bin/b.rom
+	@ uxncli bin/b.rom
 install: all
 	@ cp ${ROM} ${DIR}
 uninstall:

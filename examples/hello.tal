@@ -4,7 +4,7 @@
 |0100 ( -> )
 
 	;hello-word print-text
-	#010f DEO
+	#800f DEO
 
 BRK
 
