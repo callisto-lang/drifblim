@@ -59,8 +59,6 @@
 	( scan pass ) #01 handle-pass ?&crash
 	( write pass ) #00 handle-pass ?&crash
 	( complete. ) ;rom .length LDZ2 INC2 ADD2 ;rom/output
-	( | write )
-
 	&l ( -- )
 		LDAk #18 DEO
 		INC2 NEQ2k ?&l
@@ -249,14 +247,13 @@
 		STA
 		( >> )
 	&name ( id -- str* )
-		( x0 ) DUP #04 SFT hexc
-		( 0x ) SWP hexc ,&id STR2
+		#21 ADD ,&id STR
 		;&sym JMP2r
 	&pop ( -- )
 		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
 		,&ptr STR2
 		JMP2r
-		&sym "lambda &id "00 $1
+		&sym cebb &id $2
 
 (
 @|helpers )
@@ -290,8 +287,8 @@
 @find-opcode-mode ( c -- byte )
 	DUP [ LIT "2 ] NEQ ?{ POP #20 JMP2r }
 	DUP [ LIT "k ] NEQ ?{ POP #80 JMP2r }
-	DUP [ LIT "r ] NEQ ?{ POP #40 JMP2r }
-	POP #00 JMP2r
+	[ LIT "r ] NEQ ?{ #40 JMP2r }
+	#00 JMP2r
 
 (
 @|stdlib )
