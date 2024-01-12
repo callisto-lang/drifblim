@@ -128,17 +128,19 @@
 	find-opcode !<write>
 
 @<write-lithex> ( str* -- )
-	DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
-	( >> )
+	DUP2 slen NIP
+	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
+	!<write-hex>
 
 @<write-rawhex> ( str* -- )
-	DUP2 slen NIP DUP #02 EQU ?&byte
-	#04 EQU ?&short
+	DUP2 slen NIP
+	( >> )
+
+@<write-hex> ( str* len -- )
+	DUP #02 NEQ ?{
+		POP shex NIP !<write> }
+	#04 NEQ ?{ shex !<write-short> }
 	POP2 ;err/number !<set-error>
-	&byte ( str* len -- )
-		POP shex NIP !<write>
-	&short ( str* short* -- )
-		shex !<write-short>
 
 @<write-call> ( str* opc -: )
 	<write>
