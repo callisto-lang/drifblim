@@ -418,9 +418,6 @@
 		POP #ff &>end
 	JMP2r
 
-@hexc ( id -: char )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD JMP2r
-
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
 	&w ( `i* -- )

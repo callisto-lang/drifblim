@@ -230,11 +230,11 @@
 	;<create-symbol>/ptr LDA2 [ LIT2 &ptr $2 ]
 	&l ( -- )
 		EQU2k ?&end
-		DUP2 #0003 ADD2 [ LIT2 &t $2 ] scmp ?&found
+		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
 		scap/ INC2 GTH2k ?&l
 	&end POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
-		NIP2 JMP2r
+		#0003 SUB2 NIP2 JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
