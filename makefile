@@ -18,7 +18,10 @@ run: all
 #	@ ${EMU} ${ROM} src/${ID}.tal ${ROM}
 #	@ ${EMU} ${ROM} examples/hello.tal bin/hello.rom
 #	@ ${EMU} bin/hello.rom
-	@ cat examples/hello.tal | ${EMU} ${ROM}
+	@ uxnasm examples/hello.tal bin/res.rom
+	@ uxncli ~/roms/hx.rom bin/res.rom
+	@ cat examples/hello.tal | ${EMU} ${ROM} > bin/res.rom
+	@ uxncli ~/roms/hx.rom bin/res.rom
 install: all
 	@ cp ${ROM} ${DIR}
 uninstall:

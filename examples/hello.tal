@@ -1,8 +1,10 @@
+
 |10 @Console &vector $2 &read $1 &pad $5 &write $1 &error $1
 
 |0100 ( -> )
 
 	;hello-word print-text
+	#010f DEO
 
 BRK
 
@@ -15,4 +17,4 @@ BRK
 
 JMP2r
 
-@hello-word "Hello 20 "World! 00
+@hello-word "Hello 20 "World! 0a

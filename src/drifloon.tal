@@ -40,7 +40,7 @@
 		DUP [ LIT "] ] EQU ?&skip
 		DUP [ LIT "( ] EQU ?<toggle-mute>
 		DUP [ LIT ") ] EQU ?<toggle-mute> }
-	[ LIT &mute 00 ] ?{ &skip POP JMP2r }
+	[ LIT &mute 01 ] ?{ &skip POP JMP2r }
 	( join ) [ LIT &last-b 20 ] OVR ,&last-b STR
 	( skip ) DUP2 #2020 EQU2 ?&end
 	POP #00 [ LIT2 &ptr =input ] STA2k INC2 ,&ptr STR2
@@ -59,9 +59,7 @@
 	( explode ) ;input <sexp>
 	( scan pass ) #01 handle-pass ?&crash
 	( write pass ) #00 handle-pass ?&crash
-	( complete. ) #9999 <phex>
-	#0a18 DEO
-	JMP2r
+	( complete. ) !<write-rom>
 	&crash JMP2r
 
 @handle-pass ( scan -- err )
@@ -72,10 +70,17 @@
 	;input
 	&w ( -- )
 		DUP2 .token STZ2
-		( DUP2 <pstr> #0a18 DEO ) DUP2 <parse-token>
+		DUP2 <parse-token>
 		.halt LDZ ?&end
 		scap/ INC2 LDAk ?&w
 	&end POP2 .halt LDZ JMP2r
+
+@<write-rom> ( -- )
+	;rom .length LDZ2 INC2 ADD2 ;rom/output
+	&l ( -- )
+		LDAk #18 DEO
+		INC2 NEQ2k ?&l
+	POP2 POP2 JMP2r
 
 (
 @|tokenizer )
@@ -206,7 +211,7 @@
 @<set-scope> ( t* -- )
 	DUP2 ;scope <scpy>
 	DUP2 ;sublabel STHk <scpy>
-	[ LIT2 "/ 00 ] STHr zcap/ STHk STZ2
+	[ LIT2 "/ 00 ] STHr #00 SWP scap/ NIP STHk STZ2
 	#00 STHr INC ,get-sublabel/ptr STR2
 	( >> )
 
@@ -245,10 +250,6 @@
 	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
 	.scan LDZ ?&scan
 	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-	DUP2 <pstr>
-	#0a18 DEO
-	DUP2 find-symbol <phex>
-	#0a18 DEO
 	find-symbol INC2k #0000 EQU2 ?{
 		INC2k INC2 LDAk INC ROT ROT STA
 		LDA2 JMP2r }
@@ -315,20 +316,13 @@
 		DUP ADD OVR [ LIT "r ] EQU ?&>end
 		DUP ADD OVR [ LIT "k ] EQU ?&>end
 		DUP ADD OVR #00 EQU ?&>end
-			;err/opcode <set-error> &>end
+			&>end
 		NIP STH
 		ORAr INC2 LDAk ?&w
 	POP2 STHr ADD JMP2r
 
 (
 @|stdlib )
-
-@zcap ( ztr/buf -: ztr/cap )
-	INC & LDZk ?zcap
-	JMP2r
-
-@zlen ( ztr/buf -: len )
-	DUP zcap/ SWP SUB JMP2r
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
