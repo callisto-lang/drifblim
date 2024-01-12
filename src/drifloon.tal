@@ -5,7 +5,7 @@
 |0000
 
 	@scope $2
-	@sublabel $30
+	@sublabel $80
 	@scan $1
 	@head $2
 	@halt $1
@@ -97,40 +97,23 @@
 	is-opcode ?<write-opcode>
 	!lib/litjsi
 
-@lib
-	&padabs ( t* -- )
-		INC2 get-any !<set-head>
-	&padrel ( t* -- )
-		INC2 get-any .head LDZ2 ADD2 !<set-head>
-	&toplab ( t* -- )
-		INC2 !<set-scope>
-	&sublab ( t* -- )
-		INC2 get-sublabel !<create-symbol>
-	&litrel ( t* -- )
-		#80 <write>
-	&rawrel ( t* -- )
-		INC2 get-rel !<write>
-	&litzep ( t* -- )
-		#80 <write>
-	&rawzep ( t* -- )
-		INC2 get-ref NIP !<write>
-	&litabs ( t* -- )
-		#a0 <write>
-	&rawabs ( t* -- )
-		INC2 get-ref !<write-short>
-	&litjci ( t* -- )
-		INC2 #20 !<write-call>
-	&litjmi ( t* -- )
-		INC2 #40 !<write-call>
-	&litjsi ( t* -- )
-		#60 !<write-call>
-	&lithex ( t* -- )
-		INC2 DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
-		!<write-hex>
-	&rawstr ( t* -- )
-		INC2 !<write-str>/
-	&lambda ( t* -- )
-		POP2 !lambda/pop
+@lib &padabs INC2 get-any !<set-head>
+	&padrel INC2 get-any .head LDZ2 ADD2 !<set-head>
+	&toplab INC2 !<set-scope>
+	&sublab INC2 get-sublabel !<create-symbol>
+	&litrel #80 <write>
+	&rawrel INC2 get-rel !<write>
+	&litzep #80 <write>
+	&rawzep INC2 get-ref NIP !<write>
+	&litabs #a0 <write>
+	&rawabs INC2 get-ref !<write-short>
+	&litjci INC2 #20 !<write-call>
+	&litjmi INC2 #40 !<write-call>
+	&litjsi #60 !<write-call>
+	&lithex INC2 DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
+	!<write-hex>
+	&rawstr INC2 !<write-str>/
+	&lambda POP2 !lambda/pop
 
 (
 @|primitives )
@@ -177,7 +160,6 @@
 	<pstr>
 	#2019 DEO
 	.token LDZ2 <pstr>/
-	;dict/in <pstr>/
 	.scope LDZ2 <pstr>/
 	#0a19 DEO
 	[ LIT2 01 -halt ] STZ
@@ -368,14 +350,8 @@
 (
 @|assets )
 
-@dict &usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
-	&unused "-- 20 "Unused: 20 $1
+@dict &unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
-	&assembled "Assembled 20 $1
-	&in 20 "in 20 $1
-	&bytes 20 "bytes( $1
-	&labels 20 "labels). 0a $1
-	&sym-ext ".sym $1
 
 @err
 	"!! 20 "Error: 20 $1
@@ -385,7 +361,6 @@
 	&reference "Reference $1
 	&distance "Distance $1
 	&symbol "Symbol $1
-	&token "Token $1
 	&sublabel "Sublabel $1
 	&zeropage "Zero-page $1
 
