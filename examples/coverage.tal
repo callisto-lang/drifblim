@@ -57,7 +57,6 @@ JMP2r
 		POP2 #000a DIV2 SWPr INCr STHkr ?&w
 	POP2r POP2 POP2 JMP2r
 
-$100 @label2
+$20 @label2
 
-~examples/include.tal
-
+@hello-word "Hello 20 "World! 0a $1

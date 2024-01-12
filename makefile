@@ -15,13 +15,10 @@ lint:
 bal:
 	@ ${BAL} src/${ID}.tal
 run: all
-#	@ ${EMU} ${ROM} src/${ID}.tal ${ROM}
-#	@ ${EMU} ${ROM} examples/hello.tal bin/hello.rom
-#	@ ${EMU} bin/hello.rom
-	@ uxnasm examples/hello.tal bin/a.rom
+	@ uxnasm examples/coverage.tal bin/a.rom
 	@ uxncli ~/roms/hx.rom bin/a.rom
 	@ uxncli bin/a.rom
-	@ cat examples/hello.tal | ${EMU} ${ROM} > bin/b.rom
+	@ cat examples/coverage.tal | ${EMU} ${ROM} > bin/b.rom
 	@ uxncli ~/roms/hx.rom bin/b.rom
 	@ uxncli bin/b.rom
 install: all
