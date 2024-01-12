@@ -57,11 +57,14 @@
 @<assemble> ( -- )
 	;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2
 	( explode ) ;input <sexp>
-	( scan pass ) #01 <handle-pass>
-	( write pass ) #00 <handle-pass>
+	( scan pass ) #01 handle-pass ?&crash
+	( write pass ) #00 handle-pass ?&crash
+	( complete. ) #9999 <phex>
+	#0a18 DEO
 	JMP2r
+	&crash JMP2r
 
-@<handle-pass> ( scan -- )
+@handle-pass ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
 	#00 ;lambda/count STA
@@ -69,11 +72,10 @@
 	;input
 	&w ( -- )
 		DUP2 .token STZ2
-		DUP2 <pstr>
-		#0a18 DEO
-		DUP2 <parse-token>
+		( DUP2 <pstr> #0a18 DEO ) DUP2 <parse-token>
+		.halt LDZ ?&end
 		scap/ INC2 LDAk ?&w
-	POP2 JMP2r
+	&end POP2 .halt LDZ JMP2r
 
 (
 @|tokenizer )
