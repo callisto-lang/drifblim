@@ -282,14 +282,10 @@
 		( modes ) #0003 ADD2
 	&w ( -- )
 		LDAk ?{ POP2 STHr JMP2r }
-		LDAk find-opcode-mode STH
-		ORAr INC2 !&w
-
-@find-opcode-mode ( c -- byte )
-	DUP [ LIT "2 ] NEQ ?{ POP #20 JMP2r }
-	DUP [ LIT "k ] NEQ ?{ POP #80 JMP2r }
-	[ LIT "r ] NEQ ?{ #40 JMP2r }
-	#00 JMP2r
+		LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr }
+		LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr }
+		LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr }
+		INC2 !&w
 
 (
 @|stdlib )
