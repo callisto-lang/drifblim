@@ -57,8 +57,15 @@
 	( explode ) ;input-buf <sexp>
 	( scan pass ) #01 handle-pass ?&crash
 	( write pass ) #00 handle-pass ?&crash
-	( complete. ) !<write-rom>
-	&crash JMP2r
+	( complete. ) ;rom .length LDZ2 INC2 ADD2 ;rom/output
+	( | write )
+	&l ( -- )
+		LDAk #18 DEO
+		INC2 NEQ2k ?&l
+	POP2 POP2 JMP2r
+	&crash ( -- )
+		#800f DEO
+		JMP2r
 
 @handle-pass ( scan -- err )
 	.scan STZ
@@ -72,13 +79,6 @@
 		.halt LDZ ?&end
 		scap/ INC2 LDAk ?&w
 	&end POP2 .halt LDZ JMP2r
-
-@<write-rom> ( -- )
-	;rom .length LDZ2 INC2 ADD2 ;rom/output
-	&l ( -- )
-		LDAk #18 DEO
-		INC2 NEQ2k ?&l
-	POP2 POP2 JMP2r
 
 (
 @|tokenizer )
