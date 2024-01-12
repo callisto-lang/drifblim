@@ -226,9 +226,14 @@
 	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	find-symbol INC2k #0000 EQU2 ?{
 		INC2k INC2 LDAk INC ROT ROT STA
-		LDA2 JMP2r }
-	;err/reference <set-error>
-	&scan JMP2r
+		LDA2 &scan JMP2r }
+	;err/reference !<set-error>
+
+@get-rel ( label* -- distance )
+	get-ref .head LDZ2 INC2 INC2 SUB2
+	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
+	( ) .scan LDZ ?{ ;err/distance <set-error> }
+	POP2 #ff JMP2r
 
 @lambda
 	&push ( -- name* )
@@ -248,12 +253,6 @@
 
 (
 @|helpers )
-
-@get-rel ( label* -- distance )
-	get-ref .head LDZ2 INC2 INC2 SUB2
-	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	( ) .scan LDZ ?{ ;err/distance <set-error> }
-	POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -278,10 +277,10 @@
 		( modes ) #0003 ADD2
 	&w ( -- )
 		LDAk ?{ POP2 STHr JMP2r }
-		LDAk get-mode-value STH
+		LDAk find-opcode-mode STH
 		ORAr INC2 !&w
 
-@get-mode-value ( c -- byte )
+@find-opcode-mode ( c -- byte )
 	DUP [ LIT "2 ] NEQ ?{ POP #20 JMP2r }
 	DUP [ LIT "k ] NEQ ?{ POP #80 JMP2r }
 	DUP [ LIT "r ] NEQ ?{ POP #40 JMP2r }
