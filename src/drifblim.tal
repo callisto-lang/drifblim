@@ -47,7 +47,7 @@
 	[ LIT2 00 -halt ] STZ
 	#0000 .length STZ2
 	;mem/symbols ;<create-symbol>/ptr STA2
-	;mem/lambda ;lambda/ptr STA2
+	;lambda-buf ;lambda/ptr STA2
 	#0000 ;<create-symbol>/count STA2
 	<assemble>
 	BRK
@@ -317,18 +317,18 @@
 @lambda
 	&push ( -- name* )
 		[ LIT &count $1 ] INCk ,&count STR
-		DUP [ LIT2 &ptr =mem/lambda ] INC2k ,&ptr STR2
+		DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
 		STA
 		( >> )
 	&name ( id -- str* )
-		( x0 ) DUP #04 SFT hexc
-		( 0x ) SWP hexc ,&id STR2
+		#21 ADD ,&id STR
 		;&sym JMP2r
 	&pop ( -- )
 		,&ptr LDR2 #0001 SUB2 LDAk lambda/name <create-symbol>
 		,&ptr STR2
 		JMP2r
-		&sym "lambda &id "00 $1
+		&sym cebb &id $2
+
 
 (
 @|helpers )
@@ -507,10 +507,10 @@
 (
 @|mem )
 
+@lambda-buf  $100
 
 @mem ( buffers )
 	&include $30
-	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
 
 
