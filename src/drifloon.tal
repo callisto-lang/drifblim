@@ -348,9 +348,6 @@
 	STA
 	JMP2r
 
-@hexc ( id -: char )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD JMP2r
-
 @<scpy> ( src* dst* -: )
 	STH2
 	&w ( src* `dst* -- )
