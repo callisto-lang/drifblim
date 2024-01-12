@@ -20,7 +20,11 @@
 
 @on-console ( -> )
 	.Console/read DEI DUP ?{
-		POP <assemble>
+		POP ;<read>/ptr LDA2 INC2
+		( ) DUP2 ;<create-symbol>/ptr STA2
+		( ) ;find-symbol/ptr STA2
+		;input-buf <sexp>
+		<assemble>
 		#010e DEO
 		BRK }
 	<read>
@@ -53,12 +57,9 @@
 @|assembly )
 
 @<assemble> ( -- )
-	( set buf start ) ;<read>/ptr LDA2 INC2 DUP2 ;<create-symbol>/ptr STA2
-	;find-symbol/origin STA2
-	( explode ) ;input-buf <sexp>
-	( scan pass ) #01 handle-pass ?&crash
-	( write pass ) #00 handle-pass ?&crash
-	( complete. ) ;rom .length LDZ2 INC2 ADD2 ;rom/output
+	( scan ) #01 handle-pass ?&crash
+	( write ) #00 handle-pass ?&crash
+	;rom .length LDZ2 INC2 ADD2 ;rom/output
 	&l ( -- )
 		LDAk #18 DEO
 		INC2 NEQ2k ?&l
@@ -212,7 +213,7 @@
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;<create-symbol>/ptr LDA2 [ LIT2 &origin $2 ]
+	;<create-symbol>/ptr LDA2 [ LIT2 &ptr $2 ]
 	&l ( -- )
 		EQU2k ?&end
 		DUP2 #0003 ADD2 [ LIT2 &t $2 ] scmp ?&found
@@ -354,7 +355,7 @@
 @|assets )
 
 @dict &unused "-- 20 "Unused: 20 $1
-	&reset "RESET $1
+	&reset "QQ_ $1
 
 @err
 	"!! 20 "Error: 20 $1
