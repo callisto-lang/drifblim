@@ -43,7 +43,7 @@
 	[ LIT &mute 01 ] ?{ &skip POP JMP2r }
 	( join ) [ LIT &last-b 20 ] OVR ,&last-b STR
 	( skip ) DUP2 #2020 EQU2 ?&end
-	POP #00 [ LIT2 &ptr =input ] STA2k INC2 ,&ptr STR2
+	POP #00 [ LIT2 &ptr =input-buf ] STA2k INC2 ,&ptr STR2
 	&end ( chr last -- )
 		POP2 JMP2r
 
@@ -56,7 +56,7 @@
 
 @<assemble> ( -- )
 	( ;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2 )
-	( explode ) ;input <sexp>
+	( explode ) ;input-buf <sexp>
 	( scan pass ) #01 handle-pass ?&crash
 	( write pass ) #00 handle-pass ?&crash
 	( complete. ) !<write-rom>
@@ -67,7 +67,7 @@
 	#0100 <set-head>
 	#00 ;lambda/count STA
 	;dict/reset <set-scope>
-	;input
+	;input-buf
 	&w ( -- )
 		DUP2 .token STZ2
 		DUP2 <parse-token>
@@ -177,11 +177,11 @@
 @<set-error> ( name* -- )
 	;err <pstr>
 	<pstr>
-	#2018 DEO
+	#2019 DEO
 	.token LDZ2 <pstr>/
 	;dict/in <pstr>/
 	;scope <pstr>/
-	#0a18 DEO
+	#0a19 DEO
 	[ LIT2 01 -halt ] STZ
 	JMP2r
 
@@ -253,7 +253,7 @@
 @lambda
 	&push ( -- name* )
 		[ LIT &count $1 ] INCk ,&count STR
-		DUP [ LIT2 &ptr =mem/lambda ] INC2k ,&ptr STR2
+		DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
 		STA
 		( >> )
 	&name ( id -- str* )
@@ -306,15 +306,14 @@
 		( modes ) #0003 ADD2
 	&w ( -- )
 		LDAk ?{ POP2 STHr JMP2r }
-		LDAk get-mode-value STH ORAr
-		INC2 !&w
+		LDAk get-mode-value STH
+		ORAr INC2 !&w
 
 @get-mode-value ( c -- byte )
 	DUP [ LIT "2 ] NEQ ?{ POP #20 JMP2r }
 	DUP [ LIT "k ] NEQ ?{ POP #80 JMP2r }
 	DUP [ LIT "r ] NEQ ?{ POP #40 JMP2r }
-	POP #00
-JMP2r
+	POP #00 JMP2r
 
 (
 @|stdlib )
@@ -368,7 +367,6 @@ JMP2r
 	INC2 & LDAk ?<pstr>
 	POP2 JMP2r
 
-
 (
 @|assets )
 
@@ -410,10 +408,11 @@ JMP2r
 	"! =lib/litjmi "# =lib/lithex
 	"" =lib/rawstr ] &end
 
-@input $2000
+@lambda-buf $100
+
+@input-buf $2000
 
 @mem ( buffers )
-	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
 
 
