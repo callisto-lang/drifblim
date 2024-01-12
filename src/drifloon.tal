@@ -195,12 +195,6 @@
 	JMP2r
 
 (
-@|output )
-
-@<print-summary> ( -- )
-	JMP2r
-
-(
 @|labels )
 
 @get-sublabel ( name* -- sublabel* )
@@ -351,13 +345,6 @@ JMP2r
 		POP #ff &>end
 	JMP2r
 
-@<sclr> ( str* -- )
-	#00 ROT ROT
-	&w ( -- )
-		STAk INC2 LDAk ?&w
-	STA
-	JMP2r
-
 @<sexp> ( str* -- )
 	#00 ROT ROT
 	&w ( -- )
@@ -381,22 +368,6 @@ JMP2r
 	INC2 & LDAk ?<pstr>
 	POP2 JMP2r
 
-@<pdec> ( short* -- )
-	#2710 [ LIT2r 00fb ]
-	&w ( -- )
-		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
-			DUP [ LIT "0 ] ADD #18 DEO
-			INCr }
-		POP2 #000a DIV2 SWPr INCr STHkr ?&w
-	POP2r POP2 POP2 JMP2r
-
-@<phex> ( short* -- )
-	SWP <phex>/b
-	&b ( -- )
-		DUP #04 SFT <phex>/c
-	&c ( -- )
-		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
-		JMP2r
 
 (
 @|assets )
@@ -409,11 +380,9 @@ JMP2r
 	&bytes 20 "bytes( $1
 	&labels 20 "labels). 0a $1
 	&sym-ext ".sym $1
-	&live "Listening.. 0a $1
 
 @err
 	"!! 20 "Error: 20 $1
-	&file "File $1
 	&duplicate "Duplicate $1
 	&number "Number $1
 	&length "Length $1
@@ -422,8 +391,6 @@ JMP2r
 	&symbol "Symbol $1
 	&token "Token $1
 	&sublabel "Sublabel $1
-	&opcode "Opcode $1
-	&nested "Nested $1
 	&zeropage "Zero-page $1
 
 @opcodes [
@@ -446,7 +413,6 @@ JMP2r
 @input $2000
 
 @mem ( buffers )
-	&include $30
 	&lambda $100
 	&symbols ( addr*, refs, name[], 00 )
 
