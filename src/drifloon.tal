@@ -55,7 +55,7 @@
 @|assembly )
 
 @<assemble> ( -- )
-	;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2
+	( ;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2 )
 	( explode ) ;input <sexp>
 	( scan pass ) #01 handle-pass ?&crash
 	( write pass ) #00 handle-pass ?&crash
@@ -122,7 +122,7 @@
 	&litjsi ( t* -- )
 		#60 !<write-call>
 	&lithex ( t* -- )
-		INC2 DUP zlen #04 EQU #50 SFT #80 ORA <write>
+		INC2 DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
 		!<write-hex>
 	&rawstr ( t* -- )
 		INC2 !<write-str>/
@@ -141,7 +141,7 @@
 	find-opcode !<write>
 
 @<write-hex> ( str* -- )
-	DUP zlen DUP #02 EQU ?&byte
+	DUP2 slen NIP DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 ;err/number !<set-error>
 	&byte ( str* len -- )
@@ -199,7 +199,7 @@
 @|labels )
 
 @get-sublabel ( name* -- sublabel* )
-	DUP zlen .sublabel zlen ADD #30 LTH ?{ ;err/sublabel !<set-error> }
+	DUP2 slen NIP ;sublabel slen NIP ADD #30 LTH ?{ ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -245,6 +245,10 @@
 	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/push }
 	.scan LDZ ?&scan
 	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	DUP2 <pstr>
+	#0a18 DEO
+	DUP2 find-symbol <phex>
+	#0a18 DEO
 	find-symbol INC2k #0000 EQU2 ?{
 		INC2k INC2 LDAk INC ROT ROT STA
 		LDA2 JMP2r }
