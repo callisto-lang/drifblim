@@ -95,7 +95,7 @@
 		#0003 ADD2 GTH2k ?&l
 	POP2 POP2
 	( | non-runic )
-	is-hex ?<write-hex>
+	is-hex ?<write-rawhex>
 	is-opcode ?<write-opcode>
 	!lib/litjsi
 
@@ -112,8 +112,7 @@
 	&litjci INC2 #20 !<write-call>
 	&litjmi INC2 #40 !<write-call>
 	&litjsi #60 !<write-call>
-	&lithex INC2 DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
-	!<write-hex>
+	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
 	&lambda POP2 !lambda/pop
 
@@ -128,7 +127,11 @@
 @<write-opcode> ( str* -: )
 	find-opcode !<write>
 
-@<write-hex> ( str* -- )
+@<write-lithex> ( str* -- )
+	DUP2 slen NIP #04 EQU #50 SFT #80 ORA <write>
+	( >> )
+
+@<write-rawhex> ( str* -- )
 	DUP2 slen NIP DUP #02 EQU ?&byte
 	#04 EQU ?&short
 	POP2 ;err/number !<set-error>
