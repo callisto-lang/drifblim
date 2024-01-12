@@ -309,17 +309,18 @@
 	POP2 POP2 #00 JMP2r
 	&on-found ( name* bounds* -- byte )
 		( LITk ) NIP DUP #00 EQU #70 SFT ORA STH
-		( modes ) #0003 ADD2 STHr
-		( flag ) [ LITr 00 ]
+		( modes ) #0003 ADD2
 	&w ( -- )
-		LDAk #20 OVR [ LIT "2 ] EQU ?&>end
-		DUP ADD OVR [ LIT "r ] EQU ?&>end
-		DUP ADD OVR [ LIT "k ] EQU ?&>end
-		DUP ADD OVR #00 EQU ?&>end
-			&>end
-		NIP STH
-		ORAr INC2 LDAk ?&w
-	POP2 STHr ADD JMP2r
+		LDAk ?{ POP2 STHr JMP2r }
+		LDAk get-mode-value STH ORAr
+		INC2 !&w
+
+@get-mode-value ( c -- byte )
+	DUP [ LIT "2 ] NEQ ?{ POP #20 JMP2r }
+	DUP [ LIT "k ] NEQ ?{ POP #80 JMP2r }
+	DUP [ LIT "r ] NEQ ?{ POP #40 JMP2r }
+	POP #00
+JMP2r
 
 (
 @|stdlib )
@@ -376,7 +377,7 @@
 	POP2 POP2r JMP2r
 
 @<pstr> ( str* -: )
-	LDAk #18 DEO
+	LDAk #19 DEO
 	INC2 & LDAk ?<pstr>
 	POP2 JMP2r
 
@@ -394,7 +395,7 @@
 	&b ( -- )
 		DUP #04 SFT <phex>/c
 	&c ( -- )
-		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #19 DEO
 		JMP2r
 
 (
