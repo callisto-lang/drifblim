@@ -53,12 +53,14 @@
 @|assembly )
 
 @<assemble> ( -- )
-	( ;<read>/ptr LDA2 INC2 ;<create-symbol>/ptr STA2 )
+	( set buf start ) ;<read>/ptr LDA2 INC2 DUP2 ;<create-symbol>/ptr STA2
+	;find-symbol/origin STA2
 	( explode ) ;input-buf <sexp>
 	( scan pass ) #01 handle-pass ?&crash
 	( write pass ) #00 handle-pass ?&crash
 	( complete. ) ;rom .length LDZ2 INC2 ADD2 ;rom/output
 	( | write )
+
 	&l ( -- )
 		LDAk #18 DEO
 		INC2 NEQ2k ?&l
@@ -194,7 +196,7 @@
 	is-hex ?&invalid
 	is-opcode ?&invalid
 	DUP2 find-symbol INC2 ORA ?&not-unique
-	( addr* ) .head LDZ2 [ LIT2 &ptr =symbols-buf ] STH2k INC2r INC2r STA2
+	( addr* ) .head LDZ2 [ LIT2 &ptr $2 ] STH2k INC2r INC2r STA2
 	( refs ) #00 STH2kr INC2r STA
 	( name[] ) DUP2 STH2kr <scpy>
 	slen STH2r ADD2 INC2 ,&ptr STR2
@@ -207,7 +209,7 @@
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;<create-symbol>/ptr LDA2 ;symbols-buf
+	;<create-symbol>/ptr LDA2 [ LIT2 &origin $2 ]
 	&l ( -- )
 		EQU2k ?&end
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
@@ -360,7 +362,6 @@
 	&reference "Reference $1
 	&distance "Distance $1
 	&symbol "Symbol $1
-	&sublabel "Sublabel $1
 	&zeropage "Zero-page $1
 
 @opcodes [
@@ -383,9 +384,6 @@
 @lambda-buf $100
 
 @input-buf $2000
-
-@symbols-buf ( addr*, refs, name[], 00 )
-
 
 |8000
 
