@@ -1,0 +1,32 @@
+( echo "hello" | uxncli hx.rom )
+
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
+|0100
+
+@on-reset ( -> )
+	;on-console .Console/vector DEO2
+	BRK
+
+@on-console ( -> )
+	.Console/type DEI #01 EQU ?{ #800f DEO
+		BRK }
+	.Console/read DEI <phex>/b
+	[ LIT &count $1 ] INCk ,&count STR
+	INC DUP #0f AND ?{
+		POP #0a18 DEO
+		BRK }
+	#01 AND ?{ #2018 DEO }
+	BRK
+
+(
+@|stdlib )
+
+@<phex> ( short* -- )
+	SWP <phex>/b
+	&b ( -- )
+		DUP #04 SFT <phex>/c
+	&c ( -- )
+		#0f AND DUP #09 GTH #27 MUL ADD LIT "0 ADD #18 DEO
+		JMP2r
+

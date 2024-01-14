@@ -22,20 +22,26 @@ run-drifloon: bin/drifloon.rom
 	@ ${EMU} bin/res.rom
 clean:
 	@ rm -fr bin
-lint:
+lint: all
 	@ ${LIN} src/drifloon.tal
 	@ ${LIN} src/drifblim.tal
-bal:
+	@ ${LIN} src/hx.tal
+bal: all
 	@ ${BAL} src/drifloon.tal
 	@ ${BAL} src/drifblim.tal
-install: all
+archive: all bin/hx.rom
+	@ cp src/drifloon.tal ../oscean/etc/drifloon.tal.txt
+	@ cp src/drifblim.tal ../oscean/etc/drifblim.tal.txt
+	@ cat bin/drifloon.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifloon.rom.txt
+	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifblim.rom.txt
+install: all bin/hx.rom
 	@ cp bin/drifloon.rom ${DIR}
 	@ cp bin/drifblim.rom ${DIR}
 uninstall:
 	@ rm -f ${DIR}/drifloon.rom
 	@ rm -f ${DIR}/drifblim.rom
 
-.PHONY: all clean lint run install uninstall run-drifloon run-drifblim
+.PHONY: all clean lint run archive install uninstall run-drifloon run-drifblim
 
 bin/drifloon.rom: src/drifloon.tal
 	@ mkdir -p bin
@@ -44,3 +50,8 @@ bin/drifloon.rom: src/drifloon.tal
 bin/drifblim.rom: src/drifblim.tal
 	@ mkdir -p bin
 	@ ${ASM} src/drifblim.tal bin/drifblim.rom
+
+bin/hx.rom: src/hx.tal
+	@ mkdir -p bin
+	@ ${ASM} src/hx.tal bin/hx.rom
+
