@@ -9,7 +9,7 @@
 	BRK
 
 @on-console ( -> )
-	.Console/type DEI #01 EQU ?{ #800f DEO
+	[ LIT2 01 -Console/type ] DEI EQU ?{ #800f DEO
 		BRK }
 	.Console/read DEI <phex>/b
 	[ LIT &count $1 ] INCk ,&count STR
