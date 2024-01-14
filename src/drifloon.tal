@@ -89,7 +89,7 @@
 	( >> )
 
 @exit ( -- )
-	[ 80 -halt ] LDZ ORA #0f DEO
+	[ LIT2 80 -halt ] LDZ ORA #0f DEO
 	JMP2r
 
 @handle-pass ( scan -- err )
