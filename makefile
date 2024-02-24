@@ -9,15 +9,15 @@ all: bin/drifloon.rom bin/drifblim.rom
 run: run-drifloon run-drifblim
 	
 run-drifblim: bin/drifblim.rom
-	@ printf "@@ Assemble drifblim-bootstrap from itself\n\n"
+	@ printf "++ Assemble drifblim-bootstrap from itself\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
-	@ printf "\n@@ Test drifblim-bootstrap\n\n"
+	@ printf "\n++ Test drifblim-bootstrap\n"
 	@ ${EMU} bin/drifblim.rom examples/coverage.tal bin/res.rom
 	@ ${EMU} bin/res.rom
 run-drifloon: bin/drifloon.rom
-	@ printf "@@ Assemble drifloon-bootstrap from itself\n\n"
+	@ printf "++ Assemble drifloon-bootstrap from itself\n"
 	@ cat src/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
-	@ printf "\n@@ Test drifloon-bootstrap\n\n"
+	@ printf "\n++ Test drifloon-bootstrap\n"
 	@ cat examples/coverage.tal | ${EMU} bin/drifloon-bootstrap.rom > bin/res.rom
 	@ ${EMU} bin/res.rom
 clean:
