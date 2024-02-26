@@ -254,7 +254,7 @@
 @|labels )
 
 @get-sublabel ( name* -- sublabel* )
-	DUP zlen .sublabel zlen ADD #30 LTH ?{ ;err/sublabel !<set-error> }
+	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -403,9 +403,6 @@
 @zcap ( ztr/buf -: ztr/cap )
 	INC & LDZk ?zcap
 	JMP2r
-
-@zlen ( ztr/buf -: len )
-	DUP zcap/ SWP SUB JMP2r
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
