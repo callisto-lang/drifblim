@@ -267,9 +267,10 @@
 		INCr INC2 LDAk ?&w
 	&end POP2 #00 STHr STZ
 	( | prepare sublabel pointer )
-	;scope ;sublabel STHk <scpy>
-	[ LIT2 "/ 00 ] STHr zcap/ STHk STZ2
-	#00 STHr INC ,get-sublabel/ptr STR2
+	;scope ;sublabel <scpy>
+	[ LIT2 "/ 00 ] ;sublabel scap/
+	( ptr ) INC2k ,get-sublabel/ptr STR2
+	( cap ) STA2
 	( >> )
 
 @<create-symbol> ( name* -- )
@@ -399,10 +400,6 @@
 	&eval ( key ztr -- proc )
 		NIP LDZk #00 ROT STZ
 		JMP2r
-
-@zcap ( ztr/buf -: ztr/cap )
-	INC & LDZk ?zcap
-	JMP2r
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
