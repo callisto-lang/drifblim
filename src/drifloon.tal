@@ -3,9 +3,9 @@
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |000
 
-	@sublabel $80
 	@head $2
-	@scope $2
+	@scope $30
+	@sublabel $30
 	@length $2
 	@token $2
 	@halt $1
@@ -208,15 +208,24 @@
 (
 @|labels )
 
-@get-sublabel ( name* -: sublabel* )
+@get-sublabel ( name* -- sublabel* )
+	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
-@<set-scope> ( t* -: )
-	DUP2 .scope STZ2
-	DUP2 ;sublabel STH2k <scpy>
-	[ LIT2 "/ 00 ] STH2r scap/ STH2k STA2
-	STH2r INC ,get-sublabel/ptr STR2
+@<set-scope> ( t* -- )
+	( | copy scope until sublabel )
+	DUP2 [ LITr -scope ]
+	&w ( -- )
+		LDAk [ LIT "/ ] EQU ?&end
+		LDAk STHkr STZ
+		INCr INC2 LDAk ?&w
+	&end POP2 #00 STHr STZ
+	( | prepare sublabel pointer )
+	;scope ;sublabel <scpy>
+	[ LIT2 "/ 00 ] ;sublabel scap/
+	( ptr ) INC2k ,get-sublabel/ptr STR2
+	( cap ) STA2
 	( >> )
 
 @<create-symbol> ( name* -: )
@@ -253,11 +262,13 @@
 @get-ref ( token* -- addr* )
 	LDAk [ LIT "{ ] NEQ ?{ POP2 push-lambda }
 	.scan LDZ ?&scan
-	&eager LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-	find-symbol INC2k #0000 EQU2 ?{
-		INC2k INC2 LDAk INC ROT ROT STA
-		LDA2 &scan JMP2r }
-	;err/reference !<set-error>
+	&eager ( -- )
+		LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+		LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
+		find-symbol INC2k #0000 EQU2 ?{
+			INC2k INC2 LDAk INC ROT ROT STA
+			LDA2 &scan JMP2r }
+		;err/reference !<set-error>
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
@@ -394,6 +405,7 @@
 	&number "Number $1
 	&length "Length $1
 	&reference "Reference $1
+	&sublabel "Sublabel $1
 	&distance "Distance $1
 	&symbol "Symbol $1
 	&zeropage "Zero-page $1
@@ -421,3 +433,4 @@
 @input-buf $2000
 
 |8000 @rom $100 &output
+
