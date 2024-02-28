@@ -3,9 +3,9 @@
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |000
 
-	@head $2
 	@scope $30
 	@sublabel $30
+	@head $2
 	@length $2
 	@token $2
 	@halt $1
@@ -94,7 +94,7 @@
 @handle-pass ( scan -- err )
 	.scan STZ
 	#0100 <set-head>
-	#00 ;push-lambda/count STA
+	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
 	;input-buf
 	&w ( -- )
@@ -136,7 +136,7 @@
 	&litjsi #60 !<write-call>
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
-	&lambda POP2 !pop-lambda
+	&lambda POP2 !Lambda/pop
 	&ignore JMP2r
 
 (
@@ -260,7 +260,7 @@
 	!get-ref/eager
 
 @get-ref ( token* -- addr* )
-	LDAk [ LIT "{ ] NEQ ?{ POP2 push-lambda }
+	LDAk [ LIT "{ ] NEQ ?{ POP2 Lambda/push }
 	.scan LDZ ?&scan
 	&eager ( -- )
 		LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
@@ -307,21 +307,20 @@
 (
 @|lambda )
 
-@push-lambda ( -- name* )
-	[ LIT &count $1 ] INCk ,&count STR
-	DUP [ LIT2 &ptr =lambda-buf ] INC2k ,&ptr STR2
-	STA
-	( >> )
-
-@name-lambda ( id -- str* )
-	#21 ADD ,&id STR
-	;&sym JMP2r
-	&sym cebb &id $2
-
-@pop-lambda ( -- )
-	,push-lambda/ptr LDR2 #0001 SUB2 LDAk name-lambda <create-symbol>
-	,push-lambda/ptr STR2
-	JMP2r
+@Lambda
+	&push ( -- name* )
+		[ LIT &count $1 ] INCk ,&count STR
+		DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+		STA
+		( >> )
+	&name ( id -- str* )
+		#21 ADD ,&id STR
+		;&sym JMP2r
+	&pop ( -- )
+		,&ptr LDR2 #0001 SUB2 LDAk Lambda/name <create-symbol>
+		,&ptr STR2
+		JMP2r
+		&sym cebb &id $2
 
 (
 @|stdlib )
@@ -428,7 +427,7 @@
 	"" =lib/rawstr "~ =lib/ignore ]
 	&end
 
-@lambda-buf $100
+@Lambda/buf $100
 
 @input-buf $2000
 
