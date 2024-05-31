@@ -55,7 +55,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "21 20 "Mar 20 "2024 $1
+	( date ) "30 20 "May 20 "2024 $1
 	( exts ) 00
 
 (
@@ -152,6 +152,7 @@
 	find-opcode !<write>
 
 @<write-lithex> ( str* -: )
+	is-hex ?{ ;err/number <set-error> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
 	!<write-hex>
@@ -377,8 +378,8 @@
 		DUP ADD OVR [ LIT "k ] EQU ?&end
 		DUP ADD OVR #00 EQU ?&end
 		;err/opcode <set-error>
-		&end STH POP
-		ORAr INC2 LDAk ?&>w
+		&end STH
+		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
 (
