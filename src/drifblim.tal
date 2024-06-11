@@ -6,7 +6,7 @@
 
 	@src $30
 	@dst $30
-	@token $1 &buf $30
+	@token $30
 	@scope $30
 	@sublabel $30
 	@scan $1
@@ -328,13 +328,13 @@
 	STA
 	( >> )
 	&name ( id -- str* )
-	#21 ADD ,&id STR
+	DUP #04 SFT hexc SWP hexc SWP ,&id STR2
 	;&sym JMP2r
 	&pop ( -- )
 	,&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
 	,&ptr STR2
 	JMP2r
-	&sym cebb &id $2
+	&sym cebb &id 0000 $1
 
 (
 @|helpers )
@@ -410,6 +410,11 @@
 	[ LIT "0 ] SUB DUP #0a LTH ?&end
 	#27 SUB DUP #10 LTH ?&end
 	POP #ff &end JMP2r
+
+@hexc ( hex -- char )
+	#0f AND #0a LTHk ?{
+		SUB [ LIT "a ] ADD JMP2r }
+	POP [ LIT "0 ] ADD JMP2r
 
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
