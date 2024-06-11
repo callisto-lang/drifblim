@@ -36,7 +36,7 @@
 
 @await-dst ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ <assemble>
+	( ) DUP #20 GTH ?{ POP <assemble>
 		BRK }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
 	STZ2
@@ -57,13 +57,11 @@
 	<write-rom>
 	<write-sym>
 	#800f DEO
-	#010e DEO
 	!<print-summary>
 	&fail ( -- )
 	;dst .File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
 	#010f DEO
-	#010e DEO
 	JMP2r
 
 @handle-pass ( scan -: err )
