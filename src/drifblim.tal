@@ -19,23 +19,25 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	;await-src
+	( >> )
+
+@<await> ( addr* -> )
+	.Console/vector DEO2
 	.Console/type DEI ?{ ;dict/usage <pstr>
 		#010f DEO }
-	;await-src .Console/vector DEO2
 	BRK
 
 @await-src ( -> )
-	.Console/read DEI DUP #20 GTH ?{
-		;on-init-dst .Console/vector DEO2
-		POP BRK }
+	.Console/read DEI
+	( ) DUP #20 GTH ?{ POP ;await-dst !<await> }
 	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@on-init-dst ( -> )
-	.Console/read DEI DUP #20 GTH ?{
-		<assemble>
-		[ LIT2 80 -halt ] LDZ ORA #0f DEO
+@await-dst ( -> )
+	.Console/read DEI
+	( ) DUP #20 GTH ?{ <assemble>
 		BRK }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
 	STZ2
@@ -55,10 +57,12 @@
 	( make ) #00 handle-pass ?&fail
 	<write-rom>
 	<write-sym>
+	#800f DEO
 	!<print-summary>
 	&fail ( -- )
 	;dst .File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
+	#010f DEO
 	JMP2r
 
 @handle-pass ( scan -: err )
