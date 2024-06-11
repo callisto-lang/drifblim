@@ -57,11 +57,13 @@
 	<write-rom>
 	<write-sym>
 	#800f DEO
+	#010e DEO
 	!<print-summary>
 	&fail ( -- )
 	;dst .File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
 	#010f DEO
+	#010e DEO
 	JMP2r
 
 @handle-pass ( scan -: err )
@@ -80,18 +82,23 @@
 		INC2 [ LIT &c $1 ] handle-char !&>s
 	&end ( len* -- )
 	ORA ?{
-		;mem/include ;token/buf <scpy>
+		;mem/include ;token <scpy>
 		;err/file <set-error> }
 	JMP2r
 
 @handle-char ( c -- )
-	.token zkey ?{ JMP2r }
-	;token/buf DUP2 parse-token !<sclr>
+	DUP #20 GTH ?{
+		POP ;token
+		( ) LDAk ?{ POP2 JMP2r }
+		DUP2 <parse-token>
+		!<sclr> }
+	#00 ;token scap/ STA2
+	JMP2r
 
 (
 @|tokenizer )
 
-@parse-token ( t* -- )
+@<parse-token> ( t* -- )
 	LDAk ,&rune STR
 	;runes/end ;runes
 	&>l ( -- )
@@ -182,7 +189,7 @@
 	;err <pstr>
 	<pstr>
 	#2018 DEO
-	;token/buf <pstr>
+	;token <pstr>
 	;dict/in <pstr>/
 	;scope <pstr>/
 	#0a18 DEO
@@ -380,19 +387,6 @@
 @feof ( addr* -: f )
 	.File/read DEO2
 	[ LIT2 00 -File/success-lb ] DEI EQU JMP2r
-
-@zkey ( key ztr -- proc )
-	OVR #21 LTH ?&eval
-	LDZk #2f EQU ?&overflow
-	( write char ) STH
-	#00 STHkr LDZk ADD INC STZ2
-	( incr len ) STHr LDZk INC SWP STZ
-	#00 JMP2r
-	&overflow ( key ztr -- proc )
-	;err/token <set-error>
-	&eval ( key ztr -- proc )
-	NIP LDZk #00 ROT STZ
-	JMP2r
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
