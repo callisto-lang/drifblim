@@ -6,7 +6,7 @@ EMU=uxncli
 
 all: bin/drifloon.rom bin/drifblim.rom
 
-run: run-drifblim run-drifloon
+run: run-drifblim 
 	
 run-drifblim: bin/drifblim.rom
 	@ printf "++ Assemble drifblim-bootstrap from itself\n"
