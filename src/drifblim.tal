@@ -46,7 +46,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Jun 20 "2024 $2
+	( date ) "12 20 "Jun 20 "2024 $2
 
 (
 @|generics )
@@ -81,7 +81,7 @@
 	&end ( len* -- )
 	ORA ?{
 		;mem/include ;token <scpy>
-		;err/file <set-error> }
+		;err/file !<set-error> }
 	JMP2r
 
 @handle-char ( c -- )
@@ -132,9 +132,9 @@
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
 	&lambda POP2 !Lambda/pop
-	&inc INC2k ;mem/include STH2k <scpy>
+	&inc INC2k ;mem/include <scpy>
 	<sclr>
-	STH2r !handle-file
+	;mem/include !handle-file
 	&ignore POP2 JMP2r
 
 (
