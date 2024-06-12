@@ -328,7 +328,7 @@
 	STA
 	( >> )
 	&name ( id -- str* )
-	DUP #04 SFT hexc SWP hexc SWP ,&id STR2
+	DUP #04 SFT hexc SWP hexc ,&id STR2
 	;&sym JMP2r
 	&pop ( -- )
 	,&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
