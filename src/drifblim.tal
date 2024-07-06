@@ -234,7 +234,7 @@
 		INC2k INC2 LDA ?&skip
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&skip
 		LDAk [ LIT 28 ] EQU ?&skip
-		DUP2 ;dict/reset scmp ?&skip
+		DUP2 ;dict/reset wcmp ?&skip
 		;dict/unused <pstr>/
 		DUP2 <pstr>/
 		#0a18 DEO
@@ -295,7 +295,7 @@
 	;<create-symbol>/ptr LDA2 ;mem/symbols
 	&>l ( -- )
 		EQU2k ?&end
-		#0003 ADD2 DUP2 [ LIT2 &t $2 ] scmp ?&found
+		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?&found
 		scap/ INC2 GTH2k ?&>l
 	&end POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
@@ -401,13 +401,14 @@
 @slen ( str* -: len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
-@scmp ( a* b* -- f )
+@wcmp ( a* b* -: f )
 	STH2
-	&l ( -- )
-	LDAk ?{
-		&d LDA LDAr STHr EQU JMP2r }
-	LDAk LDAkr STHr NEQ ?&d
-	INC2 INC2r !&l
+	&>l ( a* `b* -- f )
+		LDAk #21 LTH ?&end
+		LDAk LDAkr STHr NEQ ?&end
+		INC2 INC2r !&>l
+	&end ( a* `b* -- f )
+	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
 @scmp3 ( a* b* -- f )
 	STH2
