@@ -46,19 +46,19 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Jun 20 "2024 $2
+	( date ) "6 20 "Jul 20 "2024 $2
 
 (
 @|generics )
 
 @<assemble> ( -- )
-	( scan ) #01 handle-pass ?&fail
-	( make ) #00 handle-pass ?&fail
-	<write-rom>
-	<write-sym>
-	#800f DEO
-	!<print-summary>
-	&fail ( -- )
+	( scan ) #01 handle-pass ?{
+		( make ) #00 handle-pass ?{
+			<write-rom>
+			<write-sym>
+			#800f DEO
+			!<print-summary> }
+		}
 	;dst .File/name DEO2
 	[ LIT2 01 -File/delete ] DEO
 	#010f DEO
@@ -111,9 +111,11 @@
 	!lib/litjsi
 
 @walk-comment ( t* -- )
-	;&c feof ?<sclr>
-	[ LIT2 &c $1 28 ] NEQk ?{ ;err/nested <set-error> }
-	INC NEQ ?walk-comment
+	[ LIT ") ] <stream-util>
+	!<sclr>
+
+@walk-macro ( t* -- )
+	[ LIT "} ] <stream-util>
 	!<sclr>
 
 @lib &padabs INC2 get-any !<set-head>
@@ -132,7 +134,7 @@
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
 	&lambda POP2 !Lambda/pop
-	&inc INC2k ;mem/include <scpy>
+	&inctal INC2k ;mem/include <scpy>
 	<sclr>
 	;mem/include !handle-file
 	&ignore POP2 JMP2r
@@ -298,6 +300,12 @@
 	&end POP2 POP2 #ffff JMP2r
 	&found ( symbols* -- <addr>* )
 	#0003 SUB2 NIP2 JMP2r
+
+@<stream-util> ( c -- )
+	&>s ( -- )
+		;&c feof ?<sclr>
+		[ LIT &c $1 ] EQUk ?{ POP !&>s }
+	POP2 JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
@@ -495,7 +503,7 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inc ]
+	"~ =lib/inctal "% =walk-macro ]
 	&end
 (
 @|mem )
