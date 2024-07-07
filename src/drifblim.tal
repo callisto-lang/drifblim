@@ -312,7 +312,10 @@
 	[ LIT "{ ] <stream-util>
 	&>s ( -- )
 		;&c feof ?<sclr>
-		[ LIT2 &c $1 "} ] EQUk ?{ POP Heap/<push-byte>
+		[ LIT2 &c $1 "} ] EQUk ?{
+			( bracket ) POP
+			( combine ws ) #20 [ GTHk JMP SWP POP ]
+			( push ) Heap/<push-byte>
 			!&>s }
 	POP2
 	( null ) #00 Heap/<push-byte>
