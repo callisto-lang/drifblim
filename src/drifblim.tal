@@ -80,7 +80,7 @@
 		INC2 [ LIT &c $1 ] handle-char !&>s
 	&end ( len* -- )
 	ORA ?{
-		;mem/include ;token <scpy>
+		;Include/mem ;token <scpy>
 		;err/file !<set-error> }
 	JMP2r
 
@@ -130,9 +130,9 @@
 	&lithex INC2 !<write-lithex>
 	&rawstr INC2 !<write-str>/
 	&lambda POP2 !Lambda/pop
-	&inctal INC2k ;mem/include <scpy>
+	&inctal INC2k ;Include/mem <scpy>
 	<sclr>
-	;mem/include !handle-file
+	;Include/mem !handle-file
 	&macros INC2 !<create-macro>
 	&ignore POP2 JMP2r
 
@@ -356,7 +356,7 @@
 @Lambda
 	&push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
-	DUP [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
 	( >> )
 	&name ( id -- str* )
@@ -369,25 +369,23 @@
 	&sym cebb &id 0000 $1
 
 @Heap ( symbols & macros )
-	&ptr =&mem
+	&<push-short> ( short* -- )
+	SWP /<push-byte>
+	( >> )
 	&<push-byte> ( byte -- )
-	,&ptr LDR2 INC2k ,&ptr STR2
+	[ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
 	STA
 	JMP2r
-	&<push-short> ( short* -- )
-	,&ptr LDR2 INC2k INC2 ,&ptr STR2
-	STA2
-	JMP2r
 	&<push-word> ( word* -- )
-	DUP2 ,&ptr LDR2 <scpy>
-	slen ,&ptr LDR2 ADD2 ,&ptr STR2
+	DUP2 ,&&ptr LDR2 <scpy>
+	slen ,&&ptr LDR2 ADD2 ,&&ptr STR2
 	JMP2r
 	&<push-char> ( char -- )
-	,&ptr LDR2 INC2k ,&ptr STR2
+	,&&ptr LDR2 INC2k ,&&ptr STR2
 	STA
 	JMP2r
 	&get-bounds ( -- to* from* )
-	,&ptr LDR2 ;&mem JMP2r
+	,&&ptr LDR2 ;&mem JMP2r
 
 (
 @|helpers )
@@ -556,10 +554,9 @@
 @|mem )
 
 
-@Lambda/buf $100
+@Lambda/mem $100
 
-@mem ( buffers )
-	&include $30
+@Include/mem $30
 
 @Heap/mem ( addr*, refs, body[] )
 
