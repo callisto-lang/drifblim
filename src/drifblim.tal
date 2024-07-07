@@ -279,10 +279,7 @@
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) .head LDZ2 Heap/<push-short>
 	( refs ) #00 Heap/<push-byte>
-	;Heap/ptr LDA2 STH2
-	( name[] ) DUP2 STH2kr <scpy>
-	slen STH2r ADD2 INC2 ;Heap/ptr STA2
-	JMP2r
+	!Heap/<push-word>
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
@@ -382,7 +379,7 @@
 	JMP2r
 	&<push-word> ( word* -- )
 	DUP2 ,&ptr LDR2 <scpy>
-	slen ,&ptr LDR2 ADD2 ,&ptr STR2
+	slen ,&ptr LDR2 ADD2 INC2 ,&ptr STR2
 	JMP2r
 	&<push-char> ( char -- )
 	!&<push-byte>
