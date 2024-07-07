@@ -226,7 +226,7 @@
 
 @<print-summary> ( -- )
 	( | Print summary )
-	;<create-symbol>/ptr LDA2 ;mem/symbols
+	;Heap/ptr LDA2 ;Heap/mem
 	&>l ( -- )
 		INC2k INC2 LDA ?&skip
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&skip
@@ -277,10 +277,10 @@
 	is-runic ?&invalid
 	DUP2 find-symbol INC2 ORA ?&not-unique
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) .head LDZ2 [ LIT2 &ptr =mem/symbols ] STH2k INC2r INC2r STA2
+	( addr* ) .head LDZ2 ;Heap/ptr LDA2 STH2k INC2r INC2r STA2
 	( refs ) #00 STH2kr INC2r STA
 	( name[] ) DUP2 STH2kr <scpy>
-	slen STH2r ADD2 INC2 ,&ptr STR2
+	slen STH2r ADD2 INC2 ;Heap/ptr STA2
 	JMP2r
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
@@ -289,7 +289,7 @@
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;<create-symbol>/ptr LDA2 ;mem/symbols
+	;Heap/ptr LDA2 ;Heap/mem
 	&>l ( -- )
 		EQU2k ?&end
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?&found
@@ -306,7 +306,7 @@
 	is-runic ?&invalid
 	DUP2 find-symbol INC2 ORA ?&not-unique
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) #ffff ;<create-symbol>/ptr LDA2 STH2k INC2r INC2r STA2
+	( addr* ) #ffff ;Heap/ptr LDA2 STH2k INC2r INC2r STA2
 	( refs ) #80 STH2kr INC2r STA
 	( name[] ) DUP2 STH2kr <scpy>
 	DUP2 slen STH2
@@ -318,7 +318,7 @@
 		[ LIT2 &c $1 "} ] EQUk ?{
 			POP STH2kr STA
 			INC2r !&>s }
-	POP2 INC2r [ LIT2r =<create-symbol>/ptr ] STA2r
+	POP2 INC2r [ LIT2r =Heap/ptr ] STA2r
 	!<sclr>
 	&invalid ( name* -- )
 	POP2 ;err/macro !<set-error>
