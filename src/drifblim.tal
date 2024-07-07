@@ -114,10 +114,6 @@
 	[ LIT ") ] <stream-util>
 	!<sclr>
 
-@walk-macro ( t* -- )
-	[ LIT "} ] <stream-util>
-	!<sclr>
-
 @lib &padabs INC2 get-any !<set-head>
 	&padrel INC2 get-any .head LDZ2 ADD2 !<set-head>
 	&toplab INC2 !<set-scope>
@@ -301,6 +297,13 @@
 	&found ( symbols* -- <addr>* )
 	#0003 SUB2 NIP2 JMP2r
 
+@<create-macro> ( name* -- )
+	.scan LDZ ?{ [ LIT "} ] <stream-util>
+		!<sclr> }
+	( | record only during zero-pass )
+	[ LIT "} ] <stream-util>
+	!<sclr>
+
 @<stream-util> ( c -- )
 	&>s ( -- )
 		;&c feof ?<sclr>
@@ -313,15 +316,15 @@
 
 @get-ref ( token* -- addr* )
 	LDAk [ LIT "{ ] NEQ ?{ POP2 Lambda/push }
-	.scan LDZ ?&scan
-	&eager ( -- )
-	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
-	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-	find-symbol INC2k #0000 EQU2 ?{
-		INC2k INC2 LDAk INC ROT ROT STA
-		LDA2 JMP2r }
-	;err/reference <set-error>
-	&scan JMP2r
+	.scan LDZ ?{
+		&eager ( -- )
+		LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
+		LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+		find-symbol INC2k #0000 EQU2 ?{
+			INC2k INC2 LDAk INC ROT ROT STA
+			LDA2 JMP2r }
+		;err/reference <set-error> }
+	JMP2r
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
@@ -504,7 +507,7 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal "% =walk-macro ]
+	"~ =lib/inctal "% =<create-macro> ]
 	&end
 (
 @|mem )
