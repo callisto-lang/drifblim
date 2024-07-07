@@ -214,7 +214,7 @@
 @<write-sym> ( -- )
 	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File/name DEO2
-	;mem/symbols
+	;Heap/mem
 	&>w ( -- )
 		( addr ) #0002 .File/length DEO2
 		DUP2 .File/write DEO2
@@ -226,7 +226,7 @@
 
 @<print-summary> ( -- )
 	( | Print summary )
-	;Heap/ptr LDA2 ;Heap/mem
+	Heap/get-bounds
 	&>l ( -- )
 		INC2k INC2 LDA ?&skip
 		#0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?&skip
@@ -279,7 +279,8 @@
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) .head LDZ2 Heap/<push-short>
 	( refs ) #00 Heap/<push-byte>
-	!Heap/<push-word>
+	( name[] ) Heap/<push-word>
+	( null ) #00 !Heap/<push-byte>
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
 	&not-unique ( name* -- )
@@ -287,7 +288,7 @@
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	;Heap/ptr LDA2 ;Heap/mem
+	Heap/get-bounds
 	&>l ( -- )
 		EQU2k ?&end
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?&found
@@ -306,18 +307,15 @@
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) #ffff Heap/<push-short>
 	( refs ) #80 Heap/<push-byte>
-	;Heap/ptr LDA2 STH2
-	( name[] ) DUP2 STH2kr <scpy>
-	DUP2 slen STH2
-	ADD2r
+	( name[] ) DUP2 Heap/<push-word>
 	( | record body )
 	[ LIT "{ ] <stream-util>
 	&>s ( -- )
 		;&c feof ?<sclr>
-		[ LIT2 &c $1 "} ] EQUk ?{
-			POP STH2kr STA
-			INC2r !&>s }
-	POP2 INC2r [ LIT2r =Heap/ptr ] STA2r
+		[ LIT2 &c $1 "} ] EQUk ?{ POP Heap/<push-char>
+			!&>s }
+	POP2
+	( null ) #00 Heap/<push-byte>
 	!<sclr>
 	&invalid ( name* -- )
 	POP2 ;err/macro !<set-error>
@@ -352,6 +350,9 @@
 	( ) .scan LDZ ?{ ;err/distance <set-error> }
 	POP2 #ff JMP2r
 
+(
+@|objects )
+
 @Lambda
 	&push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
@@ -379,10 +380,14 @@
 	JMP2r
 	&<push-word> ( word* -- )
 	DUP2 ,&ptr LDR2 <scpy>
-	slen ,&ptr LDR2 ADD2 INC2 ,&ptr STR2
+	slen ,&ptr LDR2 ADD2 ,&ptr STR2
 	JMP2r
 	&<push-char> ( char -- )
-	!&<push-byte>
+	,&ptr LDR2 INC2k ,&ptr STR2
+	STA
+	JMP2r
+	&get-bounds ( -- to* from* )
+	,&ptr LDR2 ;&mem JMP2r
 
 (
 @|helpers )
@@ -555,9 +560,9 @@
 
 @mem ( buffers )
 	&include $30
-	&symbols ( addr*, refs, name[], 00 )
+
+@Heap/mem ( addr*, refs, body[] )
 
 
-@Heap/mem
 |8000 @rom $100 &output
 
