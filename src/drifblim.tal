@@ -368,6 +368,21 @@
 	JMP2r
 	&sym cebb &id 0000 $1
 
+@Heap ( symbols & macros )
+	&ptr =&mem
+	&<push-byte> ( byte -- )
+	,&ptr LDR2 STAk INC2 ,&ptr STR2
+	POP JMP2r
+	&<push-short> ( short* -- )
+	,&ptr LDR2 STA2k INC2 INC2 ,&ptr STR2
+	POP2 JMP2r
+	&<push-word> ( word* -- )
+	DUP2 ,&ptr LDR2 <scpy>
+	slen ,&ptr LDR2 ADD2 ,&ptr STR2
+	JMP2r
+	&<push-char> ( char -- )
+	!&<push-byte>
+
 (
 @|helpers )
 
@@ -534,6 +549,7 @@
 (
 @|mem )
 
+
 @Lambda/buf $100
 
 @mem ( buffers )
@@ -541,5 +557,6 @@
 	&symbols ( addr*, refs, name[], 00 )
 
 
+@Heap/mem
 |8000 @rom $100 &output
 
