@@ -312,7 +312,7 @@
 	[ LIT "{ ] <stream-util>
 	&>s ( -- )
 		;&c feof ?<sclr>
-		[ LIT2 &c $1 "} ] EQUk ?{ POP Heap/<push-char>
+		[ LIT2 &c $1 "} ] EQUk ?{ POP Heap/<push-byte>
 			!&>s }
 	POP2
 	( null ) #00 Heap/<push-byte>
@@ -379,10 +379,6 @@
 	&<push-word> ( word* -- )
 	DUP2 ,&&ptr LDR2 <scpy>
 	slen ,&&ptr LDR2 ADD2 ,&&ptr STR2
-	JMP2r
-	&<push-char> ( char -- )
-	,&&ptr LDR2 INC2k ,&&ptr STR2
-	STA
 	JMP2r
 	&get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
