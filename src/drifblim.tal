@@ -306,7 +306,20 @@
 	is-opcode ?&invalid
 	is-runic ?&invalid
 	DUP2 find-symbol INC2 ORA ?&not-unique
-	[ LIT "} ] <stream-util>
+	( | set symbol )
+	
+	( keep refs ) [ LITr 80 ] [ LIT2r =<create-symbol>/ptr ] LDA2r INC2r INC2r
+	( create ) DUP2 <create-symbol>
+	( save refs ) STAr
+	( | record body )
+	[ LIT "{ ] <stream-util>
+	[ LIT2r =<create-symbol>/ptr ] LDA2r [ LIT2r 0001 ] SUB2r
+	&>s ( -- )
+		;&c feof ?<sclr>
+		[ LIT2 &c $1 "} ] EQUk ?{
+			POP STH2kr STA
+			INC2r !&>s }
+	POP2 INC2r [ LIT2r =<create-symbol>/ptr ] STA2r
 	!<sclr>
 	&invalid ( name* -- )
 	POP2 ;err/macro !<set-error>
