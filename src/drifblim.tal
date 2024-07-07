@@ -133,6 +133,7 @@
 	&inctal INC2k ;mem/include <scpy>
 	<sclr>
 	;mem/include !handle-file
+	&macros INC2 !<create-macro>
 	&ignore POP2 JMP2r
 
 (
@@ -301,8 +302,16 @@
 	.scan LDZ ?{ [ LIT "} ] <stream-util>
 		!<sclr> }
 	( | record only during zero-pass )
+	is-hex ?&invalid
+	is-opcode ?&invalid
+	is-runic ?&invalid
+	DUP2 find-symbol INC2 ORA ?&not-unique
 	[ LIT "} ] <stream-util>
 	!<sclr>
+	&invalid ( name* -- )
+	POP2 ;err/macro !<set-error>
+	&not-unique ( name* -- )
+	POP2 ;err/duplicate !<set-error>
 
 @<stream-util> ( c -- )
 	&>s ( -- )
@@ -484,6 +493,7 @@
 	&reference "Reference $1
 	&distance "Distance $1
 	&symbol "Symbol $1
+	&macro "Macro $1
 	&token "Token $1
 	&sublabel "Sublabel $1
 	&opcode "Opcode $1
@@ -507,7 +517,7 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal "% =<create-macro> ]
+	"~ =lib/inctal "% =lib/macros ]
 	&end
 (
 @|mem )
