@@ -46,7 +46,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Jul 20 "2024 $2
+	( date ) "8 20 "Jul 20 "2024 $2
 
 (
 @|generics )
@@ -133,7 +133,6 @@
 	&inctal INC2k ;Include/mem <scpy>
 	<sclr>
 	;Include/mem !handle-file
-	&macros INC2 !<create-macro>
 	&ignore POP2 JMP2r
 
 (
@@ -297,34 +296,6 @@
 	&found ( symbols* -- <addr>* )
 	#0003 SUB2 NIP2 JMP2r
 
-@<create-macro> ( name* -- )
-	.scan LDZ ?{ [ LIT "} ] <stream-util>
-		!<sclr> }
-	is-hex ?&invalid
-	is-opcode ?&invalid
-	is-runic ?&invalid
-	DUP2 find-symbol INC2 ORA ?&not-unique
-	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) #ffff Heap/<push-short>
-	( refs ) #80 Heap/<push-byte>
-	( name[] ) DUP2 Heap/<push-word>
-	( | record body )
-	[ LIT "{ ] <stream-util>
-	&>s ( -- )
-		;&c feof ?<sclr>
-		[ LIT2 &c $1 "} ] EQUk ?{
-			( bracket ) POP
-			( combine ws ) #20 [ GTHk JMP SWP POP ]
-			( push ) Heap/<push-byte>
-			!&>s }
-	POP2
-	( null ) #00 Heap/<push-byte>
-	!<sclr>
-	&invalid ( name* -- )
-	POP2 ;err/macro !<set-error>
-	&not-unique ( name* -- )
-	POP2 ;err/duplicate !<set-error>
-
 @<stream-util> ( c -- )
 	&>s ( -- )
 		;&c feof ?<sclr>
@@ -359,19 +330,19 @@
 @Lambda
 	&push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
-	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	DUP [ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
 	STA
 	( >> )
 	&name ( id -- str* )
 	DUP #04 SFT hexc SWP hexc ,&id STR2
 	;&sym JMP2r
 	&pop ( -- )
-	,&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
-	,&ptr STR2
+	,&&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
+	,&&ptr STR2
 	JMP2r
 	&sym cebb &id 0000 $1
 
-@Heap ( symbols & macros )
+@Heap
 	&<push-short> ( short* -- )
 	SWP /<push-byte>
 	( >> )
@@ -523,7 +494,6 @@
 	&reference "Reference $1
 	&distance "Distance $1
 	&symbol "Symbol $1
-	&macro "Macro $1
 	&token "Token $1
 	&sublabel "Sublabel $1
 	&opcode "Opcode $1
@@ -547,7 +517,7 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal "% =lib/macros ]
+	"~ =lib/inctal ]
 	&end
 (
 @|mem )

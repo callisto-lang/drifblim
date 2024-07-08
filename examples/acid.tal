@@ -48,10 +48,6 @@ _{ 01 02 03 }
 	#0002 SUB2 LDA2
 JMP2r
 
-%simple-macro ( -- res* ) {
-	#2024 #0001 ADD2
-}
-
 @print-str ( str* -- )
 	&while ( -- )
 		( send ) LDAk #18 DEO
