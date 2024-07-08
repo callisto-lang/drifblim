@@ -277,7 +277,7 @@
 	&litjmi INC2 #40 !<write-call>
 	&litjsi #60 !<write-call>
 	&lithex INC2 !<write-lithex>
-	&rawstr INC2 !<write-str>/
+	&rawstr INC2 !<write-str>
 	&lambda POP2 !Lambda/pop
 	&inctal INC2k ;Include/mem <scpy>
 	<sclr>
@@ -308,8 +308,8 @@
 	STA
 	JMP2r
 	&<push-word> ( word* -- )
-	DUP2 ,&&ptr LDR2 <scpy>
-	slen ,&&ptr LDR2 ADD2 ,&&ptr STR2
+	,&&ptr LDR2 STH2k <scpy>
+	STH2r scap/ ,&&ptr STR2
 	JMP2r
 	&get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
@@ -319,7 +319,7 @@
 
 @<write-str> ( str* -: )
 	LDAk <write>
-	INC2 & LDAk ?<write-str>
+	INC2 LDAk ?<write-str>
 	POP2 JMP2r
 
 @<write-opcode> ( str* -: )
