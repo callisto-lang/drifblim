@@ -108,78 +108,14 @@
 	( | non-runic )
 	is-hex ?<write-rawhex>
 	is-opcode ?<write-opcode>
-	!lib/litjsi
+	!Lib/litjsi
 
 @walk-comment ( t* -- )
 	[ LIT ") ] <stream-util>
 	!<sclr>
 
-@lib &padabs INC2 get-any !<set-head>
-	&padrel INC2 get-any .head LDZ2 ADD2 !<set-head>
-	&toplab INC2 !<set-scope>
-	&sublab INC2 get-sublabel !<create-symbol>
-	&litrel #80 <write>
-	&rawrel INC2 get-rel !<write>
-	&litzep #80 <write>
-	&rawzep INC2 get-ref NIP !<write>
-	&litabs #a0 <write>
-	&rawabs INC2 get-ref !<write-short>
-	&litjci INC2 #20 !<write-call>
-	&litjmi INC2 #40 !<write-call>
-	&litjsi #60 !<write-call>
-	&lithex INC2 !<write-lithex>
-	&rawstr INC2 !<write-str>/
-	&lambda POP2 !Lambda/pop
-	&inctal INC2k ;Include/mem <scpy>
-	<sclr>
-	;Include/mem !handle-file
-	&ignore POP2 JMP2r
-
 (
 @|primitives )
-
-@<write-str> ( str* -: )
-	LDAk <write>
-	INC2 & LDAk ?<write-str>
-	POP2 JMP2r
-
-@<write-opcode> ( str* -: )
-	find-opcode !<write>
-
-@<write-lithex> ( str* -: )
-	is-hex ?{ ;err/number <set-error> }
-	DUP2 slen NIP
-	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
-	!<write-hex>
-
-@<write-rawhex> ( str* -: )
-	DUP2 slen NIP
-	( >> )
-
-@<write-hex> ( str* len -- )
-	DUP #02 NEQ ?{ POP shex NIP !<write> }
-	#04 NEQ ?{ shex !<write-short> }
-	POP2 ;err/number !<set-error>
-
-@<write-call> ( str* opc -: )
-	<write>
-	get-ref .head LDZ2 INC2 INC2 SUB2
-	( >> )
-
-@<write-short> ( short* -: )
-	SWP <write>
-	( >> )
-
-@<write> ( byte -: )
-	DUP .head LDZ2 INC2k STH2
-	;rom ADD2 STA
-	<set-length>
-	STH2r
-	( >> )
-
-@<set-head> ( v* -: )
-	.head STZ2
-	JMP2r
 
 @<set-error> ( name* -- )
 	;err <pstr>
@@ -327,6 +263,27 @@
 (
 @|objects )
 
+@Lib &padabs INC2 get-any !<set-head>
+	&padrel INC2 get-any .head LDZ2 ADD2 !<set-head>
+	&toplab INC2 !<set-scope>
+	&sublab INC2 get-sublabel !<create-symbol>
+	&litrel #80 <write>
+	&rawrel INC2 get-rel !<write>
+	&litzep #80 <write>
+	&rawzep INC2 get-ref NIP !<write>
+	&litabs #a0 <write>
+	&rawabs INC2 get-ref !<write-short>
+	&litjci INC2 #20 !<write-call>
+	&litjmi INC2 #40 !<write-call>
+	&litjsi #60 !<write-call>
+	&lithex INC2 !<write-lithex>
+	&rawstr INC2 !<write-str>/
+	&lambda POP2 !Lambda/pop
+	&inctal INC2k ;Include/mem <scpy>
+	<sclr>
+	;Include/mem !handle-file
+	&ignore POP2 JMP2r
+
 @Lambda
 	&push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
@@ -356,6 +313,52 @@
 	JMP2r
 	&get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
+
+(
+@|Rom )
+
+@<write-str> ( str* -: )
+	LDAk <write>
+	INC2 & LDAk ?<write-str>
+	POP2 JMP2r
+
+@<write-opcode> ( str* -: )
+	find-opcode !<write>
+
+@<write-lithex> ( str* -: )
+	is-hex ?{ ;err/number <set-error> }
+	DUP2 slen NIP
+	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
+	!<write-hex>
+
+@<write-rawhex> ( str* -: )
+	DUP2 slen NIP
+	( >> )
+
+@<write-hex> ( str* len -- )
+	DUP #02 NEQ ?{ POP shex NIP !<write> }
+	#04 NEQ ?{ shex !<write-short> }
+	POP2 ;err/number !<set-error>
+
+@<write-call> ( str* opc -: )
+	<write>
+	get-ref .head LDZ2 INC2 INC2 SUB2
+	( >> )
+
+@<write-short> ( short* -: )
+	SWP <write>
+	( >> )
+
+@<write> ( byte -: )
+	DUP .head LDZ2 INC2k STH2
+	;rom ADD2 STA
+	<set-length>
+	STH2r
+	( >> )
+
+@<set-head> ( v* -: )
+	.head STZ2
+	JMP2r
 
 (
 @|helpers )
@@ -508,16 +511,16 @@
 	&brk "BRK ]
 
 @runes [
-	"| =lib/padabs "$ =lib/padrel
-	"} =lib/lambda "( =walk-comment
-	"@ =lib/toplab "& =lib/sublab
-	", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi
-	5b =lib/ignore 5d =lib/ignore
-	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal ]
+	"| =Lib/padabs "$ =Lib/padrel
+	"} =Lib/lambda "( =walk-comment
+	"@ =Lib/toplab "& =Lib/sublab
+	", =Lib/litrel "_ =Lib/rawrel
+	". =Lib/litzep "- =Lib/rawzep
+	"; =Lib/litabs "= =Lib/rawabs
+	"? =Lib/litjci "! =Lib/litjmi
+	5b =Lib/ignore 5d =Lib/ignore
+	"# =Lib/lithex "" =Lib/rawstr
+	"~ =Lib/inctal ]
 	&end
 (
 @|mem )
