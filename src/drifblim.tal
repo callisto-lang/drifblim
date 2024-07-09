@@ -12,7 +12,7 @@
 	@scan $1
 	@head $2
 	@halt $1
-	@length $2
+	@Rom/length $2
 
 |100
 
@@ -55,7 +55,7 @@
 	( scan ) #01 handle-pass ?{
 		( make ) #00 handle-pass ?{
 			Rom/<save>
-			<write-sym>
+			Sym/<save>
 			#800f DEO
 			!<print-summary> }
 		}
@@ -117,7 +117,7 @@
 (
 @|output )
 
-@<write-sym> ( -- )
+@Sym/<save> ( -- )
 	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File/name DEO2
 	;Heap/mem
@@ -148,7 +148,7 @@
 	;dst <pstr>/
 	( | length )
 	;dict/in <pstr>/
-	.length LDZ2 #00ff SUB2 <pdec>
+	.Rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
 	;<create-symbol>/count LDA2 <pdec>
 	;dict/labels !<pstr>/
@@ -372,11 +372,11 @@
 	.head LDZ2
 	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
 	( ) #8000 LTH2 ?{ ;err/length <set-error> }
-	.length STZ2
+	.&length STZ2
 	JMP2r
 	&<save> ( -: )
 	;dst .File/name DEO2
-	.length LDZ2 #00ff SUB2 .File/length DEO2
+	.&length LDZ2 #00ff SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	JMP2r
 
