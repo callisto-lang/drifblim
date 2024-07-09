@@ -97,14 +97,10 @@
 @|tokenizer )
 
 @<parse-token> ( t* -- )
-	LDAk ,&rune STR
-	;runes/end ;runes
-	&>l ( -- )
-		LDAk [ LIT &rune $1 ] NEQ ?{
-			NIP2 INC2 LDA2
-			( * ) JMP2 }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2
+	LDAk find-rune DUP2 #ffff EQU2 ?{
+		INC2 LDA2
+		( * ) JMP2 }
+	POP2
 	( | non-runic )
 	is-hex ?<write-rawhex>
 	is-opcode ?<write-opcode>
@@ -375,12 +371,15 @@
 	#01 JMP2r
 
 @is-runic ( str* -- str* f )
-	LDAk ,&rune STR
+	LDAk find-rune #ffff NEQ2 JMP2r
+
+@find-rune ( char -- <addr>* )
+	,&rune STR
 	;runes/end ;runes
 	&>l ( -- )
-		LDAk [ LIT &rune $1 ] EQU ?&end
+		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
 		#0003 ADD2 GTH2k ?&>l
-	&end NEQ2 JMP2r
+	POP2 POP2 #ffff JMP2r
 
 @find-opcode ( name* -- byte )
 	STH2
