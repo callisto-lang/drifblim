@@ -49,12 +49,12 @@
 	( date ) "8 20 "Jul 20 "2024 $2
 
 (
-@|generics )
+@|tokenizer )
 
 @<assemble> ( -- )
 	( scan ) #01 handle-pass ?{
 		( make ) #00 handle-pass ?{
-			<write-rom>
+			Rom/<save>
 			<write-sym>
 			#800f DEO
 			!<print-summary> }
@@ -66,7 +66,7 @@
 
 @handle-pass ( scan -: err )
 	.scan STZ
-	#0100 <set-head>
+	#0100 Rom/<set-head>
 	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
 	;src handle-file .halt LDZ JMP2r
@@ -93,25 +93,15 @@
 	#00 ;token scap/ STA2
 	JMP2r
 
-(
-@|tokenizer )
-
 @<parse-token> ( t* -- )
 	LDAk find-rune DUP2 #ffff EQU2 ?{
 		INC2 LDA2
 		( * ) JMP2 }
 	POP2
 	( | non-runic )
-	is-hex ?<write-rawhex>
-	is-opcode ?<write-opcode>
+	is-hex ?Rom/<write-rawhex>
+	is-opcode ?Rom/<write-opcode>
 	!Lib/litjsi
-
-@walk-comment ( t* -- )
-	[ LIT ") ] <stream-util>
-	!<sclr>
-
-(
-@|primitives )
 
 @<set-error> ( name* -- )
 	;err <pstr>
@@ -124,23 +114,8 @@
 	[ LIT2 01 -halt ] STZ
 	JMP2r
 
-@<set-length> ( byte -- )
-	?{ JMP2r }
-	.scan LDZ ?{ JMP2r }
-	.head LDZ2
-	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
-	( ) #8000 LTH2 ?{ ;err/length <set-error> }
-	.length STZ2
-	JMP2r
-
 (
 @|output )
-
-@<write-rom> ( -: )
-	;dst .File/name DEO2
-	.length LDZ2 #00ff SUB2 .File/length DEO2
-	;rom/output .File/write DEO2
-	JMP2r
 
 @<write-sym> ( -- )
 	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -179,7 +154,7 @@
 	;dict/labels !<pstr>/
 
 (
-@|labels )
+@|helpers )
 
 @get-sublabel ( name* -- sublabel* )
 	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
@@ -228,12 +203,6 @@
 	&found ( symbols* -- <addr>* )
 	#0003 SUB2 NIP2 JMP2r
 
-@<stream-util> ( c -- )
-	&>s ( -- )
-		;&c feof ?<sclr>
-		[ LIT &c $1 ] EQUk ?{ POP !&>s }
-	POP2 JMP2r
-
 @get-any ( str* -- value* )
 	is-hex ?shex
 	!get-ref/eager
@@ -256,25 +225,77 @@
 	( ) .scan LDZ ?{ ;err/distance <set-error> }
 	POP2 #ff JMP2r
 
+@is-hex ( str* -- str* f )
+	DUP2
+	&>w ( -- )
+		LDAk chex INC ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&>w
+	POP2 #01 JMP2r
+
+@is-opcode ( str* -- str* f )
+	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
+	#01 JMP2r
+
+@is-runic ( str* -- str* f )
+	LDAk find-rune INC2 ORA JMP2r
+
+@find-rune ( char -- <addr>* )
+	,&rune STR
+	;runes/end ;runes
+	&>l ( -- )
+		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 #ffff JMP2r
+
+@find-opcode ( name* -- byte )
+	STH2
+	#2000
+	&>l ( -- )
+		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
+		INC GTHk ?&>l
+	POP2 POP2r #00 JMP2r
+	&on-found ( `name* bounds* -- byte )
+	( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
+	( move to modes ) STH2r #0003 ADD2
+	( keep flag ) [ LITr 00 ]
+	&>w ( -- )
+		LDAk #20 OVR [ LIT "2 ] EQU ?&end
+		DUP ADD OVR [ LIT "r ] EQU ?&end
+		DUP ADD OVR [ LIT "k ] EQU ?&end
+		DUP ADD OVR #00 EQU ?&end
+		;err/opcode <set-error>
+		&end STH
+		POP ORAr INC2 LDAk ?&>w
+	POP2 STHr ADD JMP2r
+
+@<stream-util> ( c -- )
+	&>s ( -- )
+		;&c feof ?<sclr>
+		[ LIT &c $1 ] EQUk ?{ POP !&>s }
+	POP2 JMP2r
+
 (
 @|objects )
 
-@Lib &padabs INC2 get-any !<set-head>
-	&padrel INC2 get-any .head LDZ2 ADD2 !<set-head>
+@Lib &padabs INC2 get-any !Rom/<set-head>
+	&padrel INC2 get-any .head LDZ2 ADD2 !Rom/<set-head>
 	&toplab INC2 !<set-scope>
 	&sublab INC2 get-sublabel !<create-symbol>
-	&litrel #80 <write>
-	&rawrel INC2 get-rel !<write>
-	&litzep #80 <write>
-	&rawzep INC2 get-ref NIP !<write>
-	&litabs #a0 <write>
-	&rawabs INC2 get-ref !<write-short>
-	&litjci INC2 #20 !<write-call>
-	&litjmi INC2 #40 !<write-call>
-	&litjsi #60 !<write-call>
-	&lithex INC2 !<write-lithex>
-	&rawstr INC2 !<write-str>
+	&litrel #80 Rom/<write-byte>
+	&rawrel INC2 get-rel !Rom/<write-byte>
+	&litzep #80 Rom/<write-byte>
+	&rawzep INC2 get-ref NIP !Rom/<write-byte>
+	&litabs #a0 Rom/<write-byte>
+	&rawabs INC2 get-ref !Rom/<write-short>
+	&litjci INC2 #20 !Rom/<write-call>
+	&litjmi INC2 #40 !Rom/<write-call>
+	&litjsi #60 !Rom/<write-call>
+	&lithex INC2 !Rom/<write-lithex>
+	&rawstr INC2 !Rom/<write-str>
 	&lambda POP2 !Lambda/pop
+	( | special )
+	&comment [ LIT ") ] <stream-util>
+	!<sclr>
 	&inctal INC2k ;Include/mem <scpy>
 	<sclr>
 	;Include/mem !handle-file
@@ -310,97 +331,54 @@
 	&get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
 
-(
-@|Rom )
-
-@<write-str> ( str* -: )
-	LDAk <write>
-	INC2 LDAk ?<write-str>
+@Rom
+	&<write-str> ( str* -: )
+	LDAk /<write-byte>
+	INC2 LDAk ?&<write-str>
 	POP2 JMP2r
-
-@<write-opcode> ( str* -: )
-	find-opcode !<write>
-
-@<write-lithex> ( str* -: )
+	&<write-opcode> ( str* -: )
+	find-opcode !&<write-byte>
+	&<write-lithex> ( str* -: )
 	is-hex ?{ ;err/number <set-error> }
 	DUP2 slen NIP
-	( LIT ) DUP #04 EQU #50 SFT #80 ORA <write>
-	!<write-hex>
-
-@<write-rawhex> ( str* -: )
+	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte>
+	!&<write-hex>
+	&<write-rawhex> ( str* -: )
 	DUP2 slen NIP
 	( >> )
-
-@<write-hex> ( str* len -- )
-	DUP #02 NEQ ?{ POP shex NIP !<write> }
-	#04 NEQ ?{ shex !<write-short> }
+	&<write-hex> ( str* len -- )
+	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
+	#04 NEQ ?{ shex !&<write-short> }
 	POP2 ;err/number !<set-error>
-
-@<write-call> ( str* opc -: )
-	<write>
+	&<write-call> ( str* opc -: )
+	/<write-byte>
 	get-ref .head LDZ2 INC2 INC2 SUB2
 	( >> )
-
-@<write-short> ( short* -: )
-	SWP <write>
+	&<write-short> ( short* -: )
+	SWP /<write-byte>
 	( >> )
-
-@<write> ( byte -: )
+	&<write-byte> ( byte -: )
 	DUP .head LDZ2 INC2k STH2
-	;rom ADD2 STA
-	<set-length>
+	;&mem ADD2 STA
+	/<set-length>
 	STH2r
 	( >> )
-
-@<set-head> ( v* -: )
+	&<set-head> ( v* -: )
 	.head STZ2
 	JMP2r
-
-(
-@|helpers )
-
-@is-hex ( str* -- str* f )
-	DUP2
-	&>w ( -- )
-		LDAk chex INC ?{ POP2 #00 JMP2r }
-		INC2 LDAk ?&>w
-	POP2 #01 JMP2r
-
-@is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
-	#01 JMP2r
-
-@is-runic ( str* -- str* f )
-	LDAk find-rune #ffff NEQ2 JMP2r
-
-@find-rune ( char -- <addr>* )
-	,&rune STR
-	;runes/end ;runes
-	&>l ( -- )
-		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ffff JMP2r
-
-@find-opcode ( name* -- byte )
-	STH2
-	#2000
-	&>l ( -- )
-		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
-		INC GTHk ?&>l
-	POP2 POP2r #00 JMP2r
-	&on-found ( `name* bounds* -- byte )
-	( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
-	( move to modes ) STH2r #0003 ADD2
-	( keep flag ) [ LITr 00 ]
-	&>w ( -- )
-		LDAk #20 OVR [ LIT "2 ] EQU ?&end
-		DUP ADD OVR [ LIT "r ] EQU ?&end
-		DUP ADD OVR [ LIT "k ] EQU ?&end
-		DUP ADD OVR #00 EQU ?&end
-		;err/opcode <set-error>
-		&end STH
-		POP ORAr INC2 LDAk ?&>w
-	POP2 STHr ADD JMP2r
+	&<set-length> ( byte -- )
+	?{ JMP2r }
+	.scan LDZ ?{ JMP2r }
+	.head LDZ2
+	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
+	( ) #8000 LTH2 ?{ ;err/length <set-error> }
+	.length STZ2
+	JMP2r
+	&<save> ( -: )
+	;dst .File/name DEO2
+	.length LDZ2 #00ff SUB2 .File/length DEO2
+	;&output .File/write DEO2
+	JMP2r
 
 (
 @|stdlib )
@@ -511,7 +489,7 @@
 
 @runes [
 	"| =Lib/padabs "$ =Lib/padrel
-	"} =Lib/lambda "( =walk-comment
+	"} =Lib/lambda "( =Lib/comment
 	"@ =Lib/toplab "& =Lib/sublab
 	", =Lib/litrel "_ =Lib/rawrel
 	". =Lib/litzep "- =Lib/rawzep
@@ -522,7 +500,7 @@
 	"~ =Lib/inctal ]
 	&end
 (
-@|mem )
+@|buffers )
 
 
 @Lambda/mem $100
@@ -532,5 +510,7 @@
 @Heap/mem ( addr*, refs, body[] )
 
 
-|8000 @rom $100 &output
+|8000 @Rom/mem $100
+
+@Rom/output
 
