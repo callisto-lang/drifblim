@@ -47,7 +47,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Jul 20 "2024 $2
+	( date ) "6 20 "Aug 20 "2024 $2
 
 (
 @|tokenizer )
@@ -185,8 +185,7 @@
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) .head LDZ2 Heap/<push-short>
 	( refs ) #00 Heap/<push-byte>
-	( name[] ) Heap/<push-word>
-	( null ) #00 !Heap/<push-byte>
+	( name[] ) !Heap/<push-string>
 
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
@@ -326,9 +325,9 @@
 	STA
 	JMP2r
 
-	&<push-word> ( word* -- )
+	&<push-string> ( word* -- )
 	,&&ptr LDR2 STH2k <scpy>
-	STH2r scap/ ,&&ptr STR2
+	STH2r scap/ INC2 ,&&ptr STR2
 	JMP2r
 
 	&get-bounds ( -- to* from* )
