@@ -13,6 +13,11 @@
 	@head $2
 	@halt $1
 	@Rom/length $2
+	( TODO:
+	| create a list of references to replace before assembly: addr*, type
+	| Type byte is: zep, abs*, rel, rel*
+	| Set used flag in refs byte upon reference
+	| Refs byte is: 0x80=created, 0x40=used )
 
 |100
 
@@ -187,10 +192,9 @@
 
 	&not-unique ( name* -- )
 	( | find placeholder )
-	DUP2 find-symbol INC2 INC2 LDA #80 AND ?{
-		find-symbol INC2 INC2 #80 ROT ROT STA JMP2r
-	}
-
+	( TODO: Optimize ) DUP2 find-symbol INC2 INC2 LDA #80 AND ?{
+		find-symbol INC2 INC2 #80 ROT ROT STA
+		JMP2r }
 	POP2 ;err/duplicate !<set-error>
 
 @<create-placeholder> ( name* -- )
