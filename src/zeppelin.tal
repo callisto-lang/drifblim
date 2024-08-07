@@ -243,10 +243,13 @@
 	STH2r <pstr>
 	DUP2 <pstr>
 	#0a18 DEO
+	( | find symbol or create it )
 	DUP2 find-symbol DUP2 #ffff NEQ2 ?{
-		.head LDZ2 [ LIT &type $1 ] Refs/<new>
 		POP2 DUP2 <create-placeholder>
 		DUP2 find-symbol }
+	( | check if declared )
+	INC2k INC2 LDA #80 AND ?{
+		[ LIT &type $1 ] .head LDZ2 Refs/<new> }
 	NIP2 LDA2 JMP2r
 
 @Refs

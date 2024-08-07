@@ -22,14 +22,21 @@
 
 BRK
 
-( forward relative )
+( forward references )
 
 .forward
 ;forward
 ,forward
 !forward
+@forward
 
-$10 @forward
+( backward references )
+
+@backward
+.backward
+;backward
+,backward
+!backward
 
 (
 @| test label inheritance )
