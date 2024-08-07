@@ -62,6 +62,7 @@
 	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
 	;src handle-file .halt LDZ ?{
+		Refs/<resolve>
 		( Rom/<save> Sym/<save> #800f DEO !<print-summary> ) }
 	#010f DEO
 	JMP2r
@@ -151,7 +152,7 @@
 	;dict/labels !<pstr>/
 
 (
-@|helpers )
+@|Symbols )
 
 @get-sublabel ( name* -- sublabel* )
 	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
@@ -202,7 +203,7 @@
 	is-opcode ?&invalid
 	is-runic ?&invalid
 	( | debug )
-	{ "placeholder: 20 $1 }
+	{ "forward: 20 $1 }
 	STH2r <pstr>
 	DUP2 <pstr>
 	#0a18 DEO
@@ -243,13 +244,25 @@
 	DUP2 <pstr>
 	#0a18 DEO
 	DUP2 find-symbol DUP2 #ffff NEQ2 ?{
-		.head LDZ2 [ LIT &type $1 ] <create-future>
+		.head LDZ2 [ LIT &type $1 ] Refs/<new>
 		POP2 DUP2 <create-placeholder>
 		DUP2 find-symbol }
 	NIP2 LDA2 JMP2r
 
-@<create-future> ( type addr* -- )
-	[ <phex>/b #2018 DEO <phex> #0a18 DEO ] JMP2r
+@Refs
+	&<new> ( type addr* -- )
+	[ LIT2 &ptr =&mem ] STA2k INC2 INC2 NIP2 STAk INC2 ,&ptr STR2
+	POP JMP2r
+
+	&<resolve> ( -- )
+	,&ptr LDR2 ;&mem
+	&>l ( -- )
+		LDA2k <phex>
+		#2018 DEO
+		INC2k INC2 LDA <phex>/b
+		#0a18 DEO
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 JMP2r
 
 @get-rel-byte ( label* -- distance )
 	#02 ;get-ref/type STA
@@ -267,8 +280,10 @@
 	get-ref NIP JMP2r
 
 @get-abs-short ( label* -- addr )
-	#01 ;get-ref/type STA
-	!get-ref
+	#01 ;get-ref/type STA !get-ref
+
+(
+@|helpers )
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -563,6 +578,9 @@
 @Lambda/mem $100
 
 @Include/mem $30
+
+@Refs/mem ( addr*, type )
+	$800
 
 @Heap/mem ( addr*, refs, body[] )
 

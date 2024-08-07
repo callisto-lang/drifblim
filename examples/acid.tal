@@ -23,7 +23,13 @@
 BRK
 
 ( forward relative )
-,&forward $10 &forward
+
+.forward
+;forward
+,forward
+!forward
+
+$10 @forward
 
 (
 @| test label inheritance )
