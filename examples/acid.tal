@@ -18,11 +18,12 @@
 	( allocated string )
 	;hello-word print-str
 
-	( simple-macro <print-dec> #0a18 DEO )
-
 	#800f DEO
 
 BRK
+
+( forward relative )
+,&forward $10 &forward
 
 (
 @| test label inheritance )
@@ -77,5 +78,6 @@ JMP2r
 	POP2r POP2 POP2 JMP2r
 
 $20 @label2
+
 
 @hello-word "Hello 20 "World! 0a $1

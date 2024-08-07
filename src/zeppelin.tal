@@ -208,7 +208,7 @@
 	#0a18 DEO
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) .head LDZ2 Heap/<push-short>
-	( refs ) #00 Heap/<push-byte>
+	( refs ) #40 Heap/<push-byte>
 	( name[] ) !Heap/<push-string>
 
 	&invalid ( name* -- )
@@ -245,7 +245,7 @@
 	DUP2 find-symbol DUP2 #ffff NEQ2 ?{
 		POP2 DUP2 <create-placeholder>
 		DUP2 find-symbol }
-	NIP2 JMP2r
+	NIP2 LDA2 JMP2r
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
