@@ -243,15 +243,32 @@
 	DUP2 <pstr>
 	#0a18 DEO
 	DUP2 find-symbol DUP2 #ffff NEQ2 ?{
+		.head LDZ2 [ LIT &type $1 ] <create-future>
 		POP2 DUP2 <create-placeholder>
 		DUP2 find-symbol }
 	NIP2 LDA2 JMP2r
 
-@get-rel ( label* -- distance )
+@<create-future> ( type addr* -- )
+	[ <phex>/b #2018 DEO <phex> #0a18 DEO ] JMP2r
+
+@get-rel-byte ( label* -- distance )
+	#02 ;get-ref/type STA
 	get-ref .head LDZ2 INC2 INC2 SUB2
 	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	;err/distance <set-error>
 	POP2 #ff JMP2r
+
+@get-rel-short ( label* -- distance* )
+	#03 ;get-ref/type STA
+	get-ref .head LDZ2 INC2 INC2 SUB2 JMP2r
+
+@get-abs-byte ( label* -- addr )
+	#00 ;get-ref/type STA
+	get-ref NIP JMP2r
+
+@get-abs-short ( label* -- addr )
+	#01 ;get-ref/type STA
+	!get-ref
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -312,9 +329,9 @@
 	&padrel INC2 get-any .head LDZ2 ADD2 !Rom/<set-head>
 	&toplab INC2 !<set-scope>
 	&sublab INC2 get-sublabel !<create-symbol>
-	&litrel #80 Rom/<write-byte> &rawrel INC2 get-rel !Rom/<write-byte>
-	&litzep #80 Rom/<write-byte> &rawzep INC2 get-ref NIP !Rom/<write-byte>
-	&litabs #a0 Rom/<write-byte> &rawabs INC2 get-ref !Rom/<write-short>
+	&litrel #80 Rom/<write-byte> &rawrel INC2 get-rel-byte !Rom/<write-byte>
+	&litzep #80 Rom/<write-byte> &rawzep INC2 get-abs-byte !Rom/<write-byte>
+	&litabs #a0 Rom/<write-byte> &rawabs INC2 get-abs-short !Rom/<write-short>
 	&litjci INC2 #20 !Rom/<write-call>
 	&litjmi INC2 #40 !Rom/<write-call>
 	&litjsi #60 !Rom/<write-call>
@@ -384,7 +401,7 @@
 
 	&<write-call> ( str* opc -: )
 	/<write-byte>
-	get-ref .head LDZ2 INC2 INC2 SUB2
+	get-rel-short
 	( >> )
 	&<write-short> ( short* -: )
 	SWP /<write-byte>
