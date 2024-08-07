@@ -13,6 +13,10 @@
 	@head $2
 	@halt $1
 	@Rom/length $2
+
+|000
+
+	@Ref &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
 	( TODO:
 	| create a list of references to replace before assembly: addr*, type
 	| Type byte is: zep, abs*, rel, rel*
@@ -267,23 +271,23 @@
 		#0003 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
+@get-abs-byte ( label* -- addr )
+	.Ref/abs-byte ;get-ref/type STA
+	get-ref NIP JMP2r
+
+@get-abs-short ( label* -- addr )
+	.Ref/abs-short ;get-ref/type STA !get-ref
+
 @get-rel-byte ( label* -- distance )
-	#02 ;get-ref/type STA
+	.Ref/rel-byte ;get-ref/type STA
 	get-ref .head LDZ2 INC2 INC2 SUB2
 	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	;err/distance <set-error>
 	POP2 #ff JMP2r
 
 @get-rel-short ( label* -- distance* )
-	#03 ;get-ref/type STA
+	.Ref/rel-short ;get-ref/type STA
 	get-ref .head LDZ2 INC2 INC2 SUB2 JMP2r
-
-@get-abs-byte ( label* -- addr )
-	#00 ;get-ref/type STA
-	get-ref NIP JMP2r
-
-@get-abs-short ( label* -- addr )
-	#01 ;get-ref/type STA !get-ref
 
 (
 @|helpers )
