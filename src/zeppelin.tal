@@ -10,7 +10,6 @@
 	@token $30
 	@scope $30
 	@sublabel $30
-	@scan $1
 	@head $2
 	@halt $1
 	@Rom/length $2
@@ -53,22 +52,14 @@
 @|tokenizer )
 
 @<assemble> ( -- )
-	( scan ) #01 handle-pass ?{
-		( make ) #00 handle-pass ?{
-			Rom/<save>
-			Sym/<save>
-			#800f DEO !<print-summary> } }
-	;dst .File/name DEO2
-	[ LIT2 01 -File/delete ] DEO
-	#010f DEO
-	JMP2r
-
-@handle-pass ( scan -: err )
-	.scan STZ
+	( | single pass )
 	#0100 Rom/<set-head>
 	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
-	;src handle-file .halt LDZ JMP2r
+	;src handle-file .halt LDZ ?{
+		( Rom/<save> Sym/<save> #800f DEO !<print-summary> ) }
+	#010f DEO
+	JMP2r
 
 @handle-file ( f* -- )
 	.File/name DEO2
@@ -177,10 +168,13 @@
 	( >> )
 
 @<create-symbol> ( name* -- )
-	.scan LDZ ?{ POP2 JMP2r }
 	is-hex ?&invalid
 	is-opcode ?&invalid
 	is-runic ?&invalid
+	{ "creating: 20 $1 } STH2r <pstr>
+	DUP2 <pstr> #0a18 DEO
+
+
 	DUP2 find-symbol INC2 ORA ?&not-unique
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) .head LDZ2 Heap/<push-short>
@@ -210,20 +204,23 @@
 
 @get-ref ( token* -- addr* )
 	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 Lambda/push }
-	.scan LDZ ?{
-		&eager ( -- )
-		LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
-		LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-		find-symbol INC2k #0000 EQU2 ?{
-			INC2k INC2 LDAk INC ROT ROT STA
-			LDA2 JMP2r }
-		;err/reference <set-error> }
+	&eager ( -- )
+	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
+	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	{ "get-ref: 2000 } STH2r <pstr>
+	DUP2 <pstr> #0a18 DEO
+
+
+	find-symbol INC2k #0000 EQU2 ?{
+		INC2k INC2 LDAk INC ROT ROT STA
+		LDA2 JMP2r }
+	;err/reference <set-error>
 	JMP2r
 
 @get-rel ( label* -- distance )
 	get-ref .head LDZ2 INC2 INC2 SUB2
 	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	( ) .scan LDZ ?{ ;err/distance <set-error> }
+	;err/distance <set-error>
 	POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
@@ -374,7 +371,6 @@
 
 	&<set-length> ( byte -- )
 	?{ JMP2r }
-	.scan LDZ ?{ JMP2r }
 	.head LDZ2
 	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
 	( ) #8000 LTH2 ?{ ;err/length <set-error> }
