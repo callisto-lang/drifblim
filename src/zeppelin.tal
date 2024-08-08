@@ -45,7 +45,10 @@
 
 @await-dst ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP <assemble>
+	( ) DUP #20 GTH ?{
+		POP <assemble>
+		#010e DEO
+		#010f DEO
 		BRK }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
 	STZ2
@@ -63,12 +66,10 @@
 @<assemble> ( -- )
 	( | single pass )
 	#0100 Rom/<set-head>
-	#00 ;Lambda/count STA
 	;dict/reset <set-scope>
 	;src handle-file .halt LDZ ?{
 		Refs/<resolve>
 		( Rom/<save> Sym/<save> #800f DEO !<print-summary> ) }
-	#010f DEO
 	JMP2r
 
 @handle-file ( f* -- )
@@ -185,6 +186,8 @@
 	{ "creating: 20 $1 }
 	STH2r <pstr>
 	DUP2 <pstr>
+	#2018 DEO
+	.head LDZ2 <phex>
 	#0a18 DEO
 	DUP2 find-symbol INC2 ORA ?&not-unique
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
@@ -198,7 +201,8 @@
 	&not-unique ( name* -- )
 	( | find placeholder )
 	( TODO: Optimize ) DUP2 find-symbol INC2 INC2 LDA #80 AND ?{
-		find-symbol INC2 INC2 #80 ROT ROT STA
+		find-symbol .head LDZ2 OVR2 STA2
+		INC2 INC2 #80 ROT ROT STA
 		JMP2r }
 	POP2 ;err/duplicate !<set-error>
 
@@ -212,7 +216,7 @@
 	DUP2 <pstr>
 	#0a18 DEO
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) .head LDZ2 Heap/<push-short>
+	( addr* ) #ffff Heap/<push-short>
 	( refs ) #40 Heap/<push-byte>
 	( name[] ) !Heap/<push-string>
 
@@ -268,38 +272,31 @@
 	&<resolve> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
+		STH2k
 		( | route )
-		INC2k INC2 LDA
-		( ) DUP .Ref/abs-byte NEQ ?{ }
-		( ) DUP .Ref/abs-short NEQ ?{ }
-		( ) DUP .Ref/rel-byte NEQ ?{ }
-		( ) DUP .Ref/rel-short NEQ ?{ }
-		POP
-		( | misc.. )
-		LDA2k <phex>
-		#2018 DEO
-		INC2k INC2 LDA2 <phex>
-		#2018 DEO
-		INC2k INC2 LDA2 #0003 ADD2 <pstr>
-		#2018 DEO
-		DUP2 #0004 ADD2 LDA <phex>/b
-		#0a18 DEO
-		#0005 ADD2 GTH2k ?&>l
+		DUP2 #0004 ADD2 LDA
+		( ) DUP .Ref/abs-byte NEQ ?{
+			INC2kr INC2r STH2r LDA2 INC2 LDA STH2kr STA }
+		( ) DUP .Ref/abs-short NEQ ?{
+			INC2kr INC2r STH2r LDA2 LDA2 STH2kr STA2 }
+		( ) DUP .Ref/rel-byte NEQ ?{
+			STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 SUB2 NIP STH2kr STA }
+		( ) DUP .Ref/rel-short NEQ ?{
+			STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 SUB2 STH2kr STA2 }
+		POP POP2r
+		( ) #0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
 @get-abs-byte ( label* -- addr )
 	.Ref/abs-byte ;get-ref/type STA
 	get-ref NIP JMP2r
 
-@get-abs-short ( label* -- addr )
+@get-abs-short ( label* -- addr* )
 	.Ref/abs-short ;get-ref/type STA !get-ref
 
 @get-rel-byte ( label* -- distance )
 	.Ref/rel-byte ;get-ref/type STA
-	get-ref .head LDZ2 INC2 INC2 SUB2
-	( ) DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	;err/distance <set-error>
-	POP2 #ff JMP2r
+	get-ref .head LDZ2 INC2 INC2 SUB2 NIP JMP2r
 
 @get-rel-short ( label* -- distance* )
 	.Ref/rel-short ;get-ref/type STA
