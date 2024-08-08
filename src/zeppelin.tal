@@ -60,8 +60,10 @@
 	;dict/reset <set-scope>
 	;src handle-file .halt LDZ ?{
 		Refs/<resolve>
-		Rom/<save> !<print-summary>
-		( Sym/<save> #800f DEO ) }
+		Rom/<save>
+		<print-summary>
+		#800f DEO
+		BRK }
 	JMP2r
 
 @handle-file ( f* -- )
@@ -109,19 +111,6 @@
 
 (
 @|output )
-
-@Sym/<save> ( -- )
-	;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
-	SWP2 .File/name DEO2
-	;Heap/mem
-	&>w ( -- )
-		( addr ) #0002 .File/length DEO2
-		DUP2 .File/write DEO2
-		( name ) #0003 ADD2 DUP2 slen INC2 STH2k .File/length DEO2
-		DUP2 .File/write DEO2
-		STH2r ADD2 DUP2 #0003 ADD2 LDA ?&>w
-	POP2 #00 ROT ROT STA
-	JMP2r
 
 @<print-summary> ( -- )
 	( | Print summary )
@@ -239,6 +228,10 @@
 	( value* ) INC2r INC2r STH2kr STA2
 	( type ) INC2r INC2r STH2kr STA
 	( save ) INC2r [ LITr _&ptr ] STR2r
+	,&ptr LDR2 ;&mem SUB2 <phex>
+	LIT "/ #18 DEO
+	;&mem-end ;&mem SUB2 <phex>
+	#0a18 DEO
 	JMP2r
 
 @Refs/<resolve> ( -- )
@@ -580,7 +573,7 @@
 @Include/mem $30
 
 @Refs/mem ( addr*, symbol*, ref/type )
-	$800
+	$1800 &mem-end
 
 @Heap/mem ( addr*, refs, body[] )
 
