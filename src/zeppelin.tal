@@ -109,7 +109,7 @@
 	Syms/get-bounds
 	&>l ( -- )
 		( is used ) INC2k INC2 LDA #40 AND ?{
-			( capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
+			( is capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
 				;dict/unused <pstr>/
 				DUP2 #0003 ADD2 <pstr>/
 				#0a18 DEO } }
@@ -268,7 +268,7 @@
 	&lithex INC2 !Rom/<write-lithex>
 	&rawstr INC2 !Rom/<write-str>
 	&lambda POP2 !Lambda/pop
-	&comment LIT ") <stream-until> !<sclr>
+	&comment POP2 !<walk-comment>
 	&inctal INC2k ;Include/mem <scpy>
 	<sclr>
 	;Include/mem !handle-file
@@ -426,6 +426,16 @@
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
+@<walk-comment> ( -- )
+	( depth ) [ LITr 00 ]
+	&>s ( -- )
+		;&c feof ?{
+			[ LIT2 &c $1 "( ] OVR #18 DEO NEQk ?{ INCr }
+			POP [ LIT ") ] NEQ ?{ STHkr ?{ POPr JMP2r }
+				[ LITr 01 ] SUBr }
+			!&>s }
+	JMP2r
+
 @<stream-until> ( c -- )
 	;&c feof ?<sclr>
 	( TODO: catch nested comments ) [ LIT &c $1 ] EQUk ?{ POP !<stream-until> }
@@ -534,7 +544,6 @@
 	&token "Token $1
 	&sublabel "Sublabel $1
 	&opcode "Opcode $1
-	&nested "Nested $1
 	&zeropage "Zero-page $1
 	&refs-overflow "Refs 20 "Overflow $1
 

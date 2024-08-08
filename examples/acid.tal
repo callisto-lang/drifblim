@@ -81,6 +81,8 @@ JMP2r
 	POP2 POP2 POP2r
 JMP2r
 
+( a ( nested ( comment ) ) )
+
 @<print-dec> ( short* -- )
 	#2710 [ LIT2r 00fb ]
 	&w ( -- )
