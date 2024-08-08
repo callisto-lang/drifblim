@@ -186,11 +186,10 @@
 
 @get-any ( str* -- value* )
 	is-hex ?shex
-	!get-ref/eager
+	( >> )
 
 @get-ref ( token* -- addr* )
 	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 Lambda/push }
-	&eager ( -- )
 	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
 	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	( | find symbol or create it )
@@ -221,13 +220,14 @@
 		( | route )
 		DUP2 #0004 ADD2 LDA
 		( ) DUP .Ref/abs-byte NEQ ?{
-			INC2kr INC2r STH2r LDA2 INC2 LDA
+			( value ) STH2kr INC2 INC2 LDA2 INC2 LDA
 			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA }
 		( ) DUP .Ref/abs-short NEQ ?{
-			STH2kr INC2 INC2 LDA2 LDA2
+			( value* ) STH2kr INC2 INC2 LDA2 LDA2
 			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA2 }
 		( ) DUP .Ref/rel-byte NEQ ?{
-			( catch distance overflow ) ( value ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2 NIP
+			( | catch distance overflow )
+			( value ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2 NIP
 			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA }
 		( ) DUP .Ref/rel-short NEQ ?{
 			( value* ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2
@@ -245,8 +245,7 @@
 
 @get-rel-byte ( label* -- distance )
 	.Ref/rel-byte ;get-ref/type STA
-	( TODO: catch distance overflow )
-	get-ref .Rom/head LDZ2 INC2 INC2 SUB2 NIP JMP2r
+	( TODO: catch distance overflow ) get-ref .Rom/head LDZ2 INC2 INC2 SUB2 NIP JMP2r
 
 @get-rel-short ( label* -- distance* )
 	.Ref/rel-short ;get-ref/type STA
