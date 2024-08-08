@@ -161,20 +161,7 @@
 	POP2 ;err/duplicate !<set-error>
 
 @<create-placeholder> ( name* -- )
-	#30 #ffff
-	( >> )
-
-@syms/<push> ( name* type addr* -- )
-	syms/<push-short>
-	syms/<push-byte>
-	is-hex ?&invalid
-	is-opcode ?&invalid
-	is-runic ?&invalid
-	!syms/<push-string>
-
-	&invalid ( name* -- )
-	syms/<push-string>
-	;err/symbol !<set-error>
+	#30 #ffff !syms/<push>
 
 @get-any ( str* -- value* )
 	is-hex ?shex
@@ -304,19 +291,28 @@
 @syms/get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
 
-@syms/<push-short> ( short* -- )
-	SWP /<push-byte>
+@syms/<push> ( name* type addr* -- )
+	( hb ) SWP /<push-byte>
+	( lb ) /<push-byte>
+	( type ) /<push-byte>
+	is-hex ?&invalid
+	is-opcode ?&invalid
+	is-runic ?&invalid
 	( >> )
+
+@syms/<push-string> ( word* -- )
+	,&&ptr LDR2 STH2k <scpy>
+	STH2r scap/ INC2 ,&&ptr STR2
+	JMP2r
 
 @syms/<push-byte> ( byte -- )
 	[ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
 	STA
 	JMP2r
 
-@syms/<push-string> ( word* -- )
-	,&&ptr LDR2 STH2k <scpy>
-	STH2r scap/ INC2 ,&&ptr STR2
-	JMP2r
+@syms/invalid ( name* -- )
+	/<push-string>
+	;err/symbol !<set-error>
 
 (
 @|Rom )
