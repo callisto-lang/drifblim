@@ -2,6 +2,7 @@
 
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
+|00 @Ref &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
 
 |000
 
@@ -13,15 +14,6 @@
 	@head $2
 	@halt $1
 	@Rom/length $2
-
-|000
-
-	@Ref &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
-	( TODO:
-	| create a list of references to replace before assembly: addr*, type
-	| Type byte is: zep, abs*, rel, rel*
-	| Set used flag in refs byte upon reference
-	| Refs byte is: 0x80=created, 0x40=used )
 
 |100
 
