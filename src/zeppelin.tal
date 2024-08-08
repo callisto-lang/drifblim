@@ -12,8 +12,8 @@
 	@scope $30
 	@sublabel $30
 	@halt $1
-	@Rom/head $2
-	@Rom/length $2
+	@rom/head $2
+	@rom/length $2
 
 |100
 
@@ -56,10 +56,10 @@
 @|Tokenizer )
 
 @<assemble> ( -- )
-	#0100 Rom/<set-head>
+	#0100 rom/<set-head>
 	;dict/reset <set-scope>
-	;src handle-file .halt LDZ ?{ Refs/<resolve>
-		Rom/<save> !<print-info> }
+	;src handle-file .halt LDZ ?{ refs/<resolve>
+		rom/<save> !<print-info> }
 	JMP2r
 
 @handle-file ( f* -- )
@@ -70,7 +70,7 @@
 		;&c feof ?{
 			INC2 [ LIT &c $1 ] handle-char !&>s }
 	ORA ?{
-		;Include/mem ;token <scpy>
+		;include/mem ;token <scpy>
 		;err/file !<set-error> }
 	JMP2r
 
@@ -87,9 +87,9 @@
 		( * ) JMP2 }
 	POP2
 	( | non-runic )
-	is-hex ?Rom/<write-rawhex>
-	is-opcode ?Rom/<write-opcode>
-	!Lib/litjsi
+	is-hex ?rom/<write-rawhex>
+	is-opcode ?rom/<write-opcode>
+	!lib/litjsi
 
 @<set-error> ( name* -- )
 	[ LIT2 01 -halt ] STZ
@@ -106,7 +106,7 @@
 	JMP2r
 
 @<print-info> ( -- )
-	Syms/get-bounds
+	syms/get-bounds
 	&>l ( -- )
 		( is used ) INC2k INC2 LDA #40 AND ?{
 			( is capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
@@ -119,7 +119,7 @@
 	;dict/assembled <pstr>/
 	;dst <pstr>/
 	;dict/in <pstr>/
-	.Rom/length LDZ2 #00ff SUB2 <pdec>
+	.rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
 	;<create-symbol>/count LDA2 <pdec>
 	;dict/labels !<pstr>/
@@ -151,11 +151,11 @@
 	is-hex ?&invalid
 	is-opcode ?&invalid
 	is-runic ?&invalid
-	DUP2 Syms/find INC2 ORA ?&not-unique
+	DUP2 syms/find INC2 ORA ?&not-unique
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) .Rom/head LDZ2 Syms/<push-short>
-	( refs ) #80 Syms/<push-byte>
-	( name[] ) !Syms/<push-string>
+	( addr* ) .rom/head LDZ2 syms/<push-short>
+	( refs ) #80 syms/<push-byte>
+	( name[] ) !syms/<push-string>
 
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
@@ -164,8 +164,8 @@
 	( | find placeholder )
 	( TODO:
 	| Optimize
-	| merged with placeholder ) DUP2 Syms/find INC2 INC2 LDA #80 AND ?{
-		Syms/find .Rom/head LDZ2 OVR2 STA2
+	| merged with placeholder ) DUP2 syms/find INC2 INC2 LDA #80 AND ?{
+		syms/find .rom/head LDZ2 OVR2 STA2
 		INC2 INC2 LDAk #80 ORA ROT ROT STA
 		JMP2r }
 	POP2 ;err/duplicate !<set-error>
@@ -174,36 +174,33 @@
 	is-hex ?&invalid
 	is-opcode ?&invalid
 	is-runic ?&invalid
-	( addr* ) #ffff Syms/<push-short>
-	( refs ) #40 Syms/<push-byte>
-	( name[] ) !Syms/<push-string>
+	( addr* ) #ffff syms/<push-short>
+	( refs ) #40 syms/<push-byte>
+	( name[] ) !syms/<push-string>
 
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
-
-	&not-unique ( name* -- )
-	POP2 ;err/duplicate !<set-error>
 
 @get-any ( str* -- value* )
 	is-hex ?shex
 	( >> )
 
 @get-ref ( token* -- addr* )
-	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 Lambda/push }
+	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/push }
 	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
 	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	( | find symbol or create it )
-	DUP2 Syms/find DUP2 #ffff NEQ2 ?{
+	DUP2 syms/find DUP2 #ffff NEQ2 ?{
 		POP2 DUP2 <create-placeholder>
-		DUP2 Syms/find }
+		DUP2 syms/find }
 	( | check if declared )
 	INC2k INC2 LDA #80 AND ?{
-		STH2k [ LIT &type $1 ] STH2r .Rom/head LDZ2 Refs/<new> }
+		STH2k [ LIT &type $1 ] STH2r .rom/head LDZ2 refs/<new> }
 	( | mark as used )
 	INC2k INC2 LDAk #40 ORA ROT ROT STA
 	NIP2 LDA2 JMP2r
 
-@Refs/<new> ( type value* addr* -- )
+@refs/<new> ( type value* addr* -- )
 	[ LIT2 &ptr =&mem ] STH2k
 	( addr* ) STA2
 	( value* ) INC2r INC2r STH2kr STA2
@@ -213,29 +210,31 @@
 	,&ptr LDR2 ;&mem-end LTH2 ?{ ;err/refs-overflow !<set-error> }
 	JMP2r
 
-@Refs/<resolve> ( -- )
-	( TODO: Catch undefined placeholder symbols ) ,&ptr LDR2 ;&mem
+@refs/<resolve> ( -- )
+	( | TODO: Catch undefined placeholder symbols )
+	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		STH2k
 		( | route )
 		DUP2 #0004 ADD2 LDA
-		( ) DUP .Ref/abs-byte NEQ ?{ STH2kr resolve-abs STA
+		( ) DUP .Ref/abs-byte NEQ ?{ STH2kr /resolve-abs STA
 			POP }
-		( ) DUP .Ref/abs-short NEQ ?{ STH2kr resolve-abs STA2 }
-		( ) DUP .Ref/rel-byte NEQ ?{ STH2kr resolve-rel STA
+		( ) DUP .Ref/abs-short NEQ ?{ STH2kr /resolve-abs STA2 }
+		( ) DUP .Ref/rel-byte NEQ ?{ STH2kr /resolve-rel STA
 			POP }
-		( ) DUP .Ref/rel-short NEQ ?{ STH2kr resolve-rel STA2 }
+		( ) DUP .Ref/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
 		POP POP2r
 		( ) #0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@resolve-abs ( ref* -- value* addr* )
+@refs/resolve-abs ( ref* -- value* addr* )
 	( value* ) INC2k INC2 LDA2 LDA2
-	( addr* ) SWP2 LDA2 ;Rom/mem ADD2 JMP2r
+	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
-@resolve-rel ( ref* -- value* addr* )
+@refs/resolve-rel ( ref* -- value* addr* )
+	( | TODO: catch distance overflow )
 	( value* ) INC2k INC2 LDA2 LDA2 OVR2 LDA2 INC2 INC2 SUB2
-	( addr* ) SWP2 LDA2 ;Rom/mem ADD2 JMP2r
+	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @get-abs-byte ( label* -- addr )
 	.Ref/abs-byte ;get-ref/type STA
@@ -246,49 +245,50 @@
 
 @get-rel-byte ( label* -- distance )
 	.Ref/rel-byte ;get-ref/type STA
-	( TODO: catch distance overflow ) get-ref .Rom/head LDZ2 INC2 INC2 SUB2 NIP JMP2r
+	( | TODO: catch distance overflow )
+	get-ref .rom/head LDZ2 INC2 INC2 SUB2 NIP JMP2r
 
 @get-rel-short ( label* -- distance* )
 	.Ref/rel-short ;get-ref/type STA
-	get-ref .Rom/head LDZ2 INC2 INC2 SUB2 JMP2r
+	get-ref .rom/head LDZ2 INC2 INC2 SUB2 JMP2r
 
 (
 @|Library )
 
-@Lib ( runics )
-	&padabs INC2 get-any !Rom/<set-head>
-	&padrel INC2 get-any .Rom/head LDZ2 ADD2 !Rom/<set-head>
+@lib ( runics )
+	&padabs INC2 get-any !rom/<set-head>
+	&padrel INC2 get-any .rom/head LDZ2 ADD2 !rom/<set-head>
 	&toplab INC2 !<set-scope>
 	&sublab INC2 get-sublabel !<create-symbol>
-	&litrel #80 Rom/<write-byte> &rawrel INC2 get-rel-byte !Rom/<write-byte>
-	&litzep #80 Rom/<write-byte> &rawzep INC2 get-abs-byte !Rom/<write-byte>
-	&litabs #a0 Rom/<write-byte> &rawabs INC2 get-abs-short !Rom/<write-short>
-	&litjci INC2 #20 !Rom/<write-call>
-	&litjmi INC2 #40 !Rom/<write-call>
-	&litjsi #60 !Rom/<write-call>
-	&lithex INC2 !Rom/<write-lithex>
-	&rawstr INC2 !Rom/<write-str>
-	&lambda POP2 !Lambda/pop
+	&litrel #80 rom/<write-byte> &rawrel INC2 get-rel-byte !rom/<write-byte>
+	&litzep #80 rom/<write-byte> &rawzep INC2 get-abs-byte !rom/<write-byte>
+	&litabs #a0 rom/<write-byte> &rawabs INC2 get-abs-short !rom/<write-short>
+	&litjci INC2 #20 !rom/<write-call>
+	&litjmi INC2 #40 !rom/<write-call>
+	&litjsi #60 !rom/<write-call>
+	&lithex INC2 !rom/<write-lithex>
+	&rawstr INC2 !rom/<write-str>
+	&lambda POP2 !lambda/pop
 	&comment POP2 !<walk-comment>
-	&inctal INC2k ;Include/mem <scpy>
+	&inctal INC2k ;include/mem <scpy>
 	<sclr>
-	;Include/mem !handle-file
+	;include/mem !handle-file
 	&ignore POP2 JMP2r
 
 (
 @|Lambda )
 
-@Lambda/push ( -- name* )
+@lambda/push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
 	DUP [ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
 	STA
 	( >> )
 
-@Lambda/name ( id -- str* )
+@lambda/name ( id -- str* )
 	DUP #04 SFT hexc SWP hexc ,&id STR2
 	;&sym JMP2r
 
-@Lambda/pop ( -- )
+@lambda/pop ( -- )
 	,&&ptr LDR2 #0001 SUB2 LDAk /name <create-symbol>
 	,&&ptr STR2
 	JMP2r
@@ -297,7 +297,7 @@
 (
 @|Syms )
 
-@Syms/find ( name* -- <addr>* )
+@syms/find ( name* -- <addr>* )
 	,&t STR2
 	/get-bounds
 	&>l ( -- )
@@ -305,19 +305,19 @@
 			scap/ INC2 GTH2k ?&>l &end POP2 POP2 #ffff JMP2r }
 	#0003 SUB2 NIP2 JMP2r
 
-@Syms/get-bounds ( -- to* from* )
+@syms/get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
 
-@Syms/<push-short> ( short* -- )
+@syms/<push-short> ( short* -- )
 	SWP /<push-byte>
 	( >> )
 
-@Syms/<push-byte> ( byte -- )
+@syms/<push-byte> ( byte -- )
 	[ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
 	STA
 	JMP2r
 
-@Syms/<push-string> ( word* -- )
+@syms/<push-string> ( word* -- )
 	,&&ptr LDR2 STH2k <scpy>
 	STH2r scap/ INC2 ,&&ptr STR2
 	JMP2r
@@ -325,49 +325,49 @@
 (
 @|Rom )
 
-@Rom/<write-str> ( str* -: )
+@rom/<write-str> ( str* -: )
 	LDAk /<write-byte>
 	INC2 LDAk ?&<write-str>
 	POP2 JMP2r
 
-@Rom/<write-opcode> ( str* -: )
+@rom/<write-opcode> ( str* -: )
 	find-opcode !&<write-byte>
 
-@Rom/<write-lithex> ( str* -: )
+@rom/<write-lithex> ( str* -: )
 	is-hex ?{ ;err/number <set-error> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
-@Rom/<write-rawhex> ( str* -: )
+@rom/<write-rawhex> ( str* -: )
 	DUP2 slen NIP
 	( >> )
 
-@Rom/<write-hex> ( str* len -- )
+@rom/<write-hex> ( str* len -- )
 	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
 	#04 NEQ ?{ shex !&<write-short> }
 	POP2 ;err/number !<set-error>
 
-@Rom/<write-call> ( str* opc -: )
+@rom/<write-call> ( str* opc -: )
 	/<write-byte>
 	get-rel-short
 	( >> )
 
-@Rom/<write-short> ( short* -: )
+@rom/<write-short> ( short* -: )
 	SWP /<write-byte>
 	( >> )
 
-@Rom/<write-byte> ( byte -: )
+@rom/<write-byte> ( byte -: )
 	DUP .&head LDZ2 INC2k STH2
 	;&mem ADD2 STA
 	/<set-length>
 	STH2r
 	( >> )
 
-@Rom/<set-head> ( v* -: )
+@rom/<set-head> ( v* -: )
 	.&head STZ2
 	JMP2r
 
-@Rom/<set-length> ( byte -- )
+@rom/<set-length> ( byte -- )
 	?{ JMP2r }
 	.&head LDZ2
 	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
@@ -375,7 +375,7 @@
 	.&length STZ2
 	JMP2r
 
-@Rom/<save> ( -: )
+@rom/<save> ( -: )
 	;dst .File/name DEO2
 	.&length LDZ2 #00ff SUB2 .File/length DEO2
 	;&output .File/write DEO2
@@ -537,7 +537,6 @@
 	&reference "Reference $1
 	&distance "Distance $1
 	&symbol "Symbol $1
-	&token "Token $1
 	&sublabel "Sublabel $1
 	&opcode "Opcode $1
 	&zeropage "Zero-page $1
@@ -551,32 +550,32 @@
 	&brk "BRK ]
 
 @runes [
-	"| =Lib/padabs "$ =Lib/padrel
-	"} =Lib/lambda "( =Lib/comment
-	"@ =Lib/toplab "& =Lib/sublab
-	", =Lib/litrel "_ =Lib/rawrel
-	". =Lib/litzep "- =Lib/rawzep
-	"; =Lib/litabs "= =Lib/rawabs
-	"? =Lib/litjci "! =Lib/litjmi
-	5b =Lib/ignore 5d =Lib/ignore
-	"# =Lib/lithex "" =Lib/rawstr
-	"~ =Lib/inctal ]
+	"| =lib/padabs "$ =lib/padrel
+	"} =lib/lambda "( =lib/comment
+	"@ =lib/toplab "& =lib/sublab
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	5b =lib/ignore 5d =lib/ignore
+	"# =lib/lithex "" =lib/rawstr
+	"~ =lib/inctal ]
 	&end
 (
 @|Buffers )
 
 
-@Lambda/mem $100
+@lambda/mem $100
 
-@Include/mem $30
+@include/mem $30
 
-@Refs/mem ( addr*, symbol*, ref/type )
+@refs/mem ( addr*, symbol*, ref/type )
 	$1800 &mem-end
 
-@Syms/mem ( addr*, refs, body[] )
+@syms/mem ( addr*, refs, body[] )
 
 
-|8000 @Rom/mem $100
+|8000 @rom/mem $100
 
-@Rom/output
+@rom/output
 
