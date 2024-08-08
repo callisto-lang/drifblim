@@ -50,7 +50,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "6 20 "Aug 20 "2024 $2
+	( date ) "8 20 "Aug 20 "2024 $2
 
 (
 @|tokenizer )
@@ -106,7 +106,7 @@
 	JMP2r
 
 @<print-info> ( -- )
-	( print unused ) Heap/get-bounds
+	Heap/get-bounds
 	&>l ( -- )
 		( is used ) INC2k INC2 LDA #40 AND ?{
 			( capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
@@ -220,10 +220,10 @@
 	( value* ) INC2r INC2r STH2kr STA2
 	( type ) INC2r INC2r STH2kr STA
 	( save ) INC2r [ LITr _&ptr ] STR2r
-	,&ptr LDR2 ;&mem SUB2 <phex>
-	LIT "/ #18 DEO
-	;&mem-end ;&mem SUB2 <phex>
-	#0a18 DEO
+	( | check overflow )
+	,&ptr LDR2 ;&mem-end LTH2 ?{
+		;err/refs-overflow !<set-error>
+	}
 	JMP2r
 
 @Refs/<resolve> ( -- )
@@ -341,6 +341,9 @@
 	;Include/mem !handle-file
 	&ignore POP2 JMP2r
 
+(
+@|Lambda )
+
 @Lambda/push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
 	DUP [ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
@@ -356,6 +359,9 @@
 	,&&ptr STR2
 	JMP2r
 	&sym cebb &id 0000 $1
+
+(
+@|Heap )
 
 @Heap/<push-short> ( short* -- )
 	SWP /<push-byte>
@@ -373,6 +379,9 @@
 
 @Heap/get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
+
+(
+@|Rom )
 
 @Rom/<write-str> ( str* -: )
 	LDAk /<write-byte>
@@ -539,6 +548,7 @@
 	&opcode "Opcode $1
 	&nested "Nested $1
 	&zeropage "Zero-page $1
+	&refs-overflow "Refs 20 "Overflow $1
 
 @opcodes [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
