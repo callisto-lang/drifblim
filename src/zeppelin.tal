@@ -302,7 +302,8 @@
 	/get-bounds
 	&>l ( -- )
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?{
-			scap/ INC2 GTH2k ?&>l &end POP2 POP2 #ffff JMP2r }
+			scap/ INC2 GTH2k ?&>l
+		POP2 POP2 #ffff JMP2r }
 	#0003 SUB2 NIP2 JMP2r
 
 @syms/get-bounds ( -- to* from* )
@@ -435,7 +436,7 @@
 			POP [ LIT ") ] NEQ ?{ STHkr ?{ POPr JMP2r }
 				[ LITr 01 ] SUBr }
 			!&>s }
-	JMP2r
+	POPr JMP2r
 
 (
 @|stdlib )
