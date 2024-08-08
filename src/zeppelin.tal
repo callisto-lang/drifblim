@@ -253,22 +253,36 @@
 		DUP2 find-symbol }
 	( | check if declared )
 	INC2k INC2 LDA #80 AND ?{
-		[ LIT &type $1 ] .head LDZ2 Refs/<new> }
+		[ LIT &type $1 ] #0000 .head LDZ2 Refs/<new> }
 	NIP2 LDA2 JMP2r
 
 @Refs
-	&<new> ( type addr* -- )
-	[ LIT2 &ptr =&mem ] STA2k INC2 INC2 NIP2 STAk INC2 ,&ptr STR2
-	POP JMP2r
+	&<new> ( type value* addr* -- )
+	[ LIT2 &ptr =&mem ] STH2k
+	( addr* ) STA2
+	( value* ) INC2r INC2r STH2kr STA2
+	( type ) INC2r INC2r STH2kr STA
+	( save ) INC2r [ LITr _&ptr ] STR2r
+	JMP2r
 
 	&<resolve> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
+		( | route )
+		INC2k INC2 LDA
+		( ) DUP .Ref/abs-byte NEQ ?{ }
+		( ) DUP .Ref/abs-short NEQ ?{ }
+		( ) DUP .Ref/rel-byte NEQ ?{ }
+		( ) DUP .Ref/rel-short NEQ ?{ }
+		POP
+		( | misc.. )
 		LDA2k <phex>
 		#2018 DEO
-		INC2k INC2 LDA <phex>/b
+		INC2k INC2 LDA2 <phex>
+		#2018 DEO
+		INC2k INC2 INC2 INC2 LDA <phex>/b
 		#0a18 DEO
-		#0003 ADD2 GTH2k ?&>l
+		#0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
 @get-abs-byte ( label* -- addr )
