@@ -125,7 +125,7 @@
 	;dict/labels !<pstr>/
 
 (
-@|Symbols )
+@|References )
 
 @get-sublabel ( name* -- sublabel* )
 	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
@@ -162,7 +162,9 @@
 
 	&not-unique ( name* -- )
 	( | find placeholder )
-	( TODO: Optimize ) DUP2 Syms/find INC2 INC2 LDA #80 AND ?{
+	( TODO:
+	| Optimize
+	| TODO: merged with placeholder ) DUP2 Syms/find INC2 INC2 LDA #80 AND ?{
 		Syms/find .Rom/head LDZ2 OVR2 STA2
 		INC2 INC2 LDAk #80 ORA ROT ROT STA
 		JMP2r }
@@ -172,7 +174,6 @@
 	is-hex ?&invalid
 	is-opcode ?&invalid
 	is-runic ?&invalid
-	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	( addr* ) #ffff Syms/<push-short>
 	( refs ) #40 Syms/<push-byte>
 	( name[] ) !Syms/<push-string>
@@ -214,7 +215,7 @@
 	JMP2r
 
 @Refs/<resolve> ( -- )
-	,&ptr LDR2 ;&mem
+	( TODO: Catch undefined placeholder symbols ) ,&ptr LDR2 ;&mem
 	&>l ( -- )
 		STH2k
 		( | route )
@@ -226,7 +227,7 @@
 			STH2kr INC2 INC2 LDA2 LDA2
 			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA2 }
 		( ) DUP .Ref/rel-byte NEQ ?{
-			( value ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2 NIP
+			( catch distance overflow ) ( value ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2 NIP
 			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA }
 		( ) DUP .Ref/rel-short NEQ ?{
 			( value* ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2
@@ -251,58 +252,7 @@
 	get-ref .Rom/head LDZ2 INC2 INC2 SUB2 JMP2r
 
 (
-@|helpers )
-
-@is-hex ( str* -- str* f )
-	DUP2
-	&>w ( -- )
-		LDAk chex INC ?{ POP2 #00 JMP2r }
-		INC2 LDAk ?&>w
-	POP2 #01 JMP2r
-
-@is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
-	#01 JMP2r
-
-@is-runic ( str* -- str* f )
-	LDAk find-rune INC2 ORA JMP2r
-
-@find-rune ( char -- <addr>* )
-	,&rune STR
-	;runes/end ;runes
-	&>l ( -- )
-		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ffff JMP2r
-
-@find-opcode ( name* -- byte )
-	STH2
-	#2000
-	&>l ( -- )
-		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
-		INC GTHk ?&>l
-	POP2 POP2r #00 JMP2r
-
-	&on-found ( `name* bounds* -- byte )
-	( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
-	( move to modes ) STH2r #0003 ADD2
-	( keep flag ) [ LITr 00 ]
-	&>w ( -- )
-		LDAk #20 OVR [ LIT "2 ] EQU ?&end
-		DUP ADD OVR [ LIT "r ] EQU ?&end
-		DUP ADD OVR [ LIT "k ] EQU ?&end
-		DUP ADD OVR #00 EQU ?&end
-		;err/opcode <set-warn> &end STH
-		POP ORAr INC2 LDAk ?&>w
-	POP2 STHr ADD JMP2r
-
-@<stream-until> ( c -- )
-	;&c feof ?<sclr>
-	[ LIT &c $1 ] EQUk ?{ POP !<stream-until> }
-	POP2 JMP2r
-
-(
-@|objects )
+@|Library )
 
 @Lib ( runics )
 	&padabs INC2 get-any !Rom/<set-head>
@@ -346,17 +296,16 @@
 (
 @|Syms )
 
-@Syms/get-bounds ( -- to* from* )
-	,&&ptr LDR2 ;&mem JMP2r
-
 @Syms/find ( name* -- <addr>* )
 	,&t STR2
 	/get-bounds
 	&>l ( -- )
-		EQU2k ?&end
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?{
 			scap/ INC2 GTH2k ?&>l &end POP2 POP2 #ffff JMP2r }
 	#0003 SUB2 NIP2 JMP2r
+
+@Syms/get-bounds ( -- to* from* )
+	,&&ptr LDR2 ;&mem JMP2r
 
 @Syms/<push-short> ( short* -- )
 	SWP /<push-byte>
@@ -432,6 +381,57 @@
 	JMP2r
 
 (
+@|Helpers )
+
+@is-hex ( str* -- str* f )
+	DUP2
+	&>w ( -- )
+		LDAk chex INC ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&>w
+	POP2 #01 JMP2r
+
+@is-opcode ( str* -- str* f )
+	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
+	#01 JMP2r
+
+@is-runic ( str* -- str* f )
+	LDAk find-rune INC2 ORA JMP2r
+
+@find-rune ( char -- <addr>* )
+	,&rune STR
+	;runes/end ;runes
+	&>l ( -- )
+		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 #ffff JMP2r
+
+@find-opcode ( name* -- byte )
+	STH2
+	#2000
+	&>l ( -- )
+		#00 OVR #03 MUL ;opcodes ADD2 STH2kr scmp3 ?&on-found
+		INC GTHk ?&>l
+	POP2 POP2r #00 JMP2r
+
+	&on-found ( `name* bounds* -- byte )
+	( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
+	( move to modes ) STH2r #0003 ADD2
+	( keep flag ) [ LITr 00 ]
+	&>w ( -- )
+		LDAk #20 OVR [ LIT "2 ] EQU ?&end
+		DUP ADD OVR [ LIT "r ] EQU ?&end
+		DUP ADD OVR [ LIT "k ] EQU ?&end
+		DUP ADD OVR #00 EQU ?&end
+		;err/opcode <set-warn> &end STH
+		POP ORAr INC2 LDAk ?&>w
+	POP2 STHr ADD JMP2r
+
+@<stream-until> ( c -- )
+	;&c feof ?<sclr>
+	( TODO: catch nested comments ) [ LIT &c $1 ] EQUk ?{ POP !<stream-until> }
+	POP2 JMP2r
+
+(
 @|stdlib )
 
 @scap ( str* -: end* )
@@ -471,11 +471,8 @@
 @wcmp ( a* b* -: f )
 	STH2
 	&>l ( a* `b* -- f )
-		LDAk #21 LTH ?&end
-		LDAk LDAkr STHr NEQ ?&end
-		INC2 INC2r !&>l
-
-	&end ( a* `b* -- f )
+		LDAk #21 LTH ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
 @hexc ( hex -- char )
