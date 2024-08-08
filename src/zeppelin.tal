@@ -150,7 +150,7 @@
 
 @<create-symbol> ( name* -- )
 	DUP2 syms/find INC2 ORA ?&not-unique
-	#80 .rom/head LDZ2 !syms/<push>
+	( unique ) #80 .rom/head LDZ2 !syms/<push>
 
 	&not-unique ( name* -- )
 	( | find placeholder, TODO: optimize )
@@ -159,9 +159,6 @@
 		INC2 INC2 LDAk #80 ORA ROT ROT STA
 		JMP2r }
 	POP2 ;err/duplicate !<set-error>
-
-@<create-placeholder> ( name* -- )
-	#30 #ffff !syms/<push>
 
 @get-any ( str* -- value* )
 	is-hex ?shex
@@ -173,7 +170,8 @@
 	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	( | find symbol or create it )
 	DUP2 syms/find DUP2 #ffff NEQ2 ?{
-		POP2 DUP2 <create-placeholder>
+		( ffff ) POP2
+		( forward declaration ) DUP2 #30 #ffff syms/<push>
 		DUP2 syms/find }
 	( | check if declared )
 	INC2k INC2 LDA #80 AND ?{
