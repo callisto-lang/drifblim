@@ -106,8 +106,9 @@
 	JMP2r
 
 @<print-info> ( -- )
-	syms/get-bounds
+	( > count ) [ LIT2r 0000 ] syms/get-bounds
 	&>l ( -- )
+		INC2r
 		( is used ) INC2k INC2 LDA #40 AND ?{
 			( is capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
 				;dict/unused <pstr>/
@@ -121,7 +122,7 @@
 	;dict/in <pstr>/
 	.rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
-	;<create-symbol>/count LDA2 <pdec>
+	( count > ) STH2r #0001 SUB2 <pdec>
 	;dict/labels !<pstr>/
 
 (
@@ -149,7 +150,6 @@
 
 @<create-symbol> ( name* -- )
 	DUP2 syms/find INC2 ORA ?&not-unique
-	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
 	#80 .rom/head LDZ2 !syms/<push>
 
 	&not-unique ( name* -- )
