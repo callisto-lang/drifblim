@@ -59,7 +59,7 @@
 	#0100 Rom/<set-head>
 	;dict/reset <set-scope>
 	;src handle-file .halt LDZ ?{ Refs/<resolve>
-		Rom/<save> !<print-summary> }
+		Rom/<save> !<print-info> }
 	JMP2r
 
 @handle-file ( f* -- )
@@ -105,26 +105,19 @@
 	#0a18 DEO
 	JMP2r
 
-(
-@|output )
-
-@<print-summary> ( -- )
+@<print-info> ( -- )
 	( print unused ) Heap/get-bounds
 	&>l ( -- )
-		INC2k INC2 LDA <phex>/b
-		#2018 DEO
-		DUP2 #0003 ADD2 <pstr>
-		#0a18 DEO
-		INC2k INC2 LDA ?&skip
-		DUP2 #0003 ADD2 LDA ciuc ?&skip
-		;dict/unused <pstr>/
-		DUP2 #0003 ADD2 <pstr>/
-		#0a18 DEO &skip #0003 ADD2 scap/ INC2 GTH2k ?&>l
+		( is used ) INC2k INC2 LDA #40 AND ?{
+			( capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
+				;dict/unused <pstr>/
+				DUP2 #0003 ADD2 <pstr>/
+				#0a18 DEO } }
+		#0003 ADD2 scap/ INC2 GTH2k ?&>l
 	POP2 POP2
 	( | result )
 	;dict/assembled <pstr>/
 	;dst <pstr>/
-	( | length )
 	;dict/in <pstr>/
 	.Rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
