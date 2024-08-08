@@ -53,7 +53,7 @@
 	( date ) "8 20 "Aug 20 "2024 $2
 
 (
-@|tokenizer )
+@|Tokenizer )
 
 @<assemble> ( -- )
 	#0100 Rom/<set-head>
@@ -106,7 +106,7 @@
 	JMP2r
 
 @<print-info> ( -- )
-	Heap/get-bounds
+	Syms/get-bounds
 	&>l ( -- )
 		( is used ) INC2k INC2 LDA #40 AND ?{
 			( capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
@@ -153,9 +153,9 @@
 	is-runic ?&invalid
 	DUP2 find-symbol INC2 ORA ?&not-unique
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) .Rom/head LDZ2 Heap/<push-short>
-	( refs ) #80 Heap/<push-byte>
-	( name[] ) !Heap/<push-string>
+	( addr* ) .Rom/head LDZ2 Syms/<push-short>
+	( refs ) #80 Syms/<push-byte>
+	( name[] ) !Syms/<push-string>
 
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
@@ -173,9 +173,9 @@
 	is-opcode ?&invalid
 	is-runic ?&invalid
 	( count ) [ LIT2 &count $2 ] INC2 ,&count STR2
-	( addr* ) #ffff Heap/<push-short>
-	( refs ) #40 Heap/<push-byte>
-	( name[] ) !Heap/<push-string>
+	( addr* ) #ffff Syms/<push-short>
+	( refs ) #40 Syms/<push-byte>
+	( name[] ) !Syms/<push-string>
 
 	&invalid ( name* -- )
 	POP2 ;err/symbol !<set-error>
@@ -185,7 +185,7 @@
 
 @find-symbol ( name* -- <addr>* )
 	,&t STR2
-	Heap/get-bounds
+	Syms/get-bounds
 	&>l ( -- )
 		EQU2k ?&end
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?&found
@@ -221,9 +221,7 @@
 	( type ) INC2r INC2r STH2kr STA
 	( save ) INC2r [ LITr _&ptr ] STR2r
 	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{
-		;err/refs-overflow !<set-error>
-	}
+	,&ptr LDR2 ;&mem-end LTH2 ?{ ;err/refs-overflow !<set-error> }
 	JMP2r
 
 @Refs/<resolve> ( -- )
@@ -309,10 +307,6 @@
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
-@force-single ( addr* -- addr* )
-	INC2k LDA ?{ JMP2r }
-	;err/token !<set-warn>
-
 @<stream-util> ( c -- )
 	;&c feof ?<sclr>
 	[ LIT &c $1 ] EQUk ?{ POP !<stream-util> }
@@ -334,8 +328,8 @@
 	&litjsi #60 !Rom/<write-call>
 	&lithex INC2 !Rom/<write-lithex>
 	&rawstr INC2 !Rom/<write-str>
-	&lambda force-single POP2 !Lambda/pop
-	&comment force-single [ LIT ") ] <stream-util> !<sclr>
+	&lambda POP2 !Lambda/pop
+	&comment LIT ") <stream-util> !<sclr>
 	&inctal INC2k ;Include/mem <scpy>
 	<sclr>
 	;Include/mem !handle-file
@@ -361,23 +355,23 @@
 	&sym cebb &id 0000 $1
 
 (
-@|Heap )
+@|Syms )
 
-@Heap/<push-short> ( short* -- )
+@Syms/<push-short> ( short* -- )
 	SWP /<push-byte>
 	( >> )
 
-@Heap/<push-byte> ( byte -- )
+@Syms/<push-byte> ( byte -- )
 	[ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
 	STA
 	JMP2r
 
-@Heap/<push-string> ( word* -- )
+@Syms/<push-string> ( word* -- )
 	,&&ptr LDR2 STH2k <scpy>
 	STH2r scap/ INC2 ,&&ptr STR2
 	JMP2r
 
-@Heap/get-bounds ( -- to* from* )
+@Syms/get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
 
 (
@@ -442,10 +436,6 @@
 (
 @|stdlib )
 
-@feof ( addr* -: f )
-	.File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU JMP2r
-
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
 	JMP2r
@@ -453,30 +443,10 @@
 @slen ( str* -: len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
-@wcmp ( a* b* -: f )
-	STH2
-	&>l ( a* `b* -- f )
-		LDAk #21 LTH ?&end
-		LDAk LDAkr STHr NEQ ?&end
-		INC2 INC2r !&>l
-
-	&end ( a* `b* -- f )
-	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
-
 @scmp3 ( a* b* -- f )
 	STH2
 	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
 	LDA2r LDA2 STH2r EQU2 JMP2r
-
-@chex ( c -: <val> )
-	[ LIT "0 ] SUB DUP #0a LTH ?&end
-	#27 SUB DUP #10 LTH ?&end
-	POP #ff &end JMP2r
-
-@hexc ( hex -- char )
-	#0f AND #0a LTHk ?{
-		SUB [ LIT "a ] ADD JMP2r }
-	POP [ LIT "0 ] ADD JMP2r
 
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
@@ -485,9 +455,6 @@
 		( res ) LDAk chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
-
-@ciuc ( char -- uppercase )
-	[ LIT "A ] SUB #1a LTH JMP2r
 
 @<scpy> ( src* dst* -: )
 	STH2
@@ -502,6 +469,33 @@
 		STAk INC2 LDAk ?&>w
 	STA
 	JMP2r
+
+@wcmp ( a* b* -: f )
+	STH2
+	&>l ( a* `b* -- f )
+		LDAk #21 LTH ?&end
+		LDAk LDAkr STHr NEQ ?&end
+		INC2 INC2r !&>l
+
+	&end ( a* `b* -- f )
+	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
+
+@hexc ( hex -- char )
+	#0f AND #0a LTHk ?{
+		SUB [ LIT "a ] ADD JMP2r }
+	POP [ LIT "0 ] ADD JMP2r
+
+@ciuc ( char -- uppercase )
+	[ LIT "A ] SUB #1a LTH JMP2r
+
+@chex ( c -: <val> )
+	[ LIT "0 ] SUB DUP #0a LTH ?&end
+	#27 SUB DUP #10 LTH ?&end
+	POP #ff &end JMP2r
+
+@feof ( addr* -: f )
+	.File/read DEO2
+	[ LIT2 00 -File/success-lb ] DEI EQU JMP2r
 
 @<pstr> ( str* -: )
 	LDAk #18 DEO
@@ -526,14 +520,13 @@
 	JMP2r
 
 (
-@|assets )
+@|Assets )
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
-	&sym-ext ".sym $1
 
 @err "!! 20 "Error: 20 $1
 	&file "File $1
@@ -570,7 +563,7 @@
 	"~ =Lib/inctal ]
 	&end
 (
-@|buffers )
+@|Buffers )
 
 
 @Lambda/mem $100
@@ -580,7 +573,7 @@
 @Refs/mem ( addr*, symbol*, ref/type )
 	$1800 &mem-end
 
-@Heap/mem ( addr*, refs, body[] )
+@Syms/mem ( addr*, refs, body[] )
 
 
 |8000 @Rom/mem $100
