@@ -95,11 +95,4 @@ $20 @label2
 
 @hello-word "Hello 20 "World! 0a $1
 
-|400
-
-,next 
-
-|450 @next
-
-
 
