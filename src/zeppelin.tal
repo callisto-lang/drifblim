@@ -69,7 +69,8 @@
 	;dict/reset <set-scope>
 	;src handle-file .halt LDZ ?{
 		Refs/<resolve>
-		( Rom/<save> Sym/<save> #800f DEO !<print-summary> ) }
+		Rom/<save>
+		(  Sym/<save> #800f DEO !<print-summary> ) }
 	JMP2r
 
 @handle-file ( f* -- )
@@ -278,12 +279,25 @@
 		( ) DUP .Ref/abs-byte NEQ ?{
 			INC2kr INC2r STH2r LDA2 INC2 LDA STH2kr STA }
 		( ) DUP .Ref/abs-short NEQ ?{
-			INC2kr INC2r STH2r LDA2 LDA2 STH2kr STA2 }
+			STH2kr LDA2 <phex> #2018 DEO
+			STH2kr INC2 INC2 LDA2 LDA2 <phex> #2018 DEO
+			STH2kr INC2 INC2 LDA2 #0003 ADD2 <pstr> #0a18 DEO
+			STH2kr INC2 INC2 LDA2 LDA2	STH2kr LDA2 ;Rom/mem ADD2 STA2
+
+			 }
 		( ) DUP .Ref/rel-byte NEQ ?{
 			STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 SUB2 NIP STH2kr STA }
 		( ) DUP .Ref/rel-short NEQ ?{
 			STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 SUB2 STH2kr STA2 }
 		POP POP2r
+		
+		( | debug )
+		LDA2k <phex> #2018 DEO
+		INC2k INC2 LDA2 <phex> #2018 DEO
+		DUP2 #0004 ADD2 LDA <phex>/b #0a18 DEO
+
+
+
 		( ) #0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
