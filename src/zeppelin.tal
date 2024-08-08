@@ -219,22 +219,29 @@
 		STH2k
 		( | route )
 		DUP2 #0004 ADD2 LDA
-		( ) DUP .Ref/abs-byte NEQ ?{
-			( value ) STH2kr INC2 INC2 LDA2 INC2 LDA
-			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA }
-		( ) DUP .Ref/abs-short NEQ ?{
-			( value* ) STH2kr INC2 INC2 LDA2 LDA2
-			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA2 }
-		( ) DUP .Ref/rel-byte NEQ ?{
-			( | catch distance overflow )
-			( value ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2 NIP
-			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA }
-		( ) DUP .Ref/rel-short NEQ ?{
-			( value* ) STH2kr INC2 INC2 LDA2 LDA2 STH2kr LDA2 INC2 INC2 SUB2
-			( addr* ) STH2kr LDA2 ;Rom/mem ADD2 STA2 }
+		( ) DUP .Ref/abs-byte NEQ ?{ STH2kr resolve-abs STA
+			POP }
+		( ) DUP .Ref/abs-short NEQ ?{ STH2kr resolve-abs STA2 }
+		( ) DUP .Ref/rel-byte NEQ ?{ STH2kr resolve-rel-byte }
+		( ) DUP .Ref/rel-short NEQ ?{ STH2kr resolve-rel-short }
 		POP POP2r
 		( ) #0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
+
+@resolve-abs ( ref* -- value* addr* )
+	( value* ) INC2k INC2 LDA2 LDA2
+	( addr* ) SWP2 LDA2 ;Rom/mem ADD2 JMP2r
+
+@resolve-rel-byte ( ref* -- )
+	( | catch distance overflow )
+	( value ) INC2k INC2 LDA2 LDA2 OVR2 LDA2 INC2 INC2 SUB2
+	( addr* ) SWP2 LDA2 ;Rom/mem ADD2 STA
+	POP JMP2r
+
+@resolve-rel-short ( ref* -- )
+	( value* ) INC2k INC2 LDA2 LDA2 OVR2 LDA2 INC2 INC2 SUB2
+	( addr* ) SWP2 LDA2 ;Rom/mem ADD2 STA2
+	JMP2r
 
 @get-abs-byte ( label* -- addr )
 	.Ref/abs-byte ;get-ref/type STA
