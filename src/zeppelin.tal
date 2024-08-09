@@ -184,7 +184,6 @@
 	JMP2r
 
 @refs/<resolve> ( -- )
-	( | TODO: Catch undefined placeholder symbols )
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		STH2k
@@ -205,6 +204,7 @@
 	( sym->addr* ) LDA2k DUP2 #ffff NEQ2 ?{
 		OVR2 #0003 ADD2 ;token <scpy>
 		;err/reference <set-error> }
+	( | sym* addr* )
 	NIP2 JMP2r
 
 @refs/resolve-abs ( ref* -- value* addr* )
