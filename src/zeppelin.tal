@@ -178,13 +178,13 @@
 	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
 	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	( | find symbol or create it )
-	DUP2 syms/find-create
+	syms/find-create
 	( | check if declared )
-	INC2k INC2 LDA .SymType/declared AND ?{
+	INC2k INC2 STH2k LDA .SymType/declared AND ?{
 		STH2k [ LIT &type $1 ] STH2r .rom/head LDZ2 refs/<push> }
 	( | mark as used )
-	INC2k INC2 LDAk .SymType/used ORA ROT ROT STA
-	NIP2 LDA2 JMP2r
+	LDAkr STHr .SymType/used ORA STH2r STA
+	LDA2 JMP2r
 
 @refs/<push> ( type value* addr* -- )
 	[ LIT2 &ptr =&mem ] STH2k
