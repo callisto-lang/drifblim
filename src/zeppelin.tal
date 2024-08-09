@@ -219,7 +219,7 @@
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 test-distance
+	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/get-abs-byte ( label* -- addr )
@@ -231,19 +231,16 @@
 
 @refs/get-rel-byte ( label* -- distance )
 	.RefType/rel-byte ;get-ref/type STA
-	get-ref .rom/head LDZ2 test-distance NIP JMP2r
+	get-ref DUP2 #ffff NEQ2 ?{
+		( undefined ) POP2 #00 JMP2r }
+	.rom/head LDZ2 INC2 INC2 SUB2
+	( | check distance )
+	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
+	NIP ;err/distance !<set-error>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short ;get-ref/type STA
 	get-ref .rom/head LDZ2 INC2 INC2 SUB2 JMP2r
-
-@test-distance ( target* head* -- distance* )
-	( | undefined )
-	OVR2 #ffff NEQ2 ?{ POP2 JMP2r }
-	INC2 INC2 SUB2
-	( | catch distance overflow )
-	DUP2 #0080 ADD2 POP ?{ JMP2r }
-	;err/distance !<set-error-ref>
 
 (
 @|Library )
