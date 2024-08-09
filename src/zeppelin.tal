@@ -39,6 +39,15 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP <assemble>
+		( | handle success )
+		.halt LDZ ?{
+			refs/<resolve>
+			rom/<save>
+			<print-info>
+			#010e DEO
+			#800f DEO
+			BRK }
+		( | handle error )
 		#010e DEO
 		#010f DEO
 		BRK }
@@ -50,7 +59,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Aug 20 "2024 $2
+	( date ) "9 20 "Aug 20 "2024 $2
 
 (
 @|Tokenizer )
@@ -58,9 +67,8 @@
 @<assemble> ( -- )
 	#0100 rom/<set-head>
 	;dict/reset <set-scope>
-	;src handle-file .halt LDZ ?{ refs/<resolve>
-		rom/<save> !<print-info> }
-	JMP2r
+	;src
+	( >> )
 
 @handle-file ( f* -- )
 	.File/name DEO2
@@ -129,7 +137,7 @@
 @|References )
 
 @get-sublabel ( name* -- sublabel* )
-	DUP2 slen ;sublabel slen ADD2 #0030 LTH2 ?{ ;err/sublabel !<set-error> }
+	DUP2 slen NIP ;sublabel slen NIP ADD #30 LTH ?{ ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
