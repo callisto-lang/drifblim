@@ -177,9 +177,7 @@
 	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
 	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
 	( | find symbol or create it )
-	DUP2 syms/find DUP2 #ffff NEQ2 ?{
-		( null* -> ptr* ) POP2 syms/get-ptr
-		( frwd ) OVR2 #30 #ffff syms/<push> }
+	DUP2 syms/find-create
 	( | check if declared )
 	INC2k INC2 LDA #80 AND ?{
 		STH2k [ LIT &type $1 ] STH2r .rom/head LDZ2 refs/<push> }
@@ -292,6 +290,12 @@
 			scap/ INC2 GTH2k ?&>l
 		POP2 POP2 #ffff JMP2r }
 	#0003 SUB2 NIP2 JMP2r
+
+@syms/find-create ( name* -- addr* )
+	DUP2 /find DUP2 #ffff NEQ2 ?{
+		( null* -> ptr* ) POP2 ,&&ptr LDR2
+		( frwd ) OVR2 #30 #ffff /<push> }
+	NIP2 JMP2r
 
 @syms/get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
