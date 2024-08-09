@@ -40,9 +40,9 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{
 		POP <assemble>
+		refs/<resolve>
 		( | handle success )
 		.halt LDZ ?{
-			refs/<resolve>
 			rom/<save>
 			<print-info>
 			#010e DEO
@@ -154,8 +154,7 @@
 	;scope ;sublabel <scpy>
 	[ LIT2 "/ 00 ] ;sublabel scap/
 	( ptr ) INC2k ,get-sublabel/ptr STR2
-	( cap ) STA2
-	!syms/<create>
+	( cap ) STA2 !syms/<create>
 
 @get-any ( str* -- value* )
 	is-hex ?shex
@@ -201,13 +200,20 @@
 		( ) #0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
+@refs/resolve-sym ( ref* -- ref* addr* )
+	( sym* ) INC2k INC2 LDA2
+	( sym->addr* ) LDA2k DUP2 #ffff NEQ2 ?{
+		OVR2 #0003 ADD2 ;token <scpy>
+		;err/reference <set-error> }
+	NIP2 JMP2r
+
 @refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) INC2k INC2 LDA2 LDA2
+	( value* ) /resolve-sym
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/resolve-rel ( ref* -- value* addr* )
 	( | TODO: catch distance overflow )
-	( value* ) INC2k INC2 LDA2 LDA2 OVR2 LDA2 INC2 INC2 SUB2
+	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/get-abs-byte ( label* -- addr )
