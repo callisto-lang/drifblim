@@ -355,11 +355,10 @@
 	( >> )
 
 @rom/<write-byte> ( byte -: )
-	DUP .&head LDZ2 INC2k STH2
+	DUP /<set-length>
+	.&head LDZ2 INC2k .&head STZ2
 	;&mem ADD2 STA
-	/<set-length>
-	STH2r
-	( >> )
+	JMP2r
 
 @rom/<set-head> ( v* -: )
 	.&head STZ2
