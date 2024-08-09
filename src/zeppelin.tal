@@ -100,6 +100,13 @@
 	is-opcode ?rom/<write-opcode>
 	!lib/litjsi
 
+@<set-error-ref> ( name* -- )
+	[ LIT2 01 -halt ] STZ
+	;err <pstr>
+	<pstr>
+	#0a18 DEO
+	JMP2r
+
 @<set-error> ( name* -- )
 	[ LIT2 01 -halt ] STZ
 	( >> )
@@ -231,13 +238,12 @@
 	get-ref .rom/head LDZ2 INC2 INC2 SUB2 JMP2r
 
 @test-distance ( target* head* -- distance* )
+	( | undefined )
+	OVR2 #ffff NEQ2 ?{ POP2 JMP2r }
 	INC2 INC2 SUB2
-	( | TODO: catch distance overflow )
-	DUP2 <phex>
-	#2018 DEO
-	DUP2 #0080 ADD2 POP <phex>/b
-	#0a18 DEO
-	JMP2r
+	( | catch distance overflow )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
+	;err/distance !<set-error-ref>
 
 (
 @|Library )
