@@ -158,12 +158,10 @@
 	( >> )
 
 @<create-symbol> ( name* -- )
-	DUP2 syms/find INC2 ORA ?&not-unique
-	( unique ) .SymType/declared .rom/head LDZ2 !syms/<push>
-
-	&not-unique ( name* -- )
-	( | find placeholder, TODO: optimize )
-	DUP2 syms/find INC2 INC2 LDA .SymType/declared AND ?{
+	DUP2 syms/find INC2k ORA ?{
+		( create ) POP2 .SymType/declared .rom/head LDZ2 !syms/<push> }
+	( | name* sym* -- )
+	INC2 INC2 LDA .SymType/declared AND ?{
 		syms/find .rom/head LDZ2 OVR2 STA2
 		INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		JMP2r }
