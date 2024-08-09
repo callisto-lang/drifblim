@@ -161,11 +161,11 @@
 	DUP2 syms/find INC2k ORA ?{
 		( create ) POP2 .SymType/declared .rom/head LDZ2 !syms/<push> }
 	( | name* sym* -- )
-	INC2 INC2 LDA .SymType/declared AND ?{
-		syms/find .rom/head LDZ2 OVR2 STA2
-		INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
-		JMP2r }
-	POP2 ;err/duplicate !<set-error>
+	INC2k INC2 LDA .SymType/declared AND ?{
+		( addr* ) .rom/head LDZ2 OVR2 STA2
+		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
+		( name* ) POP2 JMP2r }
+	POP2 POP2 ;err/duplicate !<set-error>
 
 @get-any ( str* -- value* )
 	is-hex ?shex
