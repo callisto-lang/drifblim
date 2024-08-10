@@ -1,13 +1,13 @@
 #!/bin/sh
 
 roms_dir=${UXN_ROMS_DIR-"$HOME/roms"}
-asm="uxnasm"
+asm="uxncli bin/drifblim.rom"
 
 # Usage(missing src)
 $asm
 
 # Usage(missing dst)
-$asm examples/hello.tal
+# $asm examples/hello.tal
 
 echo ""
 echo "== Assembling"
