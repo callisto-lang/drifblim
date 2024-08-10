@@ -13,7 +13,7 @@ echo ""
 echo "======================="
 
 echo ""
-echo "Source missing: missing.tal"
+echo "File missing: missing.tal"
 $asm "missing.tal" "bin/res.rom"
 
 echo ""
@@ -21,7 +21,7 @@ echo "Output empty: bin/res.rom"
 $asm "tests/err-empty.tal" "bin/res.rom"
 
 echo ""
-echo "Source missing: project.tal"
+echo "File missing: project.tal"
 $asm "tests/err-file.tal" "bin/res.rom"
 
 echo ""
