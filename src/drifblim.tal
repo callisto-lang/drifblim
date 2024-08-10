@@ -44,8 +44,7 @@
 		( | handle error )
 		.halt LDZ ?{
 			.rom/length LDZ2 ORA ?on-success
-			;dst ;token <scpy>
-			;err/empty <set-error> }
+			;dst ;err/empty <set-error> }
 		#010f DEO
 		BRK }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
@@ -82,9 +81,7 @@
 		;&c feof ?{
 			INC2 [ LIT &c $1 ] <handle-char>
 			[ LIT2 00 -halt ] LDZ EQU ?&>s }
-	ORA ?{
-		DUP2 ;token <scpy>
-		;err/file <set-error> }
+	ORA ?{ DUP2 ;err/file <set-error> }
 	POP2 JMP2r
 
 @<handle-char> ( c -- )
@@ -93,7 +90,7 @@
 		DUP2 <parse-token> !<sclr> }
 	#00 ;token scap/
 	( | test token size )
-	DUP2 ;token SUB2 NIP #30 LTH ?{ ;err/token <set-error> }
+	DUP2 ;token SUB2 NIP #30 LTH ?{ ;token ;err/token <set-error> }
 	STA2
 	JMP2r
 
@@ -115,11 +112,12 @@
 	#0a18 DEO
 	JMP2r
 
-@<set-error> ( name* -- )
+@<set-error> ( keyword* name* -- )
 	[ LIT2 01 -halt ] STZ
 	<pstr>
+	[ LIT2 ": 18 ] DEO
 	#2018 DEO
-	;token <pstr>
+	<pstr>
 	;dict/in <pstr>/
 	;scope <pstr>/
 	#0a18 DEO
@@ -149,7 +147,7 @@
 @|References )
 
 @get-sublabel ( name* -- sublabel* )
-	DUP2 slen NIP ;sublabel slen NIP ADD #30 LTH ?{ ;err/sublabel !<set-error> }
+	DUP2 slen NIP ;sublabel slen NIP ADD #30 LTH ?{ ;token ;err/sublabel !<set-error> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -191,7 +189,7 @@
 	( type ) INC2r INC2r STH2kr STA
 	( save ) INC2r [ LITr _&ptr ] STR2r
 	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{ ;err/refs-overflow !<set-error> }
+	,&ptr LDR2 ;&mem-end LTH2 ?{ ;token ;err/refs-overflow !<set-error> }
 	JMP2r
 
 @refs/<resolve> ( -- )
@@ -219,8 +217,7 @@
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym->addr* ) LDA2k DUP2 #ffff NEQ2 ?{
-		OVR2 #0003 ADD2 ;token <scpy>
-		;err/reference <set-error> }
+		OVR2 #0003 ADD2 ;err/reference <set-error> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
@@ -246,7 +243,7 @@
 	.rom/head LDZ2 INC2 INC2 SUB2
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	NIP ;err/distance !<set-error>
+	NIP ;token ;err/distance !<set-error>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short ;get-ref/type STA
@@ -320,7 +317,7 @@
 		( addr* ) .rom/head LDZ2 OVR2 STA2
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
-	POP2 POP2 ;err/duplicate !<set-error>
+	POP2 POP2 ;token ;err/duplicate !<set-error>
 
 @syms/get-bounds ( -- to* from* )
 	,&&ptr LDR2 ;&mem JMP2r
@@ -346,7 +343,7 @@
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	;err/label !<set-error>
+	;token ;err/label !<set-error>
 
 @syms/<save> ( -- )
 	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -374,7 +371,7 @@
 	find-opcode !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
-	is-hex ?{ ;err/hex <set-error> }
+	is-hex ?{ ;token ;err/hex <set-error> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
@@ -385,7 +382,7 @@
 @rom/<write-hex> ( str* len -- )
 	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
 	#04 NEQ ?{ shex !&<write-short> }
-	POP2 ;err/hex !<set-error>
+	POP2 ;token ;err/hex !<set-error>
 
 @rom/<write-call> ( str* opc -: )
 	/<write-byte>
@@ -409,8 +406,8 @@
 @rom/<set-length> ( byte -- )
 	?{ JMP2r }
 	.&head LDZ2
-	( ) DUP2 OVR ?{ ;err/zeropage <set-error> }
-	( ) #8000 LTH2 ?{ ;err/length <set-error> }
+	( ) DUP2 OVR ?{ ;token ;err/zeropage <set-error> }
+	( ) #8000 LTH2 ?{ ;token ;err/length <set-error> }
 	.&length STZ2
 	JMP2r
 
@@ -460,7 +457,7 @@
 		DUP ADD OVR [ LIT "r ] EQU ?&end
 		DUP ADD OVR [ LIT "k ] EQU ?&end
 		DUP ADD OVR #00 EQU ?&end
-		;err/opcode <set-error> &end STH
+		;token ;err/opcode <set-error> &end STH
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
@@ -560,17 +557,17 @@
 	&sym-ext ".sym $1
 
 @err
-	&file "File 20 "missing: $1
-	&duplicate "Label 20 "duplicate: $1
-	&label "Label 20 "invalid: $1
-	&hex "Hexadecimal 20 "invalid: $1
-	&zeropage "Writing 20 "zero-page: $1
-	&opcode "Opcode 20 "invalid: $1
-	&reference "Reference 20 "invalid: $1
-	&distance "Reference 20 "too 20 "far: $1
-	&length "Program 20 "size 20 "exceeded: $1
-	&token "Token 20 "size 20 "exceeded: $1
-	&empty "Output 20 "empty: $1
+	&file "File 20 "missing $1
+	&duplicate "Label 20 "duplicate $1
+	&label "Label 20 "invalid $1
+	&hex "Hexadecimal 20 "invalid $1
+	&zeropage "Writing 20 "zero-page $1
+	&opcode "Opcode 20 "invalid $1
+	&reference "Reference 20 "invalid $1
+	&distance "Reference 20 "too 20 "far $1
+	&length "Program 20 "size 20 "exceeded $1
+	&token "Token 20 "size 20 "exceeded $1
+	&empty "Output 20 "empty $1
 	&sublabel "Sublabel $1
 	&refs-overflow "Refs 20 "Overflow $1
 
