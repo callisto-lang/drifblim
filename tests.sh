@@ -4,10 +4,8 @@ roms_dir=${UXN_ROMS_DIR-"$HOME/roms"}
 asm="uxncli bin/drifblim.rom"
 
 # Usage(missing src)
+echo "usage: drifblim.rom in.tal out.rom"
 $asm
-
-# Usage(missing dst)
-# $asm examples/hello.tal
 
 echo ""
 echo "======================="

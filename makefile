@@ -7,11 +7,14 @@ EMU=uxncli
 all: bin/drifloon.rom bin/drifblim.rom
 
 run: run-drifblim 
+
+test: bin/drifblim.rom
+	@ ./tests.sh
 	
 run-drifblim: bin/drifblim.rom
-	@ printf "++ Assemble drifblim-bootstrap from itself\n"
+	@ printf "Assemble drifblim-bootstrap.rom with drifblim.rom\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
-	@ printf "\n++ Test drifblim-bootstrap\n"
+	@ printf "Test drifblim-bootstrap.rom\n"
 	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/res.rom
 	@ ${EMU} bin/res.rom
 run-drifloon: bin/drifloon.rom
@@ -41,13 +44,14 @@ uninstall:
 	@ rm -f ${DIR}/drifloon.rom
 	@ rm -f ${DIR}/drifblim.rom
 
-.PHONY: all clean lint run archive install uninstall run-drifloon run-drifblim
+.PHONY: all clean lint test run archive install uninstall run-drifloon run-drifblim
 
 bin/drifloon.rom: src/drifloon.tal
 	@ mkdir -p bin
 	@ ${ASM} src/drifloon.tal bin/drifloon.rom
 
 bin/drifblim.rom: src/drifblim.tal
+	@ printf "Assemble drifblim.com\n"
 	@ mkdir -p bin
 	@ ${ASM} src/drifblim.tal bin/drifblim.rom
 
