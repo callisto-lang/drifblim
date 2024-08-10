@@ -560,11 +560,11 @@
 	&label "Label 20 "invalid: $1
 	&hex "Hexadecimal 20 "invalid: $1
 	&zeropage "Writing 20 "zero-page: $1
+	&opcode "Opcode 20 "invalid: $1
 	&length "Length $1
 	&reference "Reference $1
-	&distance "Distance $1
+	&distance "Reference 20 "too 20 "far: $1
 	&sublabel "Sublabel $1
-	&opcode "Opcode $1
 	&refs-overflow "Refs 20 "Overflow $1
 
 @opcodes [

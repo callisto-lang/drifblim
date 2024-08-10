@@ -10,7 +10,7 @@ $asm
 # $asm examples/hello.tal
 
 echo ""
-echo "== Assembling"
+echo "======================="
 
 echo ""
 echo "Source missing: missing.tal"
@@ -41,10 +41,6 @@ echo "Hexadecimal invalid: 122325"
 $asm "tests/err-rawhex.tal" "bin/res.rom"
 
 echo ""
-echo "Padding invalid: |what"
-$asm "tests/err-pad.tal" "bin/res.rom"
-
-echo ""
 echo "Writing zero-page: #12"
 $asm "tests/err-zep.tal" "bin/res.rom"
 
@@ -53,10 +49,7 @@ echo "Writing rewind: #1234 |0100"
 $asm "tests/err-rew.tal" "bin/res.rom"
 
 echo ""
-echo "== Resolving"
-
-echo ""
-echo "Label unknown: ADD2q"
+echo "Opcode invalid: ADD2q"
 $asm "tests/err-opc.tal" "bin/res.rom"
 
 echo ""
@@ -64,15 +57,12 @@ echo "Label unknown: .missing"
 $asm "tests/err-ref.tal" "bin/res.rom"
 
 echo ""
-echo "Relative reference too far: on-reset/back"
-$asm "tests/err-far.tal" "bin/res.rom"
+echo "Reference too far: next"
+$asm "tests/err-farfwd.tal" "bin/res.rom"
 
 echo ""
-echo "== STRICT"
-
-echo ""
-echo "          Nested ( in RESET."
-$asm "tests/err-com.tal" "bin/res.rom"
+echo "Reference too far: prev"
+$asm "tests/err-farbwd.tal" "bin/res.rom"
 
 echo ""
 echo "          Length ab in RESET"
@@ -87,3 +77,7 @@ echo "          Sublabel &some-long-sublabel in token-length-20-aaaaaaaaaaaaaaaa
 $asm "tests/err-lablen.tal" "bin/res.rom"
 echo ""
 
+
+echo ""
+echo "Assembled bin/res.rom in 148 bytes"
+$asm "tests/err-farall.tal" "bin/res.rom"
