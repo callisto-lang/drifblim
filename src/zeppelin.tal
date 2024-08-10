@@ -44,6 +44,7 @@
 		( | handle success )
 		.halt LDZ ?{
 			rom/<save>
+			syms/<save>
 			<print-info>
 			#010e DEO
 			#800f DEO
@@ -60,7 +61,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "9 20 "Aug 20 "2024 $2
+	( date ) "10 20 "Aug 20 "2024 $2
 
 (
 @|Tokenizer )
@@ -346,6 +347,20 @@
 	/<push-string>
 	;err/symbol !<set-error>
 
+@syms/<save> ( -- )
+	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
+	SWP2 .File/name DEO2
+	;syms/mem-end ;syms/mem
+	&>w ( -- )
+		( addr ) #0002 .File/length DEO2
+		DUP2 .File/write DEO2
+		( name ) #0003 ADD2 DUP2 slen INC2 STH2k .File/length DEO2
+		DUP2 .File/write DEO2
+		STH2r ADD2 GTH2k ?&>w
+	POP2 POP2
+	( rem ext ) #00 ROT ROT STA
+	JMP2r
+
 (
 @|Rom )
 
@@ -549,6 +564,7 @@
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
+	&sym-ext ".sym $1
 
 @err "!! 20 "Error: 20 $1
 	&file "File $1
@@ -596,6 +612,7 @@
 @syms/mem ( addr*, SymType, body[] )
 
 
+|7fff &mem-end
 |8000 @rom/mem $100
 
 @rom/output
