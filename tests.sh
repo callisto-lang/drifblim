@@ -53,7 +53,7 @@ echo "Opcode invalid: ADD2q"
 $asm "tests/err-opc.tal" "bin/res.rom"
 
 echo ""
-echo "Label unknown: .missing"
+echo "Reference invalid: missing"
 $asm "tests/err-ref.tal" "bin/res.rom"
 
 echo ""
@@ -65,19 +65,10 @@ echo "Reference too far: prev"
 $asm "tests/err-farbwd.tal" "bin/res.rom"
 
 echo ""
-echo "          Length ab in RESET"
+echo "Program size exceeded."
 $asm "tests/err-length.tal" "bin/res.rom"
 
 echo ""
-echo "          Token @token-length-30-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in reset"
-$asm "tests/err-toklen.tal" "bin/res.rom"
+echo "Token size exceeded: @aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+$asm "tests/err-token.tal" "bin/res.rom"
 
-echo ""
-echo "          Sublabel &some-long-sublabel in token-length-20-aaaaaaaaaaaaaaaa"
-$asm "tests/err-lablen.tal" "bin/res.rom"
-echo ""
-
-
-echo ""
-echo "Assembled bin/res.rom in 148 bytes"
-$asm "tests/err-farall.tal" "bin/res.rom"

@@ -70,23 +70,27 @@
 	;src
 	( >> )
 
-@handle-file ( f* -- )
+@<handle-file> ( f* -- )
 	.File/name DEO2
 	#0001 .File/length DEO2
 	#0000
 	&>s ( len* -- )
 		;&c feof ?{
-			INC2 [ LIT &c $1 ] handle-char !&>s }
+			INC2 [ LIT &c $1 ] <handle-char>
+			[ LIT2 00 -halt ] LDZ EQU ?&>s }
 	ORA ?{
 		;include/mem ;token <scpy>
 		;err/source !<set-error> }
 	JMP2r
 
-@handle-char ( c -- )
+@<handle-char> ( c -- )
 	DUP #20 GTH ?{
 		POP ;token LDAk ?{ POP2 JMP2r }
 		DUP2 <parse-token> !<sclr> }
-	#00 ;token scap/ STA2
+	#00 ;token scap/
+	( | test token size )
+	DUP2 ;token SUB2 NIP #30 LTH ?{ ;err/token <set-error> }
+	STA2
 	JMP2r
 
 @<parse-token> ( t* -- )
@@ -267,7 +271,7 @@
 	&comment POP2 !<walk-comment>
 	&inctal INC2k ;include/mem <scpy>
 	<sclr>
-	;include/mem !handle-file
+	;include/mem !<handle-file>
 	&ignore POP2 JMP2r
 
 (
@@ -561,9 +565,10 @@
 	&hex "Hexadecimal 20 "invalid: $1
 	&zeropage "Writing 20 "zero-page: $1
 	&opcode "Opcode 20 "invalid: $1
-	&length "Length $1
-	&reference "Reference $1
+	&reference "Reference 20 "invalid: $1
 	&distance "Reference 20 "too 20 "far: $1
+	&length "Program 20 "size 20 "exceeded. $1
+	&token "Token 20 "size 20 "exceeded: $1
 	&sublabel "Sublabel $1
 	&refs-overflow "Refs 20 "Overflow $1
 
