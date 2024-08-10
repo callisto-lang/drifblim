@@ -74,7 +74,7 @@
 	( >> )
 
 @<handle-file> ( f* -- )
-	.File/name DEO2
+	DUP2 .File/name DEO2
 	#0001 .File/length DEO2
 	#0000
 	&>s ( len* -- )
@@ -82,9 +82,9 @@
 			INC2 [ LIT &c $1 ] <handle-char>
 			[ LIT2 00 -halt ] LDZ EQU ?&>s }
 	ORA ?{
-		;include/mem ;token <scpy>
-		;err/file !<set-error> }
-	JMP2r
+		DUP2 ;token <scpy>
+		;err/file <set-error> }
+	POP2 JMP2r
 
 @<handle-char> ( c -- )
 	DUP #20 GTH ?{
@@ -116,9 +116,6 @@
 
 @<set-error> ( name* -- )
 	[ LIT2 01 -halt ] STZ
-	( >> )
-
-@<set-warn> ( name* -- )
 	<pstr>
 	#2018 DEO
 	;token <pstr>
@@ -462,7 +459,7 @@
 		DUP ADD OVR [ LIT "r ] EQU ?&end
 		DUP ADD OVR [ LIT "k ] EQU ?&end
 		DUP ADD OVR #00 EQU ?&end
-		;err/opcode <set-warn> &end STH
+		;err/opcode <set-error> &end STH
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
