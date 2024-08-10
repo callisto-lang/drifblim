@@ -61,14 +61,14 @@ echo "Reference too far: next"
 $asm "tests/err-farfwd.tal" "bin/res.rom"
 
 echo ""
-echo "Reference too far: prev"
+echo "Reference too far: back"
 $asm "tests/err-farbwd.tal" "bin/res.rom"
-
-echo ""
-echo "Program size exceeded."
-$asm "tests/err-length.tal" "bin/res.rom"
 
 echo ""
 echo "Token size exceeded: @aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 $asm "tests/err-token.tal" "bin/res.rom"
+
+echo ""
+echo "Program size exceeded: ab"
+$asm "tests/err-length.tal" "bin/res.rom"
 

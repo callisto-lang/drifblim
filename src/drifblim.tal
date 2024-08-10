@@ -44,6 +44,7 @@
 		( | handle error )
 		.halt LDZ ?{
 			.rom/length LDZ2 ORA ?on-success
+			;dst ;token <scpy>
 			;err/empty <set-error> }
 		#010f DEO
 		BRK }
@@ -567,9 +568,9 @@
 	&opcode "Opcode 20 "invalid: $1
 	&reference "Reference 20 "invalid: $1
 	&distance "Reference 20 "too 20 "far: $1
-	&length "Program 20 "size 20 "exceeded. $1
+	&length "Program 20 "size 20 "exceeded: $1
 	&token "Token 20 "size 20 "exceeded: $1
-	&empty "Output 20 "empty. $1
+	&empty "Output 20 "empty: $1
 	&sublabel "Sublabel $1
 	&refs-overflow "Refs 20 "Overflow $1
 
