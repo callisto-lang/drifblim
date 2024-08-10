@@ -9,3 +9,7 @@
 ( fails ff7f -129 ) &back $7e ,&back
 ( fails 0080 +128 ) ,&next $81 &next
 
+,far-forward $200 @far-forward
+
+@far-backward $200 ,far-backward
+

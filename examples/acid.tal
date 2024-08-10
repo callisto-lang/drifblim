@@ -94,7 +94,6 @@ JMP2r
 
 $20 @label2
 
-@far $1000 ,far
 @hello-word "Hello 20 "World! 0a $1
 
 
