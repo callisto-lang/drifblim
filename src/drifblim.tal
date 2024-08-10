@@ -216,7 +216,7 @@
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
-	( sym->addr* ) LDA2k DUP2 #ffff NEQ2 ?{
+	( sym->addr* ) LDA2k INC2k ORA ?{
 		OVR2 #0003 ADD2 ;err/reference <set-error-scope> }
 	( | sym* addr* )
 	NIP2 JMP2r
@@ -238,7 +238,7 @@
 
 @refs/get-rel-byte ( label* -- distance )
 	.RefType/rel-byte ;get-ref/type STA
-	get-ref DUP2 #ffff NEQ2 ?{
+	get-ref INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
 	.rom/head LDZ2 INC2 INC2 SUB2
 	( | check distance )
@@ -304,14 +304,14 @@
 	#0003 SUB2 NIP2 JMP2r
 
 @syms/find-alloc ( name* -- addr* )
-	DUP2 /find DUP2 #ffff NEQ2 ?{
+	DUP2 /find INC2k ORA ?{
 		( null* -> ptr* ) POP2 ,&&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
 	NIP2 JMP2r
 
 @syms/<create> ( name* -- )
 	DUP2 /find INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared .rom/head LDZ2 !/<push> }
+		( alloc ) POP2 [ LIT2 -SymType/declared -rom/head ] LDZ2 !/<push> }
 	( | name* sym* -- )
 	INC2k INC2 LDA .SymType/declared AND ?{
 		( addr* ) .rom/head LDZ2 OVR2 STA2
