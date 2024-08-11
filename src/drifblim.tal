@@ -76,6 +76,7 @@
 @<handle-file> ( f* -- )
 	DUP2 .File/name DEO2
 	#0001 .File/length DEO2
+	;token <sclr>
 	#0000
 	&>s ( len* -- )
 		;&c feof ?{
@@ -267,8 +268,7 @@
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
 	&comment POP2 !<walk-comment>
-	&inctal INC2k ;include/mem <scpy>
-	<sclr>
+	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
 	&ignore POP2 JMP2r
 
