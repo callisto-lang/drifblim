@@ -63,7 +63,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "10 20 "Aug 20 "2024 $2
+	( date ) "11 20 "Aug 20 "2024 $2
 
 (
 @|Core )
@@ -623,9 +623,7 @@
 	$1800 &mem-end
 
 @syms/mem ( addr*, SymType, body[] )
-
-
-|7fff &mem-end
+	$4800 &mem-end
 |8000 @rom/mem $100
 
 @rom/output
