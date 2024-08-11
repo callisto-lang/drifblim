@@ -45,6 +45,7 @@
 		.halt LDZ ?{
 			.rom/length LDZ2 ORA ?on-success
 			;dst ;err/empty <set-error-scope> }
+		#010e DEO
 		#010f DEO
 		BRK }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
@@ -55,6 +56,7 @@
 	rom/<save>
 	syms/<save>
 	<print-info>
+	#010e DEO
 	#800f DEO
 	BRK
 
@@ -151,8 +153,29 @@
 		( | non-runic )
 		is-hex ?rom/<write-rawhex>
 		is-opcode ?rom/<write-opcode>
-		!lib/litjsi }
+		( | macros )
+		DUP2 macros/find INC2k ORA ?&found-macro
+		POP2
+		( immediate word ) !lib/litjsi }
 	( call ) INC2 LDA2 JMP2
+
+	&found-macro ( t* macro* -- )
+	DUP2 <pstr>
+	#2018 DEO
+	scap/ INC2 <pstr>
+	#0a18 DEO
+	#0a18 DEO
+	#0a18 DEO
+	#0a18 DEO
+	POP2 JMP2r
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
 
 (
 @|References )
@@ -301,6 +324,38 @@
 	,&ptr STR2
 	JMP2r
 	&sym cebb &id 0000 $1
+
+(
+@|Macros )
+
+@macros/find ( name* -- <addr>* )
+	,&t STR2
+	,&ptr LDR2 ;&mem
+	&>l ( -- )
+		DUP2 [ LIT2 &t $2 ] wcmp ?{
+			scap/ INC2 scap/ INC2 GTH2k ?&>l
+		POP2 POP2 #ffff JMP2r }
+	NIP2 JMP2r
+
+@macros/<push-string> ( t* -- )
+	LDAk /<push-byte>
+	INC2 LDAk ?&<push-string>
+	POP2 #00 !&<push-byte>
+
+@macros/<append> ( c -- )
+	( | normalize )
+	#20 GTHk ?{ SWP }
+	POP
+	( | join spaces )
+	DUP #20 NEQ ?{
+		DUP [ LIT &last 20 ] NEQ ?{ POP JMP2r } }
+	DUP ,&last STR
+	( >> )
+
+@macros/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	STA
+	JMP2r
 
 (
 @|Syms )
@@ -498,29 +553,6 @@
 		;&cc feof ?{ [ LIT2 "} &cc $1 ] EQUk ?{ DUP macros/<append> }
 			EQU ?{ !&>ss } }
 	#00 !macros/<push-byte>
-
-(
-@|Macros )
-
-@macros/<push-string> ( t* -- )
-	LDAk /<push-byte>
-	INC2 LDAk ?&<push-string>
-	POP2 #00 !&<push-byte>
-
-@macros/<append> ( c -- )
-	( | normalize )
-	#20 GTHk ?{ SWP }
-	POP
-	( | join spaces )
-	DUP #20 NEQ ?{
-		DUP [ LIT &last 20 ] NEQ ?{ POP JMP2r } }
-	DUP ,&last STR
-	( >> )
-
-@macros/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
-	STA
-	JMP2r
 
 (
 @|Stdlib )
