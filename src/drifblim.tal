@@ -45,7 +45,6 @@
 		.halt LDZ ?{
 			.rom/length LDZ2 ORA ?on-success
 			;dst ;err/empty <set-error-scope> }
-		#010e DEO
 		#010f DEO
 		BRK }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
@@ -56,7 +55,6 @@
 	rom/<save>
 	syms/<save>
 	<print-info>
-	#010e DEO
 	#800f DEO
 	BRK
 
@@ -154,34 +152,25 @@
 		is-hex ?rom/<write-rawhex>
 		is-opcode ?rom/<write-opcode>
 		( | macros )
-		DUP2 macros/find INC2k ORA ?&found-macro
+		DUP2 macros/find INC2k ORA ?&<parse-macro>
 		POP2
 		( immediate word ) !lib/litjsi }
 	( call ) INC2 LDA2 JMP2
 
-	&found-macro ( t* macro* -- )
-	DUP2 <pstr>
-	#2018 DEO
-	scap/ INC2 <pstr>
-	#0a18 DEO
-	#0a18 DEO
-	#0a18 DEO
-	#0a18 DEO
-	POP2 JMP2r
-
-@<phex> ( short* -: )
-	SWP /b
-	&b ( byte -: )
-	DUP #04 SFT /c
-	&c ( byte -: )
-	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
-	JMP2r
+@token/<parse-macro> ( t* macro* -- )
+	token/<new>
+	scap/ INC2
+	&>w ( -- )
+		LDAk token/<push>
+		INC2 LDAk ?&>w
+	POP2 POP2 JMP2r
 
 (
 @|References )
 
 @get-sublabel ( name* -- sublabel* )
-	DUP2 slen NIP ;sublabel slen NIP ADD #30 LTH ?{ ;token ;err/sublabel !<set-error-scope> }
+	DUP2 slen NIP ;sublabel slen NIP ADD
+	( check length ) #30 LTH ?{ ;token ;err/sublabel !<set-error-scope> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
