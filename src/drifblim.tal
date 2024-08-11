@@ -122,8 +122,12 @@
 	;dict/in <pstr>/
 	.rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
-	( count > ) STH2r #0001 SUB2 <pdec>
-	;dict/labels !<pstr>/
+	( labels ) STH2r #0001 SUB2 <pdec>
+	;dict/labels <pstr>/
+	( symbols ) ;syms/mem-end ;syms/ptr LDA2 SUB2 <pdec>
+	;dict/syms-free <pstr>/
+	( references ) ;refs/mem-end ;refs/ptr LDA2 SUB2 <pdec>
+	;dict/refs-free !<pstr>/
 
 (
 @|Tokenizer )
@@ -137,7 +141,7 @@
 		token/<parse> !&<new> }
 	( | append )
 	[ LIT2 00 &ptr -token ]
-	( overflow ) DUP .&cap NEQ ?{ ;token ;err/token <set-error-scope> }
+	( overflow ) DUP .&cap NEQ ?{ ;token ;err/token-mem <set-error-scope> }
 	( move ptr ) INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -197,7 +201,7 @@
 	( type ) INC2r INC2r STH2kr STA
 	( save ) INC2r [ LITr _&ptr ] STR2r
 	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{ ;token ;err/refs-overflow !<set-error-scope> }
+	,&ptr LDR2 ;&mem-end LTH2 ?{ ;token ;err/refs-mem !<set-error-scope> }
 	JMP2r
 
 @refs/<resolve> ( -- )
@@ -284,7 +288,7 @@
 
 @lambda/push ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
-	DUP [ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
+	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
 	( >> )
 
@@ -293,8 +297,8 @@
 	;&sym JMP2r
 
 @lambda/pop ( -- )
-	,&&ptr LDR2 #0001 SUB2 LDAk /name syms/<create>
-	,&&ptr STR2
+	,&ptr LDR2 #0001 SUB2 LDAk /name syms/<create>
+	,&ptr STR2
 	JMP2r
 	&sym cebb &id 0000 $1
 
@@ -312,7 +316,7 @@
 
 @syms/find-alloc ( name* -- addr* )
 	DUP2 /find INC2k ORA ?{
-		( null* -> ptr* ) POP2 ,&&ptr LDR2
+		( null* -> ptr* ) POP2 ,&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
 	NIP2 JMP2r
 
@@ -327,7 +331,7 @@
 	POP2 POP2 ;token ;err/duplicate !<set-error-scope>
 
 @syms/get-bounds ( -- to* from* )
-	,&&ptr LDR2 ;&mem JMP2r
+	,&ptr LDR2 ;&mem JMP2r
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -339,13 +343,16 @@
 	( >> )
 
 @syms/<push-string> ( word* -- )
-	,&&ptr LDR2 STH2k <scpy>
-	STH2r scap/ INC2 ,&&ptr STR2
-	JMP2r
+	LDAk /<push-byte>
+	INC2 LDAk ?&<push-string>
+	POP2 #00
+	( >> )
 
 @syms/<push-byte> ( byte -- )
-	[ LIT2 &&ptr =&mem ] INC2k ,&&ptr STR2
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
+	( | check overflow )
+	,&ptr LDR2 ;&mem-end LTH2 ?{ ;token ;err/syms-mem !<set-error-scope> }
 	JMP2r
 
 @syms/invalid ( name* -- )
@@ -412,7 +419,7 @@
 	?{ JMP2r }
 	.&head LDZ2
 	( ) OVR ?{ ;token ;err/zeropage <set-error-scope> }
-	( ) DUP2 #8000 LTH2 ?{ ;token ;err/length <set-error-scope> }
+	( ) DUP2 #8000 LTH2 ?{ ;token ;err/rom-mem <set-error-scope> }
 	.&length STZ2
 	JMP2r
 	&mmu 00 0001 0001 &addr $2 &value $1
@@ -422,8 +429,7 @@
 	JMP2r
 
 @rom/get-head ( -- addr* )
-	.&head LDZ2
-	JMP2r
+	.&head LDZ2 JMP2r
 
 @rom/<save> ( -: )
 	;dst .File/name DEO2
@@ -567,8 +573,8 @@
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
-	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
-	&sym-ext ".sym $1
+	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels, 20 $1
+	&sym-ext ".sym $1 &syms-free 20 "syms 20 "free, 20 $1 &refs-free 20 "refs 20 "free). 0a $1
 
 @err
 	&file "File 20 "missing $1
@@ -577,13 +583,14 @@
 	&hex "Hexadecimal 20 "invalid $1
 	&opcode "Opcode 20 "invalid $1
 	&reference "Reference 20 "invalid $1
-	&zeropage "Writing 20 "zero-page: $1
+	&zeropage "Writing 20 "zero-page $1
 	&distance "Reference 20 "too 20 "far $1
-	&length "Program 20 "size 20 "exceeded $1
-	&token "Token 20 "size 20 "exceeded $1
 	&empty "Output 20 "empty $1
 	&sublabel "Sublabel $1
-	&refs-overflow "Refs 20 "Overflow $1
+	&rom-mem "Rom 20 "size 20 "exceeded $1
+	&token-mem "Token 20 "size 20 "exceeded $1
+	&refs-mem "References 20 "exceeded $1
+	&syms-mem "Symbols 20 "exceeded $1
 
 @opcodes [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
