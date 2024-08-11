@@ -412,8 +412,8 @@
 @rom/<set-length> ( byte -- )
 	?{ JMP2r }
 	.&head LDZ2
-	( ) DUP2 OVR ?{ ;token ;err/zeropage <set-error-scope> }
-	( ) #8000 LTH2 ?{ ;token ;err/length <set-error-scope> }
+	( ) OVR ?{ ;token ;err/zeropage <set-error-scope> }
+	( ) DUP2 #8000 LTH2 ?{ ;token ;err/length <set-error-scope> }
 	.&length STZ2
 	JMP2r
 
@@ -567,9 +567,9 @@
 	&duplicate "Label 20 "duplicate $1
 	&label "Label 20 "invalid $1
 	&hex "Hexadecimal 20 "invalid $1
-	&zeropage "Writing 20 "zero-page $1
 	&opcode "Opcode 20 "invalid $1
 	&reference "Reference 20 "invalid $1
+	&zeropage "Writing 20 "zero-page: $1
 	&distance "Reference 20 "too 20 "far $1
 	&length "Program 20 "size 20 "exceeded $1
 	&token "Token 20 "size 20 "exceeded $1
