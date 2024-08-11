@@ -1,6 +1,5 @@
 ( usage: drifblim.rom input.tal output.rom )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |00 @RefType &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
@@ -408,11 +407,6 @@
 	( >> )
 
 @rom/<write-byte> ( byte -: )
-	( | write in page 01 )
-	DUP ,&value STR
-	.&head LDZ2 ,&addr STR2
-	;&mmu .System/expansion DEO2
-	( | write in ram )
 	DUP .&head LDZ2 INC2k .&head STZ2
 	;&mem ADD2 STA
 	( | change length )
@@ -422,7 +416,6 @@
 	( ) DUP2 #8000 LTH2 ?{ ;token ;err/rom-mem <set-error-scope> }
 	.&length STZ2
 	JMP2r
-	&mmu 00 0001 0001 &addr $2 &value $1
 
 @rom/<set-head> ( addr* -: )
 	.&head STZ2
