@@ -280,7 +280,7 @@
 	&comment !<handle-comment>
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
-	&macro INC2 !<handle-macro>
+	&macros INC2 !<handle-macro>
 	&ignore POP2 JMP2r
 
 (
@@ -487,12 +487,26 @@
 	POPr JMP2r
 
 @<handle-macro> ( t* -- )
-	<pstr>
-	#0a18 DEO
+	DUP2 <pstr> #0a18 DEO
+	macros/<push-string>
 	JMP2r
 
 (
-@|stdlib )
+@|Macros )
+
+@macros/<push-string> ( t* -- )
+	LDAk /<push-byte>
+	INC2 LDAk ?&<push-string>
+	POP2 #00
+	( >> )
+
+@macros/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	STA
+	JMP2r
+
+(
+@|Stdlib )
 
 @scap ( str* -: end* )
 	INC2 & LDAk ?scap
@@ -609,7 +623,7 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal "% =lib/macro ]
+	"~ =lib/inctal "% =lib/macros ]
 	&end ( .. )
 
 
