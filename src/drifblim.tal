@@ -134,9 +134,7 @@
 	DUP #20 GTH ?{
 		POP ;token LDZk ?{ POP2 JMP2r }
 		token/<parse> !&<new> }
-	( >> )
-
-@token/<append> ( c -- )
+	( | append )
 	[ LIT2 00 &ptr -token ]
 	( overflow ) DUP .&cap NEQ ?{ ;token ;err/token <set-error-scope> }
 	( move ptr ) INCk ,&ptr STR
@@ -144,14 +142,13 @@
 	JMP2r
 
 @token/<parse> ( t* -- )
-	LDZk find-rune DUP2 #ffff EQU2 ?{
-		INC2 LDA2
-		( * ) JMP2 }
-	POP2
-	( | non-runic )
-	is-hex ?rom/<write-rawhex>
-	is-opcode ?rom/<write-opcode>
-	!lib/litjsi
+	LDZk find-rune INC2k ORA ?{
+		POP2
+		( | non-runic )
+		is-hex ?rom/<write-rawhex>
+		is-opcode ?rom/<write-opcode>
+		!lib/litjsi }
+	( call ) INC2 LDA2 JMP2
 
 (
 @|References )
