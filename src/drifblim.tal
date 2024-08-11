@@ -9,7 +9,7 @@
 
 	@src $30
 	@dst $30
-	@token $30
+	@token $2f &cap $1
 	@scope $30
 	@sublabel $30
 	@halt $1
@@ -65,7 +65,7 @@
 	( date ) "10 20 "Aug 20 "2024 $2
 
 (
-@|Tokenizer )
+@|Core )
 
 @<assemble> ( -- )
 	#0100 rom/<set-head>
@@ -76,34 +76,14 @@
 @<handle-file> ( f* -- )
 	DUP2 .File/name DEO2
 	#0001 .File/length DEO2
-	;token <sclr>
+	token/<new>
 	#0000
 	&>s ( len* -- )
 		;&c feof ?{
-			INC2 [ LIT &c $1 ] <handle-char>
+			INC2 [ LIT &c $1 ] token/<push>
 			[ LIT2 00 -halt ] LDZ EQU ?&>s }
 	ORA ?{ DUP2 ;err/file <set-error-scope> }
 	POP2 JMP2r
-
-@<handle-char> ( c -- )
-	DUP #20 GTH ?{
-		POP ;token LDAk ?{ POP2 JMP2r }
-		DUP2 <parse-token> !<sclr> }
-	#00 ;token scap/
-	( | test token size )
-	DUP2 ;token SUB2 NIP #30 LTH ?{ ;token ;err/token <set-error-scope> }
-	STA2
-	JMP2r
-
-@<parse-token> ( t* -- )
-	LDAk find-rune DUP2 #ffff EQU2 ?{
-		INC2 LDA2
-		( * ) JMP2 }
-	POP2
-	( | non-runic )
-	is-hex ?rom/<write-rawhex>
-	is-opcode ?rom/<write-opcode>
-	!lib/litjsi
 
 @<set-error> ( name* -- )
 	[ LIT2 01 -halt ] STZ
@@ -143,6 +123,35 @@
 	;dict/bytes <pstr>/
 	( count > ) STH2r #0001 SUB2 <pdec>
 	;dict/labels !<pstr>/
+
+(
+@|Tokenizer )
+
+@token/<new> ( -- )
+	;token DUP ,&ptr STR !<sclr>
+
+@token/<push> ( c -- )
+	DUP #20 GTH ?{
+		POP ;token LDZk ?{ POP2 JMP2r }
+		token/<parse> !&<new> }
+	( >> )
+
+@token/<append> ( c -- )
+	[ LIT2 00 &ptr -token ]
+	( overflow ) DUP .&cap NEQ ?{ ;token ;err/token <set-error-scope> }
+	( move ptr ) INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@token/<parse> ( t* -- )
+	LDZk find-rune DUP2 #ffff EQU2 ?{
+		INC2 LDA2
+		( * ) JMP2 }
+	POP2
+	( | non-runic )
+	is-hex ?rom/<write-rawhex>
+	is-opcode ?rom/<write-opcode>
+	!lib/litjsi
 
 (
 @|References )
