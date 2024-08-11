@@ -186,11 +186,33 @@
 	&lithex INC2 !rom/<write-lithex>
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
-	&comment !<handle-comment>
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
-	&macros INC2 !<handle-macro>
 	&ignore POP2 JMP2r
+
+@lib/comment ( t* -- )
+	POP2
+	( depth ) [ LITr 00 ]
+	&>sc ( -- )
+		;&c feof ?{
+			[ LIT2 &c $1 "( ] NEQk ?{ INCr }
+			POP [ LIT ") ] NEQ ?{ STHkr ?{ POPr JMP2r }
+				[ LITr 01 ] SUBr }
+			!&>sc }
+	POPr JMP2r
+
+@lib/macros ( t* -- )
+	INC2 macros/<push-string>
+	#20 ;macros/last STA
+	( walk to macro start )
+	&>sm ( -- )
+		;&cm feof ?{
+			[ LIT2 &cm $1 "{ ] EQU ?{ !&>sm } }
+	( record macro body until bracket )
+	&>sb ( -- )
+		;&cb feof ?{ [ LIT2 "} &cb $1 ] EQUk ?{ DUP macros/<append> }
+			EQU ?{ !&>sb } }
+	#00 !macros/<push-byte>
 
 (
 @|Lambda )
@@ -494,17 +516,6 @@
 (
 @|Helpers )
 
-@is-hex ( str* -- str* f )
-	DUP2
-	&>w ( -- )
-		LDAk chex INC ?{ POP2 #00 JMP2r }
-		INC2 LDAk ?&>w
-	POP2 #01 JMP2r
-
-@is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
-	#01 JMP2r
-
 @is-runic ( str* -- str* f )
 	LDAk find-rune INC2 ORA JMP2r
 
@@ -515,6 +526,10 @@
 		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
 		#0003 ADD2 GTH2k ?&>l
 	POP2 POP2 #ffff JMP2r
+
+@is-opcode ( str* -- str* f )
+	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
+	#01 JMP2r
 
 @find-opcode ( name* -- byte )
 	,&t STR2
@@ -535,29 +550,12 @@
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
-@<handle-comment> ( t* -- )
-	POP2
-	( depth ) [ LITr 00 ]
-	&>s ( -- )
-		;&c feof ?{
-			[ LIT2 &c $1 "( ] NEQk ?{ INCr }
-			POP [ LIT ") ] NEQ ?{ STHkr ?{ POPr JMP2r }
-				[ LITr 01 ] SUBr }
-			!&>s }
-	POPr JMP2r
-
-@<handle-macro> ( t* -- )
-	macros/<push-string>
-	#20 ;macros/last STA
-	( walk to macro start )
-	&>s ( -- )
-		;&c feof ?{
-			[ LIT2 &c $1 "{ ] EQU ?{ !&>s } }
-	( record macro body )
-	&>ss ( -- )
-		;&cc feof ?{ [ LIT2 "} &cc $1 ] EQUk ?{ DUP macros/<append> }
-			EQU ?{ !&>ss } }
-	#00 !macros/<push-byte>
+@is-hex ( str* -- str* f )
+	DUP2
+	&>w ( -- )
+		LDAk chex INC ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&>w
+	POP2 #01 JMP2r
 
 (
 @|Stdlib )
