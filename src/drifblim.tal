@@ -82,7 +82,8 @@
 		;&c feof ?{
 			INC2 [ LIT &c $1 ] token/<push>
 			[ LIT2 00 -halt ] LDZ EQU ?&>s }
-	ORA ?{ DUP2 ;err/file <set-error-scope> }
+	ORA ?{
+		( ! ) DUP2 ;err/file <set-error-scope> }
 	POP2 JMP2r
 
 @<set-error> ( name* -- )
@@ -142,7 +143,8 @@
 		token/<parse> !&<new> }
 	( | append )
 	[ LIT2 00 &ptr -token ]
-	( overflow ) DUP .&cap NEQ ?{ ;token ;err/token-mem <set-error-scope> }
+	( overflow ) DUP .&cap NEQ ?{
+		( ! ) ;token ;err/token-mem <set-error-scope> }
 	( move ptr ) INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -166,113 +168,6 @@
 		LDAk token/<push>
 		INC2 LDAk ?&>w
 	POP2 POP2 JMP2r
-
-(
-@|References )
-
-@get-sublabel ( name* -- sublabel* )
-	DUP2 slen NIP ;sublabel slen NIP ADD
-	( check length ) #30 LTH ?{ ;token ;err/sublabel !<set-error-scope> }
-	[ LIT2 &ptr $2 ] <scpy>
-	;sublabel JMP2r
-
-@<set-scope> ( t* -- )
-	( | copy scope until sublabel )
-	DUP2 [ LITr -scope ]
-	&>w ( -- )
-		LDAk [ LIT "/ ] EQU ?{
-			LDAk STHkr STZ
-			INCr INC2 LDAk ?&>w }
-	POP2 #00 STHr STZ
-	( | prepare sublabel pointer )
-	;scope ;sublabel <scpy>
-	[ LIT2 "/ 00 ] ;sublabel scap/
-	( ptr ) INC2k ,get-sublabel/ptr STR2
-	( cap ) STA2 !syms/<create>
-
-@get-any ( str* -- value* )
-	is-hex ?shex
-	( >> )
-
-@get-ref ( token* -- addr* )
-	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/push }
-	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
-	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
-	( | find symbol or create it )
-	syms/find-alloc
-	( | check if declared )
-	INC2k INC2 STH2k LDA .SymType/declared AND ?{
-		STH2k [ LIT &type $1 ] STH2r rom/get-head refs/<push> }
-	( | mark as used )
-	LDAkr STHr .SymType/used ORA STH2r STA
-	LDA2 JMP2r
-
-@refs/<push> ( type value* addr* -- )
-	[ LIT2 &ptr =&mem ] STH2k
-	( addr* ) STA2
-	( value* ) INC2r INC2r STH2kr STA2
-	( type ) INC2r INC2r STH2kr STA
-	( save ) INC2r [ LITr _&ptr ] STR2r
-	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{ ;token ;err/refs-mem !<set-error-scope> }
-	JMP2r
-
-@refs/<resolve> ( -- )
-	,&ptr LDR2 ;&mem
-	&>l ( -- )
-		STH2k
-		( | route )
-		DUP2 #0004 ADD2 LDA
-		( ) DUP .RefType/abs-byte NEQ ?{ STH2kr /resolve-abs STA
-			POP }
-		( ) DUP .RefType/abs-short NEQ ?{ STH2kr /resolve-abs STA2 }
-		( ) DUP .RefType/rel-byte NEQ ?{
-			STH2kr /resolve-rel
-			( | validate distance )
-			OVR2 #0080 ADD2 POP #00 EQU ?{
-				( sym* ) STH2kr INC2 INC2 LDA2
-				( sym/name* ) #0003 ADD2 ;err/distance <set-error> }
-			STA
-			POP }
-		( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
-		POP POP2r
-		( ) #0005 ADD2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
-@refs/resolve-sym ( ref* -- ref* addr* )
-	( sym* ) INC2k INC2 LDA2
-	( sym/addr* ) LDA2k INC2k ORA ?{
-		OVR2 #0003 ADD2 ;err/reference <set-error-scope> }
-	( | sym* addr* )
-	NIP2 JMP2r
-
-@refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym
-	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
-
-@refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
-	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
-
-@refs/get-abs-byte ( label* -- addr )
-	.RefType/abs-byte ;get-ref/type STA
-	get-ref NIP JMP2r
-
-@refs/get-abs-short ( label* -- addr* )
-	.RefType/abs-short ;get-ref/type STA !get-ref
-
-@refs/get-rel-byte ( label* -- distance )
-	.RefType/rel-byte ;get-ref/type STA
-	get-ref INC2k ORA ?{
-		( undefined ) POP2 #00 JMP2r }
-	rom/get-head INC2 INC2 SUB2
-	( | check distance )
-	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	NIP ;token ;err/distance !<set-error-scope>
-
-@refs/get-rel-short ( label* -- distance* )
-	.RefType/rel-short ;get-ref/type STA
-	get-ref rom/get-head INC2 INC2 SUB2 JMP2r
 
 (
 @|Library )
@@ -346,6 +241,9 @@
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
+	( | check overflow )
+	,&ptr LDR2 ;&mem-end LTH2 ?{
+		( ! ) ;token ;err/macros-mem !<set-error-scope> }
 	JMP2r
 
 (
@@ -374,7 +272,8 @@
 		( addr* ) rom/get-head OVR2 STA2
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
-	POP2 POP2 ;token ;err/duplicate !<set-error-scope>
+	POP2 POP2
+	( ! ) ;token ;err/duplicate !<set-error-scope>
 
 @syms/get-bounds ( -- to* from* )
 	,&ptr LDR2 ;&mem JMP2r
@@ -398,12 +297,13 @@
 	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
 	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{ ;token ;err/syms-mem !<set-error-scope> }
+	,&ptr LDR2 ;&mem-end LTH2 ?{
+		( ! ) ;token ;err/syms-mem !<set-error-scope> }
 	JMP2r
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	;token ;err/label !<set-error-scope>
+	( ! ) ;token ;err/label !<set-error-scope>
 
 @syms/<save> ( -- )
 	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -420,6 +320,116 @@
 	JMP2r
 
 (
+@|References )
+
+@get-sublabel ( name* -- sublabel* )
+	DUP2 slen NIP ;sublabel slen NIP ADD
+	( check length ) #30 LTH ?{
+		( ! ) ;token ;err/sublabel !<set-error-scope> }
+	[ LIT2 &ptr $2 ] <scpy>
+	;sublabel JMP2r
+
+@<set-scope> ( t* -- )
+	( | copy scope until sublabel )
+	DUP2 [ LITr -scope ]
+	&>w ( -- )
+		LDAk [ LIT "/ ] EQU ?{
+			LDAk STHkr STZ
+			INCr INC2 LDAk ?&>w }
+	POP2 #00 STHr STZ
+	( | prepare sublabel pointer )
+	;scope ;sublabel <scpy>
+	[ LIT2 "/ 00 ] ;sublabel scap/
+	( ptr ) INC2k ,get-sublabel/ptr STR2
+	( cap ) STA2 !syms/<create>
+
+@get-any ( str* -- value* )
+	is-hex ?shex
+	( >> )
+
+@get-ref ( token* -- addr* )
+	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/push }
+	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
+	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	( | find symbol or create it )
+	syms/find-alloc
+	( | check if declared )
+	INC2k INC2 STH2k LDA .SymType/declared AND ?{
+		STH2k [ LIT &type $1 ] STH2r rom/get-head refs/<push> }
+	( | mark as used )
+	LDAkr STHr .SymType/used ORA STH2r STA
+	LDA2 JMP2r
+
+@refs/<push> ( type value* addr* -- )
+	[ LIT2 &ptr =&mem ] STH2k
+	( addr* ) STA2
+	( value* ) INC2r INC2r STH2kr STA2
+	( type ) INC2r INC2r STH2kr STA
+	( save ) INC2r [ LITr _&ptr ] STR2r
+	( | check overflow )
+	,&ptr LDR2 ;&mem-end LTH2 ?{
+		( ! ) ;token ;err/refs-mem !<set-error-scope> }
+	JMP2r
+
+@refs/<resolve> ( -- )
+	,&ptr LDR2 ;&mem
+	&>l ( -- )
+		STH2k
+		( | route )
+		DUP2 #0004 ADD2 LDA
+		( ) DUP .RefType/abs-byte NEQ ?{ STH2kr /resolve-abs STA
+			POP }
+		( ) DUP .RefType/abs-short NEQ ?{ STH2kr /resolve-abs STA2 }
+		( ) DUP .RefType/rel-byte NEQ ?{
+			STH2kr /resolve-rel
+			( | validate distance )
+			OVR2 #0080 ADD2 POP #00 EQU ?{
+				( sym* ) STH2kr INC2 INC2 LDA2
+				( sym/name* ) #0003 ADD2 ;err/distance <set-error> }
+			STA
+			POP }
+		( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
+		POP POP2r
+		( ) #0005 ADD2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@refs/resolve-sym ( ref* -- ref* addr* )
+	( sym* ) INC2k INC2 LDA2
+	( sym/addr* ) LDA2k INC2k ORA ?{
+		( ! ) OVR2 #0003 ADD2 ;err/reference <set-error-scope> }
+	( | sym* addr* )
+	NIP2 JMP2r
+
+@refs/resolve-abs ( ref* -- value* addr* )
+	( value* ) /resolve-sym
+	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
+
+@refs/resolve-rel ( ref* -- value* addr* )
+	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
+	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
+
+@refs/get-abs-byte ( label* -- addr )
+	.RefType/abs-byte ;get-ref/type STA
+	get-ref NIP JMP2r
+
+@refs/get-abs-short ( label* -- addr* )
+	.RefType/abs-short ;get-ref/type STA !get-ref
+
+@refs/get-rel-byte ( label* -- distance )
+	.RefType/rel-byte ;get-ref/type STA
+	get-ref INC2k ORA ?{
+		( undefined ) POP2 #00 JMP2r }
+	rom/get-head INC2 INC2 SUB2
+	( | check distance )
+	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
+	NIP
+	( ! ) ;token ;err/distance !<set-error-scope>
+
+@refs/get-rel-short ( label* -- distance* )
+	.RefType/rel-short ;get-ref/type STA
+	get-ref rom/get-head INC2 INC2 SUB2 JMP2r
+
+(
 @|Rom )
 
 @rom/<write-str> ( str* -: )
@@ -431,7 +441,8 @@
 	find-opcode !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
-	is-hex ?{ ;token ;err/hex <set-error-scope> }
+	is-hex ?{
+		( ! ) ;token ;err/hex <set-error-scope> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
@@ -442,7 +453,8 @@
 @rom/<write-hex> ( str* len -- )
 	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
 	#04 NEQ ?{ shex !&<write-short> }
-	POP2 ;token ;err/hex !<set-error-scope>
+	POP2
+	( ! ) ;token ;err/hex !<set-error-scope>
 
 @rom/<write-call> ( str* opc -: )
 	/<write-byte>
@@ -459,8 +471,10 @@
 	( | change length )
 	?{ JMP2r }
 	.&head LDZ2
-	( ) OVR ?{ ;token ;err/zeropage <set-error-scope> }
-	( ) DUP2 #8000 LTH2 ?{ ;token ;err/rom-mem <set-error-scope> }
+	( ) OVR ?{
+		( ! ) ;token ;err/zeropage <set-error-scope> }
+	( ) DUP2 #8000 LTH2 ?{
+		( ! ) ;token ;err/rom-mem <set-error-scope> }
 	.&length STZ2
 	JMP2r
 
@@ -517,7 +531,7 @@
 		DUP ADD OVR [ LIT "r ] EQU ?&end
 		DUP ADD OVR [ LIT "k ] EQU ?&end
 		DUP ADD OVR #00 EQU ?&end
-		;token ;err/opcode <set-error-scope> &end STH
+		( ! ) ;token ;err/opcode <set-error-scope> &end STH
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
@@ -612,6 +626,9 @@
 	POP2 JMP2r
 
 @<pdec> ( short* -- )
+	ORAk ?{
+		[ LIT2 "0 18 ] DEO
+		JMP2r }
 	#2710 [ LIT2r 00fb ]
 	&>w ( -- )
 		DIV2k #000a DIV2k MUL2 SUB2 SWPr EQUk OVR STHkr EQU AND ?{
@@ -645,6 +662,7 @@
 	&rom-mem "Rom 20 "exceeded $1
 	&refs-mem "References 20 "exceeded $1
 	&syms-mem "Symbols 20 "exceeded $1
+	&macros-mem "Macros 20 "exceeded $1
 
 @opcodes [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
