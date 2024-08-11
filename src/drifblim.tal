@@ -277,9 +277,10 @@
 	&lithex INC2 !rom/<write-lithex>
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
-	&comment POP2 !<walk-comment>
+	&comment !<handle-comment>
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
+	&macro INC2 !<handle-macro>
 	&ignore POP2 JMP2r
 
 (
@@ -474,7 +475,8 @@
 		POP ORAr INC2 LDAk ?&>w
 	POP2 STHr ADD JMP2r
 
-@<walk-comment> ( -- )
+@<handle-comment> ( t* -- )
+	POP2
 	( depth ) [ LITr 00 ]
 	&>s ( -- )
 		;&c feof ?{
@@ -483,6 +485,11 @@
 				[ LITr 01 ] SUBr }
 			!&>s }
 	POPr JMP2r
+
+@<handle-macro> ( t* -- )
+	<pstr>
+	#0a18 DEO
+	JMP2r
 
 (
 @|stdlib )
@@ -580,8 +587,8 @@
 	&distance "Reference 20 "too 20 "far $1
 	&empty "Output 20 "empty $1
 	&sublabel "Sublabel $1
-	&rom-mem "Rom 20 "size 20 "exceeded $1
-	&token-mem "Token 20 "size 20 "exceeded $1
+	&token-mem "Token 20 "exceeded $1
+	&rom-mem "Rom 20 "exceeded $1
 	&refs-mem "References 20 "exceeded $1
 	&syms-mem "Symbols 20 "exceeded $1
 
@@ -602,10 +609,8 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal ]
-	&end
-(
-@|Buffers )
+	"~ =lib/inctal "% =lib/macro ]
+	&end ( .. )
 
 
 @lambda/mem $100
@@ -615,9 +620,14 @@
 @refs/mem ( addr*, symbol*, RefType )
 	$1800 &mem-end
 
-@syms/mem ( addr*, SymType, body[] )
+@syms/mem ( addr*, SymType, body..0 )
 	$4800 &mem-end
-|8000 @rom/mem $100
 
-@rom/output
+@macros/mem ( name..0, value..0 )
+	$1800 &mem-end
+
+@rom/mem ( zeropage )
+	$100
+
+@rom/output $7f00 &mem-end
 
