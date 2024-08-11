@@ -1,5 +1,6 @@
 ( usage: drifblim.rom input.tal output.rom )
 
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |00 @RefType &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
@@ -184,7 +185,7 @@
 	syms/find-alloc
 	( | check if declared )
 	INC2k INC2 STH2k LDA .SymType/declared AND ?{
-		STH2k [ LIT &type $1 ] STH2r .rom/head LDZ2 refs/<push> }
+		STH2k [ LIT &type $1 ] STH2r rom/get-head refs/<push> }
 	( | mark as used )
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
@@ -247,21 +248,21 @@
 	.RefType/rel-byte ;get-ref/type STA
 	get-ref INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	.rom/head LDZ2 INC2 INC2 SUB2
+	rom/get-head INC2 INC2 SUB2
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP ;token ;err/distance !<set-error-scope>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short ;get-ref/type STA
-	get-ref .rom/head LDZ2 INC2 INC2 SUB2 JMP2r
+	get-ref rom/get-head INC2 INC2 SUB2 JMP2r
 
 (
 @|Library )
 
 @lib ( runics )
 	&padabs INC2 get-any !rom/<set-head>
-	&padrel INC2 get-any .rom/head LDZ2 ADD2 !rom/<set-head>
+	&padrel INC2 get-any rom/get-head ADD2 !rom/<set-head>
 	&toplab INC2 !<set-scope>
 	&sublab INC2 get-sublabel !syms/<create>
 	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
@@ -317,10 +318,10 @@
 
 @syms/<create> ( name* -- )
 	DUP2 /find INC2k ORA ?{
-		( alloc ) POP2 [ LIT2 -SymType/declared -rom/head ] LDZ2 !/<push> }
+		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
 	( | name* sym* -- )
 	INC2k INC2 LDA .SymType/declared AND ?{
-		( addr* ) .rom/head LDZ2 OVR2 STA2
+		( addr* ) rom/get-head OVR2 STA2
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
 	POP2 POP2 ;token ;err/duplicate !<set-error-scope>
@@ -400,21 +401,28 @@
 	( >> )
 
 @rom/<write-byte> ( byte -: )
-	DUP /<set-length>
-	.&head LDZ2 INC2k .&head STZ2
+	( | write in page 01 )
+	DUP ,&value STR
+	.&head LDZ2 ,&addr STR2
+	;&mmu .System/expansion DEO2
+	( | write in ram )
+	DUP .&head LDZ2 INC2k .&head STZ2
 	;&mem ADD2 STA
-	JMP2r
-
-@rom/<set-head> ( v* -: )
-	.&head STZ2
-	JMP2r
-
-@rom/<set-length> ( byte -- )
+	( | change length )
 	?{ JMP2r }
 	.&head LDZ2
 	( ) OVR ?{ ;token ;err/zeropage <set-error-scope> }
 	( ) DUP2 #8000 LTH2 ?{ ;token ;err/length <set-error-scope> }
 	.&length STZ2
+	JMP2r
+	&mmu 00 0001 0001 &addr $2 &value $1
+
+@rom/<set-head> ( addr* -: )
+	.&head STZ2
+	JMP2r
+
+@rom/get-head ( -- addr* )
+	.&head LDZ2
 	JMP2r
 
 @rom/<save> ( -: )
