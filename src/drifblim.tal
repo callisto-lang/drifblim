@@ -487,19 +487,17 @@
 	POPr JMP2r
 
 @<handle-macro> ( t* -- )
-	DUP2 <pstr>
-	#0a18 DEO
 	macros/<push-string>
+	#20 ;macros/last STA
 	( walk to macro start )
 	&>s ( -- )
 		;&c feof ?{
 			[ LIT2 &c $1 "{ ] EQU ?{ !&>s } }
 	( record macro body )
 	&>ss ( -- )
-		;&cc feof ?{ [ LIT2 &cc $1 "} ] OVR #18 DEO
+		;&cc feof ?{ [ LIT2 "} &cc $1 ] EQUk ?{ DUP macros/<append> }
 			EQU ?{ !&>ss } }
-	#0a18 DEO
-	JMP2r
+	#00 !macros/<push-byte>
 
 (
 @|Macros )
@@ -507,7 +505,16 @@
 @macros/<push-string> ( t* -- )
 	LDAk /<push-byte>
 	INC2 LDAk ?&<push-string>
-	POP2 #00
+	POP2 #00 !&<push-byte>
+
+@macros/<append> ( c -- )
+	( | normalize )
+	#20 GTHk ?{ SWP }
+	POP
+	( | join spaces )
+	DUP #20 NEQ ?{
+		DUP [ LIT &last 20 ] NEQ ?{ POP JMP2r } }
+	DUP ,&last STR
 	( >> )
 
 @macros/<push-byte> ( byte -- )
