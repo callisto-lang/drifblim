@@ -70,3 +70,9 @@ echo ""
 echo "Program size exceeded: ab"
 $asm "tests/err-length.tal" "bin/res.rom"
 
+echo ""
+echo "Macro invalid: %ADD"
+$asm "tests/err-macro.tal" "bin/res.rom"
+
+
+
