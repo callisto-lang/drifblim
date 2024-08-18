@@ -24,7 +24,11 @@ $asm "tests/err-file.tal" "bin/res.rom"
 
 echo ""
 echo "Label duplicate: &sub"
-$asm "tests/err-dup.tal" "bin/res.rom"
+$asm "tests/err-dup1.tal" "bin/res.rom"
+
+echo ""
+echo "Label duplicate: @TEST"
+$asm "tests/err-dup2.tal" "bin/res.rom"
 
 echo ""
 echo "Label invalid: @1234"
@@ -73,6 +77,14 @@ $asm "tests/err-length.tal" "bin/res.rom"
 echo ""
 echo "Macro invalid: %ADD"
 $asm "tests/err-macro.tal" "bin/res.rom"
+
+echo ""
+echo "Label duplicate: %TEST"
+$asm "tests/err-macrodup1.tal" "bin/res.rom"
+
+echo ""
+echo "Label duplicate: %TEST"
+$asm "tests/err-macrodup2.tal" "bin/res.rom"
 
 
 
