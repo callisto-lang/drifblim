@@ -23,7 +23,7 @@
 	;await-src
 	( >> )
 
-@<await> ( addr* -> )
+@<on-await> ( addr* -> )
 	.Console/vector DEO2
 	.Console/type DEI ?{ ;dict/usage <pstr>
 		#010f DEO }
@@ -31,27 +31,30 @@
 
 @await-src ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;await-dst !<await> }
+	( ) DUP #20 GTH ?{ POP ;await-dst !<on-await> }
 	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
 	STZ2
 	BRK
 
 @await-dst ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{
-		POP <assemble>
-		refs/<resolve>
-		( | handle error )
-		.halt LDZ ?{
-			.rom/length LDZ2 ORA ?on-success
-			;dst ;err/empty <set-error-scope> }
-		#010f DEO
-		BRK }
+	( ) DUP #20 GTH ?{ POP !<on-ready> }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@on-success ( -> )
+@<on-ready> ( -> )
+	#0100 rom/<set-head>
+	;dict/reset <set-scope>
+	;src <handle-file>
+	refs/<resolve>
+	.halt LDZ ?{
+		.rom/length LDZ2 ORA ?<on-success>
+		;dst ;err/empty <set-error-scope> }
+	#010f DEO
+	BRK
+
+@<on-success> ( -> )
 	rom/<save>
 	syms/<save>
 	<print-info>
@@ -62,16 +65,10 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "17 20 "Aug 20 "2024 $2
+	( date ) "8 20 "Dec 20 "2024 $2
 
 (
 @|Core )
-
-@<assemble> ( -- )
-	#0100 rom/<set-head>
-	;dict/reset <set-scope>
-	;src
-	( >> )
 
 @<handle-file> ( f* -- )
 	DUP2 .File/name DEO2
