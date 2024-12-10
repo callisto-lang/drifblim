@@ -65,7 +65,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "8 20 "Dec 20 "2024 $2
+	( date ) "10 20 "Dec 20 "2024 $2
 
 (
 @|Core )
@@ -203,8 +203,8 @@
 	INC2
 	( | validate )
 	is-hex ?&macro-invalid
-	is-opcode ?&macro-invalid
 	is-runic ?&macro-invalid
+	is-opcode ?&macro-invalid
 	DUP2 syms/find INC2 ORA ?&macro-duplicate
 	DUP2 macros/find INC2 ORA ?&macro-duplicate
 	( | record )
@@ -322,8 +322,8 @@
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	is-hex ?&invalid
-	is-opcode ?&invalid
 	is-runic ?&invalid
+	is-opcode ?&invalid
 	( >> )
 
 @syms/<push-string> ( word* -- )
@@ -545,8 +545,18 @@
 	POP2 POP2 #ffff JMP2r
 
 @is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
-	#01 JMP2r
+	match-opcode #ff NEQ JMP2r
+
+@match-opcode ( str* -- str* id )
+	LDA2k ,&xxo STR2
+	INC2k INC2 LDA ,&oox STR
+	;opcodes/end ;opcodes
+	&>l ( -- )
+		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
+			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{
+				SWP2 SUB2 #0063 ADD2 #0003 DIV2 #1f AND NIP JMP2r } }
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 #ff JMP2r
 
 @find-opcode ( name* -- byte )
 	,&t STR2
@@ -685,7 +695,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	&brk "BRK ]
+	&brk "BRK &end ]
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
