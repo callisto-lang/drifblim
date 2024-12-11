@@ -558,15 +558,14 @@
 
 @find-opcode ( name* -- byte )
 	match-opcode NIP #63 SWP SUB #03 DIV #1f AND STH
-	( LIT keep ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
+	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
 		LDAk #21 LTH ?{
-			( ) LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-			( ) LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-			( ) LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			;token ;err/opcode <set-error-scope>
-			( ) &r INC2 !&>w }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			;token ;err/opcode <set-error-scope> &r INC2 !&>w }
 	POP2 STHr JMP2r
 
 @is-hex ( str* -- str* f )
