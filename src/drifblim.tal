@@ -476,7 +476,16 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* -: )
-	find-opcode !&<write-byte>
+	match-opcode NIP #63 SWP SUB #03 DIV #1f AND STH
+	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
+	ORAr #0003 ADD2
+	&>w ( -- )
+		LDAk #21 LTH ?{
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			;token ;err/opcode <set-error-scope> &r INC2 !&>w }
+	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
 	is-hex ?{
@@ -555,18 +564,6 @@
 			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 JMP2r } }
 		#0003 ADD2 GTH2k ?&>l
 	POP2 POP2 #ffff JMP2r
-
-@find-opcode ( name* -- byte )
-	match-opcode NIP #63 SWP SUB #03 DIV #1f AND STH
-	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
-	ORAr #0003 ADD2
-	&>w ( -- )
-		LDAk #21 LTH ?{
-			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			;token ;err/opcode <set-error-scope> &r INC2 !&>w }
-	POP2 STHr JMP2r
 
 @is-hex ( str* -- str* f )
 	DUP2
