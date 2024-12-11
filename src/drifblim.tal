@@ -557,23 +557,17 @@
 	POP2 POP2 #ffff JMP2r
 
 @find-opcode ( name* -- byte )
-	,&t STR2
-	#2000
-	&>l ( -- )
-		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?{
-			INC GTHk ?&>l
-		POP2 #00 JMP2r }
-	( add keep mode to LIT ) NIP DUP #00 EQU #70 SFT ORA
-	( move to modes ) ,&t LDR2 #0003 ADD2
-	( keep flag ) [ LITr 00 ]
+	match-opcode NIP #63 SWP SUB #03 DIV #1f AND STH
+	( LIT keep ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
+	ORAr #0003 ADD2
 	&>w ( -- )
-		LDAk #20 OVR [ LIT "2 ] EQU ?&end
-		DUP ADD OVR [ LIT "r ] EQU ?&end
-		DUP ADD OVR [ LIT "k ] EQU ?&end
-		DUP ADD OVR #00 EQU ?&end
-		( ! ) ;token ;err/opcode <set-error-scope> &end STH
-		POP ORAr INC2 LDAk ?&>w
-	POP2 STHr ADD JMP2r
+		LDAk #21 LTH ?{
+			( ) LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			( ) LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			( ) LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			;token ;err/opcode <set-error-scope>
+			( ) &r INC2 !&>w }
+	POP2 STHr JMP2r
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -591,11 +585,6 @@
 
 @slen ( str* -: len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
-
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
@@ -693,7 +682,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	&brk "BRK &end ]
+	"BRK ] &end
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
