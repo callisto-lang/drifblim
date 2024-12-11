@@ -65,7 +65,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "10 20 "Dec 20 "2024 $2
+	( date ) "11 20 "Dec 20 "2024 $2
 
 (
 @|Core )
@@ -266,8 +266,7 @@
 
 @macros/<append> ( c -- )
 	( | normalize )
-	#20 GTHk ?{ SWP }
-	POP
+	#20 GTHk [ JMP SWP POP ]
 	( | join spaces )
 	DUP #20 NEQ ?{
 		DUP [ LIT &last 20 ] NEQ ?{ POP JMP2r } }
@@ -545,18 +544,18 @@
 	POP2 POP2 #ffff JMP2r
 
 @is-opcode ( str* -- str* f )
-	match-opcode #ff NEQ JMP2r
+	match-opcode #ffff NEQ2 JMP2r
 
-@match-opcode ( str* -- str* id )
+@match-opcode ( str* -- str* id* )
 	LDA2k ,&xxo STR2
 	INC2k INC2 LDA ,&oox STR
 	;opcodes/end ;opcodes
 	&>l ( -- )
 		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
 			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{
-				SWP2 SUB2 #0063 ADD2 #0003 DIV2 #1f AND NIP JMP2r } }
+				SWP2 SUB2 #0063 ADD2 #0003 DIV2 JMP2r } }
 		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ff JMP2r
+	POP2 POP2 #ffff JMP2r
 
 @find-opcode ( name* -- byte )
 	,&t STR2
