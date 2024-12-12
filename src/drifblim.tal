@@ -478,7 +478,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* -: )
-	match-opcode NIP #63 SWP SUB #03 DIV #1f AND STH
+	match-opcode #63 SWP SUB #03 DIV #1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
@@ -555,7 +555,7 @@
 	POP2 POP2 #ffff JMP2r
 
 @is-opcode ( str* -- str* f )
-	match-opcode INC2 ORA JMP2r
+	match-opcode INC JMP2r
 
 @match-opcode ( str* -- str* opcode* )
 	LDA2k ,&xxo STR2
@@ -563,9 +563,9 @@
 	;opcodes/end ;opcodes
 	&>l ( -- )
 		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
-			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 JMP2r } }
+			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
 		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ffff JMP2r
+	POP2 POP2 #ff JMP2r
 
 @is-hex ( str* -- str* f )
 	DUP2
