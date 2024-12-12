@@ -388,6 +388,10 @@
 
 @get-any ( str* -- value* )
 	is-hex ?shex
+	!get-ref
+
+@get-ref-type ( token* type -- addr* )
+	,get-ref/type STR
 	( >> )
 
 @get-ref ( token* -- addr* )
@@ -452,15 +456,13 @@
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/get-abs-byte ( label* -- addr )
-	.RefType/abs-byte ;get-ref/type STA
-	get-ref NIP JMP2r
+	.RefType/abs-byte get-ref-type NIP JMP2r
 
 @refs/get-abs-short ( label* -- addr* )
-	.RefType/abs-short ;get-ref/type STA !get-ref
+	.RefType/abs-short !get-ref-type
 
 @refs/get-rel-byte ( label* -- distance )
-	.RefType/rel-byte ;get-ref/type STA
-	get-ref INC2k ORA ?{
+	.RefType/rel-byte get-ref-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
 	rom/get-head INC2 INC2 SUB2
 	( | check distance )
@@ -469,8 +471,7 @@
 	( ! ) ;err/distance !<set-error-scope-token>
 
 @refs/get-rel-short ( label* -- distance* )
-	.RefType/rel-short ;get-ref/type STA
-	get-ref rom/get-head INC2 INC2 SUB2 JMP2r
+	.RefType/rel-short get-ref-type rom/get-head INC2 INC2 SUB2 JMP2r
 
 (
 @|Rom )
@@ -618,9 +619,9 @@
 	[ LIT "A ] SUB #1a LTH JMP2r
 
 @chex ( c -: <val> )
-	[ LIT "0 ] SUB DUP #0a LTH ?&end
-	#27 SUB DUP #10 LTH ?&end
-	POP #ff &end JMP2r
+	[ LIT "0 ] SUB DUP #0a LTH ?{
+		#27 SUB DUP #10 LTH ?{ POP #ff } }
+	JMP2r
 
 @feof ( addr* -: f )
 	.File/read DEO2
