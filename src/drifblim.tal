@@ -79,8 +79,7 @@
 		;&c feof ?{
 			INC2 [ LIT &c $1 ] token/<push>
 			[ LIT2 00 -halt ] LDZ EQU ?&>s }
-	ORA ?{
-		( ! ) DUP2 ;err/file <set-error-scope> }
+	ORA ?{ DUP2 ;err/file <set-error-scope> }
 	POP2 JMP2r
 
 @<set-error> ( token* name* -- )
@@ -91,6 +90,10 @@
 	<pstr>
 	#0a18 DEO
 	JMP2r
+
+@<set-error-scope-token> ( name* -- )
+	;token SWP2
+	( >> )
 
 @<set-error-scope> ( keyword* name* -- )
 	[ LIT2 01 -halt ] STZ
@@ -144,7 +147,7 @@
 	( | append )
 	[ LIT2 00 &ptr -token ]
 	( overflow ) DUP .&cap NEQ ?{
-		( ! ) ;token ;err/token-mem <set-error-scope> }
+		( ! ) ;err/token-mem <set-error-scope-token> }
 	( move ptr ) INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -280,7 +283,7 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;token ;err/macros-mem !<set-error-scope> }
+		( ! ) ;err/macros-mem !<set-error-scope-token> }
 	JMP2r
 
 (
@@ -338,12 +341,12 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;token ;err/syms-mem !<set-error-scope> }
+		( ! ) ;err/syms-mem !<set-error-scope-token> }
 	JMP2r
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	( ! ) ;token ;err/label !<set-error-scope>
+	( ! ) ;err/label !<set-error-scope-token>
 
 @syms/<save> ( -- )
 	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -365,7 +368,7 @@
 @get-sublabel ( name* -- sublabel* )
 	DUP2 slen NIP ;sublabel slen NIP ADD
 	( check length ) #30 LTH ?{
-		( ! ) ;token ;err/sublabel !<set-error-scope> }
+		( ! ) ;err/sublabel !<set-error-scope-token> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -408,7 +411,7 @@
 	( save ) INC2r [ LITr _&ptr ] STR2r
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;token ;err/refs-mem !<set-error-scope> }
+		( ! ) ;err/refs-mem !<set-error-scope-token> }
 	JMP2r
 
 @refs/<resolve> ( -- )
@@ -463,7 +466,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;token ;err/distance !<set-error-scope>
+	( ! ) ;err/distance !<set-error-scope-token>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short ;get-ref/type STA
@@ -486,12 +489,12 @@
 			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			;token ;err/opcode <set-error-scope> &r INC2 !&>w }
+			( ! ) ;err/opcode <set-error-scope-token> &r INC2 !&>w }
 	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
 	is-hex ?{
-		( ! ) ;token ;err/hex <set-error-scope> }
+		( ! ) ;err/hex <set-error-scope-token> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
@@ -503,7 +506,7 @@
 	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
 	#04 NEQ ?{ shex !&<write-short> }
 	POP2
-	( ! ) ;token ;err/hex !<set-error-scope>
+	( ! ) ;err/hex !<set-error-scope-token>
 
 @rom/<write-call> ( str* opc -: )
 	/<write-byte>
@@ -521,9 +524,9 @@
 	?{ JMP2r }
 	.&head LDZ2
 	( ) OVR ?{
-		( ! ) ;token ;err/zeropage <set-error-scope> }
+		( ! ) ;err/zeropage <set-error-scope-token> }
 	( ) DUP2 #8000 LTH2 ?{
-		( ! ) ;token ;err/rom-mem <set-error-scope> }
+		( ! ) ;err/rom-mem <set-error-scope-token> }
 	.&length STZ2
 	JMP2r
 

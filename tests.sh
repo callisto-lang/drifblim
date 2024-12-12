@@ -67,11 +67,11 @@ echo "Reference too far: back"
 $asm "tests/err-farbwd.tal" "bin/res.rom"
 
 echo ""
-echo "Token size exceeded: @aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+echo "Token exceeded: @aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 $asm "tests/err-token.tal" "bin/res.rom"
 
 echo ""
-echo "Program size exceeded: ab"
+echo "Rom exceeded: ab"
 $asm "tests/err-length.tal" "bin/res.rom"
 
 echo ""
