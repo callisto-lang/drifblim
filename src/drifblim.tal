@@ -560,7 +560,7 @@
 @is-opcode ( str* -- str* f )
 	match-opcode INC JMP2r
 
-@match-opcode ( str* -- str* opcode* )
+@match-opcode ( str* -- str* opcode )
 	LDA2k ,&xxo STR2
 	INC2k INC2 LDA ,&oox STR
 	;opcodes/end ;opcodes
@@ -687,10 +687,10 @@
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
 	"~ =lib/inctal "% =lib/macros ]
-	&end ( .. )
-
+	&end
 (
 @|Buffers )
+
 
 @lambda/mem $100
 
