@@ -146,7 +146,15 @@
 	POP2 JMP2r
 
 @<write-opcode> ( str* -: )
-	find-opcode !<write>
+	match-opcode #63 SWP SUB #03 DIV #1f AND STH
+	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
+	ORAr #0003 ADD2
+	&>w ( -- )
+		LDAk #21 LTH ?{
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r } &r INC2 !&>w }
+	POP2 STHr !<write>
 
 @<write-lithex> ( str* -: )
 	is-hex ?{ ;err/number <set-error> }
@@ -283,26 +291,17 @@
 	POP2 #01 JMP2r
 
 @is-opcode ( str* -- str* f )
-	DUP2 find-opcode ?{ DUP2 ;opcodes/brk !scmp3 }
-	#01 JMP2r
+	match-opcode INC JMP2r
 
-@find-opcode ( name* -- byte )
-	DUP2 ,&t STR2
-	#2000
+@match-opcode ( str* -- str* opcode )
+	LDA2k ,&xxo STR2
+	INC2k INC2 LDA ,&oox STR
+	;opcodes/end ;opcodes
 	&>l ( -- )
-		#00 OVR #03 MUL ;opcodes ADD2 [ LIT2 &t $2 ] scmp3 ?&on-found
-		INC GTHk ?&>l
-	POP2 POP2 #00 JMP2r
-
-	&on-found ( name* bounds* -- byte )
-	( LITk ) NIP DUP #00 EQU #70 SFT ORA STH
-	( modes ) #0003 ADD2
-	&>w ( -- )
-		LDAk ?{ POP2 STHr JMP2r }
-		LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr }
-		LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr }
-		LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr }
-		INC2 !&>w
+		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
+			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 #ff JMP2r
 
 (
 @|lambda )
@@ -339,11 +338,6 @@
 		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
 		LDAk LDAkr STHr NEQ ?&d
 		INC2 INC2r !&>l
-
-@scmp3 ( a* b* -- f )
-	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
 
 @chex ( c -: <val> )
 	[ LIT "0 ] SUB DUP #0a LTH ?{
@@ -386,7 +380,7 @@
 	POP2 POP2
 	&>put ( -- )
 		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
+		[ LIT "0 ] ADD #19 DEO !&>put
 
 (
 @|assets )
@@ -413,7 +407,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	&brk "BRK ]
+	"BRK ] &end
 
 @runics [
 	"| =lib/padabs "$ =lib/padrel
