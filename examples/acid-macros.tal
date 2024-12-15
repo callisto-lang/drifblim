@@ -94,6 +94,17 @@ JMP2r
 
 $20 @label2
 
+%red-macro { #1234 }
+
+%blue-macro ( hey -- what ) { #1234 DUP2 ADD2 }
+
+%yellow-macro ( -- a ) {
+	#12 #45
+	ADD
+}
+
+yellow-macro
+
 @hello-word "Hello 20 "World! 0a $1
 
 
