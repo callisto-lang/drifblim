@@ -65,7 +65,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Dec 20 "2024 $2
+	( date ) "18 20 "Dec 20 "2024 $2
 
 (
 @|Core )
@@ -633,14 +633,14 @@
 	POP2 JMP2r
 
 @<pdec> ( short* -- )
-	#000a SWP2 [ LITr ff ]
-	&>get ( -- )
-		SWP2k DIV2k MUL2 SUB2 STH
-		POP OVR2 DIV2 ORAk ?&>get
-	POP2 POP2
-	&>put ( -- )
-		STHr INCk ?{ POP JMP2r }
-		[ LIT "0 ] ADD #18 DEO !&>put
+	[ LIT2r ff00 ]
+	&>read ( -- )
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write ( -- )
+		NIP #30 ADD #18 DEO
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
 (
 @|Assets )
