@@ -54,6 +54,20 @@
 	#010f DEO
 	BRK
 
+@<handle-file> ( f* -- )
+	.File/name DEO2
+	#0001 .File/length DEO2
+	token/<new>
+	#0000
+	&>s ( len* -- )
+		.halt LDZ ?&end
+		;&c .File/read DEO2
+		.File/success-lb DEI ?{
+			ORAk ?{ ;src ;err/file <set-error-scope> }
+			&end ( i* -- )
+			POP2 JMP2r }
+		INC2 [ LIT &c $1 ] token/<push> !&>s
+
 @<on-success> ( -> )
 	rom/<save>
 	syms/<save>
@@ -69,18 +83,6 @@
 
 (
 @|Core )
-
-@<handle-file> ( f* -- )
-	DUP2 .File/name DEO2
-	#0001 .File/length DEO2
-	token/<new>
-	#0000
-	&>s ( len* -- )
-		;&c feof ?{
-			INC2 [ LIT &c $1 ] token/<push>
-			[ LIT2 00 -halt ] LDZ EQU ?&>s }
-	ORA ?{ DUP2 ;err/file <set-error-scope> }
-	POP2 JMP2r
 
 @<set-error> ( token* name* -- )
 	[ LIT2 01 -halt ] STZ
