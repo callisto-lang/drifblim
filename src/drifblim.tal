@@ -9,7 +9,7 @@
 
 	@src $30
 	@dst $30
-	@token $2f &cap $1
+	@token &buf $2f &cap $1
 	@scope $30
 	@sublabel $30
 	@halt $1
@@ -94,7 +94,7 @@
 	JMP2r
 
 @<set-error-scope-token> ( name* -- )
-	;token SWP2
+	;token/buf SWP2
 	( >> )
 
 @<set-error-scope> ( keyword* name* -- )
@@ -132,16 +132,16 @@
 @|Tokenizer )
 
 @token/<new> ( -- )
-	[ LIT2 -token _&ptr ] STR
-	#0000 .token STZ2
+	[ LIT2 -&buf _&ptr ] STR
+	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
 @token/<push> ( c -- )
 	DUP #20 GTH ?{
-		POP ;token LDZk ?{ POP2 JMP2r }
-		token/<parse> !&<new> }
+		POP ;&buf LDZk ?{ POP2 JMP2r }
+		/<parse> !&<new> }
 	( | append )
-	[ LIT2 00 &ptr -token ]
+	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap NEQ ?{
 		( ! ) ;err/token-mem <set-error-scope-token> }
 	( move ptr ) INCk ,&ptr STR
@@ -161,10 +161,10 @@
 	( call ) INC2 LDA2 JMP2
 
 @token/<parse-macro> ( t* macro* -- )
-	token/<new>
+	/<new>
 	scap/ INC2
 	&>w ( -- )
-		LDAk token/<push>
+		LDAk /<push>
 		INC2 LDAk ?&>w
 	POP2 POP2 #20 !token/<push>
 
@@ -223,11 +223,11 @@
 
 	&macro-invalid ( t* -- )
 	POP2
-	( ! ) ;token ;err/macro !<set-error>
+	( ! ) ;token/buf ;err/macro !<set-error>
 
 	&macro-duplicate ( t* -- )
 	POP2
-	( ! ) ;token ;err/duplicate !<set-error>
+	( ! ) ;token/buf ;err/duplicate !<set-error>
 
 (
 @|Lambda )
@@ -312,7 +312,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;token ;err/duplicate !<set-error>
+	( ! ) ;token/buf ;err/duplicate !<set-error>
 
 @syms/get-bounds ( -- to* from* )
 	,&ptr LDR2 ;&mem JMP2r
