@@ -149,16 +149,18 @@
 	JMP2r
 
 @token/<parse> ( t* -- )
-	LDZk find-rune INC2k ORA ?{
-		POP2
-		( | non-runic )
-		is-hex ?rom/<write-rawhex>
-		is-opcode ?rom/<write-opcode>
-		( | macros )
-		DUP2 macros/find INC2k ORA ?&<parse-macro>
-		POP2
-		( immediate word ) !lib/litjsi }
-	( call ) INC2 LDA2 JMP2
+	LDAk [ LIT "( ] NEQ ?{
+		,&mute LDR INC ,&mute STR }
+	[ LIT &mute $1 ] ?{
+		LDZk find-rune INC2k ORA ?{
+			POP2 is-hex ?rom/<write-rawhex>
+			is-opcode ?rom/<write-opcode>
+			DUP2 macros/find INC2k ORA ?&<parse-macro>
+			( imm ) POP2 !lib/litjsi }
+		( call ) INC2 LDA2 JMP2 }
+	LDA [ LIT ") ] NEQ ?{
+		[ LIT2 ff _&mute ] LDR ADD ,&mute STR }
+	JMP2r
 
 @token/<parse-macro> ( t* macro* -- )
 	/<new>
@@ -188,17 +190,6 @@
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
 	&ignore POP2 JMP2r
-
-@lib/comment ( t* -- )
-	POP2
-	( depth ) [ LITr 00 ]
-	&>sc ( -- )
-		;&c feof ?{
-			[ LIT2 &c $1 "( ] NEQk ?{ INCr }
-			POP [ LIT ") ] NEQ ?{ STHkr ?{ POPr JMP2r }
-				[ LITr 01 ] SUBr }
-			!&>sc }
-	POPr JMP2r
 
 @lib/macros ( t* -- )
 	INC2
@@ -675,7 +666,6 @@
 
 @runes [
 	"| =lib/padabs "$ =lib/padrel
-	"} =lib/lambda "( =lib/comment
 	"@ =lib/toplab "& =lib/sublab
 	", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep
@@ -683,7 +673,8 @@
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"~ =lib/inctal "% =lib/macros ]
+	"} =lib/lambda "% =lib/macros
+	"~ =lib/inctal ]
 	&end
 (
 @|Buffers )
