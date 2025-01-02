@@ -7,7 +7,7 @@
 	{ ( skip ) #ffff } POP2r
 
 	( nested lambda )
-	{ { "hello 0a $1 } STH2r !print-str } STH2r JSR2
+	{ { "hello 0a $1 } STH2r !<print-str> } STH2r JSR2
 
 	( function application )
 	{ 01 02 03 04 05 } STH2r { LIT "0 ADD #18 DEO #0a18 DEO JMP2r } STH2r foreach
@@ -16,9 +16,9 @@
 	{ "Dindeldums $1 } STH2r get-lambda-length <print-dec> #0a18 DEO
 
 	( allocated string )
-	;hello-word print-str
-
-	( nested ( comment ) ;error-nested print-str )
+	;hello-word <print-str>
+	test-macro
+	( nested ( comment ) ;error-nested <print-str> )
 
 	#800f DEO
 
@@ -64,7 +64,7 @@ _{ 01 02 03 }
 	#0002 SUB2 LDA2
 JMP2r
 
-@print-str ( str* -- )
+@<print-str> ( str* -- )
 	&while ( -- )
 		( send ) LDAk #18 DEO
 		( loop ) INC2 LDAk ?&while
@@ -107,6 +107,23 @@ $20 @label2
 
 yellow-macro
 
+(
+@|tests )
+
+
+%add1 { #0001 ADD2 }
+
+@test-macro ( -- )
+	#0001 add1 #0002 EQU2 ?{
+		;err-macro <print-str>
+	}
+	JMP2r
+
+(
+@|assets )
+
 @hello-word "Hello 20 "World! 0a $1
 
 @error-nested "Error 20 "nested 20 "comment 0a $1
+@err-macro "Error 20 "macro 0a $1
+

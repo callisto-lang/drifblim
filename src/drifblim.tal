@@ -209,7 +209,6 @@
 	DUP2 macros/find INC2 ORA ?&macro-duplicate
 	( | record )
 	macros/<push-string>
-	#20 ;macros/last STA
 	( walk to macro start )
 	&>sm ( -- )
 		;&cm feof ?{
