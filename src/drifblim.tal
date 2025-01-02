@@ -164,18 +164,9 @@
 	LDZk find-rune INC2k ORA ?{
 		POP2 is-hex ?rom/<write-rawhex>
 		is-opcode ?rom/<write-opcode>
-		DUP2 macros/find INC2k ORA ?&<parse-macro>
-		POP2
-		( immediate ) !lib/litjsi }
-	( runic ) INC2 LDA2 JMP2
-
-	&<parse-macro> ( t* macro* -- )
-	token/<new>
-	scap/ INC2
-	&>w ( -- )
-		LDAk token/<push>
-		INC2 LDAk ?&>w
-	POP2 POP2 #20 !token/<push>
+		DUP2 macros/find INC2k ORA ?rom/<write-macro>
+		POP2 !lib/litjsi }
+	INC2 LDA2 JMP2
 
 @<set-default> ( -- )
 	;asm-default ;token/mode STA2
@@ -479,6 +470,14 @@
 
 (
 @|Rom )
+
+@rom/<write-macro> ( t* macro* -- )
+	token/<new>
+	scap/ INC2
+	&>wm ( -- )
+		LDAk token/<push>
+		INC2 LDAk ?&>wm
+	POP2 POP2 #20 !token/<push>
 
 @rom/<write-str> ( str* -: )
 	LDAk /<write-byte>
