@@ -50,7 +50,7 @@
 	refs/<resolve>
 	.halt LDZ ?{
 		.rom/length LDZ2 ORA ?on-complete
-		;dst ;err/empty <set-error-scope> }
+		;dst ;err/empty <set-error> }
 	#010f DEO
 	BRK
 
@@ -79,25 +79,16 @@
 		.halt LDZ ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;src ;err/file <set-error-scope> }
+			ORAk ?{ ;src ;err/file <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push> !&>s
-
-@<set-error> ( token* name* -- )
-	[ LIT2 01 -halt ] STZ
-	<pstr>
-	[ LIT2 ": 18 ] DEO
-	#2018 DEO
-	<pstr>
-	#0a18 DEO
-	JMP2r
 
 @<set-error-scope-token> ( name* -- )
 	;token/buf SWP2
 	( >> )
 
-@<set-error-scope> ( keyword* name* -- )
+@<set-error> ( keyword* name* -- )
 	[ LIT2 01 -halt ] STZ
 	<pstr>
 	[ LIT2 ": 18 ] DEO
@@ -298,7 +289,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;token/buf ;err/duplicate !<set-error>
+	( ! ) ;err/duplicate !<set-error-scope-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -422,7 +413,7 @@
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) OVR2 #0003 ADD2 ;err/reference <set-error-scope> }
+		( ! ) OVR2 #0003 ADD2 ;err/reference <set-error> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
