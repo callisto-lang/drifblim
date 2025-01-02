@@ -68,7 +68,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Jan 20 "2025 $2
+	( date ) "2 20 "Jan 20 "2025 $2
 
 @<handle-file> ( f* -- )
 	.File/name DEO2
@@ -154,10 +154,22 @@
 @asm-comment ( t* -- )
 	[ LITr &depth $1 ] LDA DUP
 	( | nested comments )
-	[ LIT "( ] NEQ ?{ INCr }
 	[ LIT ") ] NEQ ?{ LITr 01 SUBr }
+	[ LIT "( ] NEQ ?{ INCr }
 	STHr DUP ,&depth STR
 	?{ !<set-default> }
+	JMP2r
+
+@asm-macro ( t* -- )
+	[ LITr &depth $1 ] LDAk
+	( | nested lambdas )
+	[ LIT "} ] NEQ ?{
+		[ LITr 01 ] SUBr STHkr ?{
+			#00 macros/<push-byte>
+			POP2 POPr !<set-default> } }
+	STHkr #00 EQU ?{ ;token/buf macros/<push-word> }
+	LDA [ LIT "{ ] NEQ ?{ INCr }
+	STHr ,&depth STR
 	JMP2r
 
 @asm-default ( t* -- )
@@ -175,6 +187,11 @@
 @<set-comment> ( -- )
 	;asm-comment ;token/mode STA2
 	#01 ;asm-comment/depth STA
+	JMP2r
+
+@<set-macro> ( -- )
+	;asm-macro ;token/mode STA2
+	#00 ;asm-macro/depth STA
 	JMP2r
 
 (
@@ -197,35 +214,8 @@
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
 	&cmment POP2 !<set-comment>
+	&macros INC2 macros/<push-word> !<set-macro>
 	&ignore POP2 JMP2r
-
-@lib/macros ( t* -- )
-	INC2
-	( | validate )
-	is-hex ?&macro-invalid
-	is-runic ?&macro-invalid
-	is-opcode ?&macro-invalid
-	DUP2 syms/find INC2 ORA ?&macro-duplicate
-	DUP2 macros/find INC2 ORA ?&macro-duplicate
-	( | record )
-	macros/<push-string>
-	( walk to macro start )
-	&>sm ( -- )
-		;&cm feof ?{
-			[ LIT2 &cm $1 "{ ] EQU ?{ !&>sm } }
-	( record macro body until bracket )
-	&>sb ( -- )
-		;&cb feof ?{ [ LIT2 "} &cb $1 ] EQUk ?{ DUP macros/<append> }
-			EQU ?{ !&>sb } }
-	#00 !macros/<push-byte>
-
-	&macro-invalid ( t* -- )
-	POP2
-	( ! ) ;token/buf ;err/macro !<set-error>
-
-	&macro-duplicate ( t* -- )
-	POP2
-	( ! ) ;token/buf ;err/duplicate !<set-error>
 
 (
 @|Lambda )
@@ -254,14 +244,15 @@
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		DUP2 [ LIT2 &t $2 ] wcmp ?{
-			scap/ INC2 scap/ INC2 GTH2k ?&>l
+			scap/ INC2 GTH2k ?&>l
 		POP2 POP2 #ffff JMP2r }
 	NIP2 JMP2r
 
-@macros/<push-string> ( t* -- )
-	LDAk /<push-byte>
-	INC2 LDAk ?&<push-string>
-	POP2 #00 !&<push-byte>
+@macros/<push-word> ( t* -- )
+	LDAk /<append>
+	INC2 LDAk ?&<push-word>
+	POP2 #20
+	( >> )
 
 @macros/<append> ( c -- )
 	( | normalize )
@@ -472,7 +463,9 @@
 
 @rom/<write-macro> ( t* macro* -- )
 	token/<new>
-	scap/ INC2
+	&>wcap ( macro* -- macro* )
+		INC2 LDAk #20 GTH ?&>wcap
+	INC2
 	&>wm ( -- )
 		LDAk token/<push>
 		INC2 LDAk ?&>wm
@@ -625,10 +618,6 @@
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
 
-@feof ( addr* -: f )
-	.File/read DEO2
-	[ LIT2 00 -File/success-lb ] DEI EQU JMP2r
-
 @<pstr> ( str* -: )
 	LDAk #18 DEO
 	INC2 & LDAk ?<pstr>
@@ -661,7 +650,6 @@
 	&hex "Hexadecimal 20 "invalid $1
 	&opcode "Opcode 20 "invalid $1
 	&reference "Reference 20 "invalid $1
-	&macro "Macro 20 "invalid $1
 	&zeropage "Writing 20 "zero-page $1
 	&distance "Reference 20 "too 20 "far $1
 	&empty "Output 20 "empty $1

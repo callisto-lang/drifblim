@@ -15,7 +15,7 @@ run-drifblim: bin/drifblim.rom
 	@ printf "Assemble drifblim-bootstrap.rom with drifblim.rom\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
 	@ printf "Test drifblim-bootstrap.rom\n"
-	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/res.rom
+	@ ${EMU} bin/drifblim.rom examples/hello.tal bin/res.rom
 	@ ${EMU} bin/res.rom
 run-drifloon: bin/drifloon.rom
 	@ printf "++ Assemble drifloon-bootstrap from itself\n"
