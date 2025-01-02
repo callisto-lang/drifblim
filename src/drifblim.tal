@@ -252,18 +252,9 @@
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	LDAk /<append>
+	LDAk /<push-byte>
 	INC2 LDAk ?&<push-word>
 	POP2 #20
-	( >> )
-
-@macros/<append> ( c -- )
-	( | normalize )
-	#20 GTHk [ JMP SWP POP ]
-	( | join spaces )
-	DUP #20 NEQ ?{
-		DUP [ LIT &last 20 ] NEQ ?{ POP JMP2r } }
-	DUP ,&last STR
 	( >> )
 
 @macros/<push-byte> ( byte -- )
