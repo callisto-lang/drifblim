@@ -151,13 +151,35 @@
 (
 @|Assembly )
 
+@<set-default> ( -- )
+	;asm-default ;token/mode STA2
+	JMP2r
+
+@asm-default ( t* -- )
+	LDZk find-rune INC2k ORA ?{
+		POP2 is-hex ?rom/<write-rawhex>
+		is-opcode ?rom/<write-opcode>
+		DUP2 macros/find INC2k ORA ?rom/<write-macro>
+		POP2 !lib/litjsi }
+	INC2 LDA2 JMP2
+
+@<set-comment> ( -- )
+	;asm-comment ;token/mode STA2
+	[ LIT2 01 _asm-comment/depth ] STR
+	JMP2r
+
 @asm-comment ( t* -- )
 	[ LITr &depth $1 ] LDA DUP
 	( | nested comments )
 	[ LIT ") ] NEQ ?{ LITr 01 SUBr }
 	[ LIT "( ] NEQ ?{ INCr }
-	STHr DUP ,&depth STR
+	STHkr [ LITr _&depth ] STRr
 	?{ !<set-default> }
+	JMP2r
+
+@<set-macro> ( -- )
+	;asm-macro ;token/mode STA2
+	[ LIT2 00 _asm-macro/depth ] STR
 	JMP2r
 
 @asm-macro ( t* -- )
@@ -169,29 +191,7 @@
 			POP2 POPr !<set-default> } }
 	STHkr #00 EQU ?{ ;token/buf macros/<push-word> }
 	LDA [ LIT "{ ] NEQ ?{ INCr }
-	STHr ,&depth STR
-	JMP2r
-
-@asm-default ( t* -- )
-	LDZk find-rune INC2k ORA ?{
-		POP2 is-hex ?rom/<write-rawhex>
-		is-opcode ?rom/<write-opcode>
-		DUP2 macros/find INC2k ORA ?rom/<write-macro>
-		POP2 !lib/litjsi }
-	INC2 LDA2 JMP2
-
-@<set-default> ( -- )
-	;asm-default ;token/mode STA2
-	JMP2r
-
-@<set-comment> ( -- )
-	;asm-comment ;token/mode STA2
-	#01 ;asm-comment/depth STA
-	JMP2r
-
-@<set-macro> ( -- )
-	;asm-macro ;token/mode STA2
-	#00 ;asm-macro/depth STA
+	[ LITr _&depth ] STRr
 	JMP2r
 
 (
