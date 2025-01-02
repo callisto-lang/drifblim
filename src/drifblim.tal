@@ -112,10 +112,10 @@
 	[ LIT "A ] SUB #1a LTH }
 
 %is-opcode ( str* -- str* f ) {
-	match-opcode INC }
+	opcodes/find INC }
 
 %is-runic ( str* -- str* f ) {
-	LDAk find-rune INC2 ORA }
+	LDAk runes/find INC2 ORA }
 
 @<print-info> ( -- )
 	( > count ) [ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
@@ -165,7 +165,7 @@
 	JMP2r
 
 @asm-default ( t* -- )
-	LDZk find-rune INC2k ORA ?{
+	LDZk runes/find INC2k ORA ?{
 		POP2 is-hex ?rom/<write-rawhex>
 		is-opcode ?rom/<write-opcode>
 		DUP2 macros/find INC2k ORA ?rom/<write-macro>
@@ -474,7 +474,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* -: )
-	match-opcode #63 SWP SUB #03 DIV #1f AND STH
+	opcodes/find #63 SWP SUB #03 DIV #1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
@@ -539,18 +539,19 @@
 (
 @|Helpers )
 
-@find-rune ( char -- <addr>* )
-	,&rune STR
-	;runes/end ;runes
+@runes/find ( char -- <addr>* )
+	STH
+	;&db-end ;&db
 	&>l ( -- )
-		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ffff JMP2r
+		LDAk STHkr EQU ?{
+			#0003 ADD2 GTH2k ?&>l
+		POP2 #ffff }
+	NIP2 POPr JMP2r
 
-@match-opcode ( str* -- str* opcode )
+@opcodes/find ( str* -- str* opc )
 	LDA2k ,&xxo STR2
 	INC2k INC2 LDA ,&oox STR
-	;opcodes/end ;opcodes
+	;&db-end ;&db
 	&>l ( -- )
 		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
 			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
@@ -648,14 +649,14 @@
 	&syms-mem "Symbols 20 "exceeded $1
 	&macros-mem "Macros 20 "exceeded $1
 
-@opcodes [
+@opcodes/db [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] &end
+	"BRK ] &db-end
 
-@runes [
+@runes/db [
 	"| =lib/padabs "$ =lib/padrel
 	"@ =lib/toplab "& =lib/sublab
 	"% =lib/macros "( =lib/coment
@@ -666,7 +667,7 @@
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
 	"} =lib/lambda "~ =lib/inctal ]
-	&end
+	&db-end
 (
 @|Buffers )
 
