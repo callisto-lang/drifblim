@@ -108,12 +108,15 @@
 	#0a18 DEO
 	JMP2r
 
+%is-uppercase ( char -- uppercase ) {
+	[ LIT "A ] SUB #1a LTH }
+
 @<print-info> ( -- )
 	( > count ) [ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
 	&>l ( -- )
 		INC2r
 		( is used ) INC2k INC2 LDA .SymType/used AND ?{
-			( is capitalized ) DUP2 #0003 ADD2 LDA ciuc ?{
+			( is capitalized ) DUP2 #0003 ADD2 LDA is-uppercase ?{
 				;dict/unused <pstr>/
 				DUP2 #0003 ADD2 <pstr>/
 				#0a18 DEO } }
@@ -240,13 +243,13 @@
 @|Macros )
 
 @macros/find ( name* -- <addr>* )
-	,&t STR2
+	STH2
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
-		DUP2 [ LIT2 &t $2 ] wcmp ?{
+		DUP2 STH2kr wcmp ?{
 			scap/ INC2 GTH2k ?&>l
-		POP2 POP2 #ffff JMP2r }
-	NIP2 JMP2r
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
 	LDAk /<append>
@@ -606,9 +609,6 @@
 	#0f AND #0a LTHk ?{
 		SUB [ LIT "a ] ADD JMP2r }
 	POP [ LIT "0 ] ADD JMP2r
-
-@ciuc ( char -- uppercase )
-	[ LIT "A ] SUB #1a LTH JMP2r
 
 @chex ( c -: <val> )
 	[ LIT "0 ] SUB DUP #0a LTH ?{
