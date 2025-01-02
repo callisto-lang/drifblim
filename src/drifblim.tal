@@ -203,9 +203,6 @@
 	[ LITr _&depth ] STRr
 	JMP2r
 
-(
-@|Library )
-
 @lib ( runics )
 	&padabs INC2 get-any !rom/<set-head>
 	&padrel INC2 get-any rom/get-head ADD2 !rom/<set-head>
@@ -460,13 +457,13 @@
 
 @rom/<write-macro> ( t* macro* -- )
 	token/<new>
-	&>wcap ( macro* -- macro* )
+	&>wcap ( name* -- body* )
 		INC2 LDAk #20 GTH ?&>wcap
 	INC2
-	&>wm ( -- )
+	&>body ( body* -- cap* )
 		LDAk token/<push>
-		INC2 LDAk ?&>wm
-	POP2 POP2 #20 !token/<push>
+		INC2 LDAk ?&>body
+	NIP2 LDA !token/<push>
 
 @rom/<write-str> ( str* -: )
 	LDAk /<write-byte>
@@ -539,25 +536,6 @@
 (
 @|Helpers )
 
-@runes/find ( char -- <addr>* )
-	STH
-	;&db-end ;&db
-	&>l ( -- )
-		LDAk STHkr EQU ?{
-			#0003 ADD2 GTH2k ?&>l
-		POP2 #ffff }
-	NIP2 POPr JMP2r
-
-@opcodes/find ( str* -- str* opc )
-	LDA2k ,&xxo STR2
-	INC2k INC2 LDA ,&oox STR
-	;&db-end ;&db
-	&>l ( -- )
-		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
-			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ff JMP2r
-
 @is-hex ( str* -- str* f )
 	DUP2
 	&>w ( -- )
@@ -583,13 +561,6 @@
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
-@<scpy> ( src* dst* -: )
-	STH2
-	&>w ( src* `dst* -- )
-		LDAk #00 STH2kr STA2
-		INC2r INC2 LDAk ?&>w
-	POP2 POP2r JMP2r
-
 @wcmp ( a* b* -: f )
 	STH2
 	&>l ( a* `b* -- f )
@@ -606,6 +577,13 @@
 	[ LIT "0 ] SUB DUP #0a LTH ?{
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
+
+@<scpy> ( src* dst* -: )
+	STH2
+	&>w ( src* `dst* -- )
+		LDAk #00 STH2kr STA2
+		INC2r INC2 LDAk ?&>w
+	POP2 POP2r JMP2r
 
 @<pstr> ( str* -: )
 	LDAk #18 DEO
@@ -624,6 +602,44 @@
 
 (
 @|Assets )
+
+@opcodes/find ( str* -- str* opc )
+	LDA2k ,&xxo STR2
+	INC2k INC2 LDA ,&oox STR
+	;&db-end ;&db
+	&>l ( -- )
+		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
+			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
+		#0003 ADD2 GTH2k ?&>l
+	POP2 POP2 #ff JMP2r
+
+@opcodes/db [
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	"BRK ] &db-end
+
+@runes/find ( char -- <addr>* )
+	STH
+	;&db-end ;&db
+	&>l ( -- )
+		LDAk STHkr EQU ?{
+			#0003 ADD2 GTH2k ?&>l
+		POP2 #ffff }
+	NIP2 POPr JMP2r
+
+@runes/db [
+	"| =lib/padabs "$ =lib/padrel
+	"@ =lib/toplab "& =lib/sublab
+	"% =lib/macros "( =lib/coment
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	5b =lib/ignore 5d =lib/ignore
+	"# =lib/lithex "" =lib/rawstr
+	"} =lib/lambda "~ =lib/inctal ] &db-end
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
@@ -649,28 +665,8 @@
 	&syms-mem "Symbols 20 "exceeded $1
 	&macros-mem "Macros 20 "exceeded $1
 
-@opcodes/db [
-	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
-	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
-	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] &db-end
-
-@runes/db [
-	"| =lib/padabs "$ =lib/padrel
-	"@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment
-	", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi
-	5b =lib/ignore 5d =lib/ignore
-	"# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal ]
-	&db-end
 (
 @|Buffers )
-
 
 @lambda/mem $100
 
@@ -679,10 +675,10 @@
 @refs/mem ( addr*, symbol*, RefType )
 	$1800 &mem-end
 
-@syms/mem ( addr*, SymType, body..0 )
+@syms/mem ( addr*, SymType, body..00 )
 	$4800 &mem-end
 
-@macros/mem ( name..0, value..0 )
+@macros/mem ( name..20, value..00 )
 	$1000 &mem-end
 
 @rom/mem ( zeropage )
