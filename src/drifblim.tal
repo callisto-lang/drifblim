@@ -12,9 +12,7 @@
 	@token &buf $2f &cap $1
 	@scope $30
 	@sublabel $30
-	@halt $1
-	@rom/head $2
-	@rom/length $2
+	@rom/head $2 &length $2
 
 |100
 
@@ -48,10 +46,9 @@
 	;dict/reset <set-scope>
 	;src <handle-file>
 	refs/<resolve>
-	.halt LDZ ?{
+	#0f DEI ?{
 		.rom/length LDZ2 ORA ?on-complete
 		;dst ;err/empty <set-error> }
-	#010f DEO
 	BRK
 
 @on-complete ( -> )
@@ -76,7 +73,7 @@
 	token/<new>
 	#0000
 	&>s ( len* -- )
-		.halt LDZ ?&end
+		#0f DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
 			ORAk ?{ ;src ;err/file <set-error> }
@@ -89,7 +86,6 @@
 	( >> )
 
 @<set-error> ( keyword* name* -- )
-	[ LIT2 01 -halt ] STZ
 	<pstr>
 	[ LIT2 ": 18 ] DEO
 	#2018 DEO
@@ -97,6 +93,7 @@
 	;dict/in <pstr>/
 	;scope <pstr>/
 	#0a18 DEO
+	#010f DEO
 	JMP2r
 
 %is-uppercase ( char -- f ) {
