@@ -18,6 +18,8 @@
 	( allocated string )
 	;hello-word print-str
 
+	( nested ( comment ) ;error-nested print-str )
+
 	#800f DEO
 
 BRK
@@ -107,4 +109,4 @@ yellow-macro
 
 @hello-word "Hello 20 "World! 0a $1
 
-
+@error-nested "Error 20 "nested 20 "comment 0a $1

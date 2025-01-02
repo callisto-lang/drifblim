@@ -20,39 +20,55 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;await-src
+	;on-await-src
 	( >> )
 
-@<on-await> ( addr* -> )
+@on-await ( addr* -> )
 	.Console/vector DEO2
 	.Console/type DEI ?{ ;dict/usage <pstr>
 		#010f DEO }
 	BRK
 
-@await-src ( -> )
+@on-await-src ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;await-dst !<on-await> }
+	( ) DUP #20 GTH ?{ POP ;on-await-dst !on-await }
 	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@await-dst ( -> )
+@on-await-dst ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP !<on-ready> }
+	( ) DUP #20 GTH ?{ POP !on-ready }
 	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@<on-ready> ( -> )
+@on-ready ( -> )
 	#0100 rom/<set-head>
 	;dict/reset <set-scope>
 	;src <handle-file>
 	refs/<resolve>
 	.halt LDZ ?{
-		.rom/length LDZ2 ORA ?<on-success>
+		.rom/length LDZ2 ORA ?on-complete
 		;dst ;err/empty <set-error-scope> }
 	#010f DEO
 	BRK
+
+@on-complete ( -> )
+	rom/<save>
+	syms/<save>
+	<print-info>
+	#800f DEO
+	BRK
+
+(
+@|Core )
+
+@meta $1
+	( name ) "Drifblim 0a
+	( desc ) "Uxntal 20 "Assembler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "1 20 "Jan 20 "2025 $2
 
 @<handle-file> ( f* -- )
 	.File/name DEO2
@@ -67,22 +83,6 @@
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push> !&>s
-
-@<on-success> ( -> )
-	rom/<save>
-	syms/<save>
-	<print-info>
-	#800f DEO
-	BRK
-
-@meta $1
-	( name ) "Drifblim 0a
-	( desc ) "Uxntal 20 "Assembler 0a
-	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "1 20 "Jan 20 "2025 $2
-
-(
-@|Core )
 
 @<set-error> ( token* name* -- )
 	[ LIT2 01 -halt ] STZ
