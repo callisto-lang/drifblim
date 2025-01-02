@@ -157,7 +157,7 @@
 	[ LIT "( ] NEQ ?{ INCr }
 	[ LIT ") ] NEQ ?{ LITr 01 SUBr }
 	STHr DUP ,&depth STR
-	?{ <set-default> }
+	?{ !<set-default> }
 	JMP2r
 
 @asm-default ( t* -- )
@@ -168,7 +168,6 @@
 		POP2
 		( immediate ) !lib/litjsi }
 	( runic ) INC2 LDA2 JMP2
-	JMP2r
 
 	&<parse-macro> ( t* macro* -- )
 	token/<new>
