@@ -79,7 +79,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "28 20 "Dec 20 "2024 $2
+	( date ) "1 20 "Jan 20 "2025 $2
 
 (
 @|Core )
@@ -139,7 +139,7 @@
 @token/<push> ( c -- )
 	DUP #20 GTH ?{
 		POP ;&buf LDZk ?{ POP2 JMP2r }
-		/<parse> !&<new> }
+		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap NEQ ?{
@@ -148,28 +148,44 @@
 	STZ2
 	JMP2r
 
-@token/<parse> ( t* -- )
-	LDAk [ LIT "( ] NEQ ?{
-		,&mute LDR INC ,&mute STR }
-	[ LIT &mute $1 ] ?{
-		LDZk find-rune INC2k ORA ?{
-			POP2 is-hex ?rom/<write-rawhex>
-			is-opcode ?rom/<write-opcode>
-			DUP2 macros/find INC2k ORA ?&<parse-macro>
-			POP2
-			( immediate ) !lib/litjsi }
-		( runic ) INC2 LDA2 JMP2 }
-	LDA [ LIT ") ] NEQ ?{
-		[ LIT2 ff _&mute ] LDR ADD ,&mute STR }
+(
+@|Assembly )
+
+@asm-comment ( t* -- )
+	[ LITr &depth $1 ] LDA DUP
+	( | nested comments )
+	[ LIT "( ] NEQ ?{ INCr }
+	[ LIT ") ] NEQ ?{ LITr 01 SUBr }
+	STHr DUP ,&depth STR
+	?{ <set-default> }
 	JMP2r
 
-@token/<parse-macro> ( t* macro* -- )
-	/<new>
+@asm-default ( t* -- )
+	LDZk find-rune INC2k ORA ?{
+		POP2 is-hex ?rom/<write-rawhex>
+		is-opcode ?rom/<write-opcode>
+		DUP2 macros/find INC2k ORA ?&<parse-macro>
+		POP2
+		( immediate ) !lib/litjsi }
+	( runic ) INC2 LDA2 JMP2
+	JMP2r
+
+	&<parse-macro> ( t* macro* -- )
+	token/<new>
 	scap/ INC2
 	&>w ( -- )
-		LDAk /<push>
+		LDAk token/<push>
 		INC2 LDAk ?&>w
 	POP2 POP2 #20 !token/<push>
+
+@<set-default> ( -- )
+	;asm-default ;token/mode STA2
+	JMP2r
+
+@<set-comment> ( -- )
+	;asm-comment ;token/mode STA2
+	#01 ;asm-comment/depth STA
+	JMP2r
 
 (
 @|Library )
@@ -190,6 +206,7 @@
 	&lambda POP2 !lambda/pop
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
+	&cmment POP2 !<set-comment>
 	&ignore POP2 JMP2r
 
 @lib/macros ( t* -- )
@@ -675,6 +692,7 @@
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
 	"} =lib/lambda "% =lib/macros
+	"( =lib/cmment ") =lib/cmment
 	"~ =lib/inctal ]
 	&end
 (
