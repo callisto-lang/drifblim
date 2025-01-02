@@ -109,7 +109,7 @@
 	JMP2r
 
 @<print-info> ( -- )
-	( > count ) [ LIT2r 0000 ] syms/get-bounds
+	( > count ) [ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
 	&>l ( -- )
 		INC2r
 		( is used ) INC2k INC2 LDA .SymType/used AND ?{
@@ -202,6 +202,8 @@
 	&padrel INC2 get-any rom/get-head ADD2 !rom/<set-head>
 	&toplab INC2 !<set-scope>
 	&sublab INC2 get-sublabel !syms/<create>
+	&coment POP2 !<set-comment>
+	&macros INC2 macros/<push-word> !<set-macro>
 	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
 	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-abs-byte !rom/<write-byte>
 	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-abs-short !rom/<write-short>
@@ -213,8 +215,6 @@
 	&lambda POP2 !lambda/pop
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
-	&cmment POP2 !<set-comment>
-	&macros INC2 macros/<push-word> !<set-macro>
 	&ignore POP2 JMP2r
 
 (
@@ -276,7 +276,7 @@
 
 @syms/find ( name* -- <addr>* )
 	,&t STR2
-	/get-bounds
+	;&ptr LDA2 ;&mem
 	&>l ( -- )
 		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?{
 			scap/ INC2 GTH2k ?&>l
@@ -302,9 +302,6 @@
 	&duplicate ( name* -- )
 	POP2
 	( ! ) ;token/buf ;err/duplicate !<set-error>
-
-@syms/get-bounds ( -- to* from* )
-	,&ptr LDR2 ;&mem JMP2r
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -670,15 +667,14 @@
 @runes [
 	"| =lib/padabs "$ =lib/padrel
 	"@ =lib/toplab "& =lib/sublab
+	"% =lib/macros "( =lib/coment
 	", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep
 	"; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi
 	5b =lib/ignore 5d =lib/ignore
 	"# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "% =lib/macros
-	"( =lib/cmment ") =lib/cmment
-	"~ =lib/inctal ]
+	"} =lib/lambda "~ =lib/inctal ]
 	&end
 (
 @|Buffers )
