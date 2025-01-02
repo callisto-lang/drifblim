@@ -108,8 +108,14 @@
 	#0a18 DEO
 	JMP2r
 
-%is-uppercase ( char -- uppercase ) {
+%is-uppercase ( char -- f ) {
 	[ LIT "A ] SUB #1a LTH }
+
+%is-opcode ( str* -- str* f ) {
+	match-opcode INC }
+
+%is-runic ( str* -- str* f ) {
+	LDAk find-rune INC2 ORA }
 
 @<print-info> ( -- )
 	( > count ) [ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
@@ -533,9 +539,6 @@
 (
 @|Helpers )
 
-@is-runic ( str* -- str* f )
-	LDAk find-rune INC2 ORA JMP2r
-
 @find-rune ( char -- <addr>* )
 	,&rune STR
 	;runes/end ;runes
@@ -543,9 +546,6 @@
 		LDAk [ LIT &rune $1 ] NEQ ?{ NIP2 JMP2r }
 		#0003 ADD2 GTH2k ?&>l
 	POP2 POP2 #ffff JMP2r
-
-@is-opcode ( str* -- str* f )
-	match-opcode INC JMP2r
 
 @match-opcode ( str* -- str* opcode )
 	LDA2k ,&xxo STR2
