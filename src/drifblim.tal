@@ -269,13 +269,13 @@
 @|Syms )
 
 @syms/find ( name* -- <addr>* )
-	,&t STR2
+	STH2
 	;&ptr LDA2 ;&mem
 	&>l ( -- )
-		#0003 ADD2 DUP2 [ LIT2 &t $2 ] wcmp ?{
-			scap/ INC2 GTH2k ?&>l
-		POP2 POP2 #ffff JMP2r }
-	#0003 SUB2 NIP2 JMP2r
+		DUP2 #0003 ADD2 STH2kr wcmp ?{
+			#0003 ADD2 scap/ INC2 GTH2k ?&>l
+		POP2 #ffff }
+	NIP2 POP2r JMP2r
 
 @syms/find-alloc ( name* -- addr* )
 	DUP2 /find INC2k ORA ?{
