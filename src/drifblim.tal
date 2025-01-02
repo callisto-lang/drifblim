@@ -344,13 +344,6 @@
 (
 @|References )
 
-@get-sublabel ( name* -- sublabel* )
-	DUP2 slen NIP ;sublabel slen NIP ADD
-	( check length ) #30 LTH ?{
-		( ! ) ;err/sublabel !<set-error-scope-token> }
-	[ LIT2 &ptr $2 ] <scpy>
-	;sublabel JMP2r
-
 @<set-scope> ( t* -- )
 	( | copy scope until sublabel )
 	DUP2 [ LITr -scope ]
@@ -364,6 +357,13 @@
 	[ LIT2 "/ 00 ] ;sublabel scap/
 	( ptr ) INC2k ,get-sublabel/ptr STR2
 	( cap ) STA2 !syms/<create>
+
+@get-sublabel ( name* -- sublabel* )
+	DUP2 slen NIP ;sublabel slen NIP ADD
+	( check length ) #30 LTH ?{
+		( ! ) ;err/sublabel !<set-error-scope-token> }
+	[ LIT2 &ptr $2 ] <scpy>
+	;sublabel JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
@@ -534,7 +534,7 @@
 	JMP2r
 
 (
-@|Helpers )
+@|Stdlib )
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -543,16 +543,6 @@
 		INC2 LDAk ?&>w
 	POP2 #01 JMP2r
 
-(
-@|Stdlib )
-
-@scap ( str* -: end* )
-	INC2 & LDAk ?scap
-	JMP2r
-
-@slen ( str* -: len* )
-	DUP2 scap/ SWP2 SUB2 JMP2r
-
 @shex ( str* -: value* )
 	[ LIT2r 0000 ]
 	&>w ( `i* -- )
@@ -560,13 +550,6 @@
 		( res ) LDAk chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
-
-@wcmp ( a* b* -: f )
-	STH2
-	&>l ( a* `b* -- f )
-		LDAk #21 LTH ?{
-			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
-	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
@@ -577,6 +560,20 @@
 	[ LIT "0 ] SUB DUP #0a LTH ?{
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
+
+@scap ( str* -: end* )
+	INC2 & LDAk ?scap
+	JMP2r
+
+@slen ( str* -: len* )
+	DUP2 scap/ SWP2 SUB2 JMP2r
+
+@wcmp ( a* b* -: f )
+	STH2
+	&>l ( a* `b* -- f )
+		LDAk #21 LTH ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
+	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
 @<scpy> ( src* dst* -: )
 	STH2
