@@ -7,8 +7,8 @@
 
 |000
 
-	@src $30
-	@dst $30
+	@src/buf $30
+	@dst/buf $30
 	@token &buf $2f &cap $1
 	@scope $30
 	@sublabel $30
@@ -18,37 +18,37 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;on-await-src
+	;src/on-console
 	( >> )
 
-@on-await ( addr* -> )
+@bind ( vector* -> )
 	.Console/vector DEO2
 	.Console/type DEI ?{ ;dict/usage <pstr>
 		#010f DEO }
 	BRK
 
-@on-await-src ( -> )
+@src/on-console ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;on-await-dst !on-await }
-	[ LIT2 00 &ptr -src ] INCk ,&ptr STR
+	( ) DUP #20 GTH ?{ POP ;dst/on-console !bind }
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@on-await-dst ( -> )
+@dst/on-console ( -> )
 	.Console/read DEI
 	( ) DUP #20 GTH ?{ POP !on-ready }
-	[ LIT2 00 &ptr -dst ] INCk ,&ptr STR
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	BRK
 
 @on-ready ( -> )
 	#0100 rom/<set-head>
 	;dict/reset <set-scope>
-	;src <handle-file>
+	;src/buf <handle-file>
 	refs/<resolve>
 	#0f DEI ?{
 		.rom/length LDZ2 ORA ?on-complete
-		;dst ;dict/empty ;dict/File <set-error> }
+		;dst/buf ;dict/empty ;dict/File <set-error> }
 	BRK
 
 @on-complete ( -> )
@@ -76,7 +76,7 @@
 		#0f DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;src ;dict/missing ;dict/File <set-error> }
+			ORAk ?{ ;src/buf ;dict/missing ;dict/File <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push> !&>s
@@ -98,21 +98,13 @@
 	#010f DEO
 	JMP2r
 
-%is-uppercase ( char -- f ) {
-	[ LIT "A ] SUB #1a LTH }
-
-%is-opcode ( str* -- str* f ) {
-	opcodes/find INC }
-
-%is-runic ( str* -- str* f ) {
-	LDAk runes/find INC2 ORA }
-
 @<print-info> ( -- )
 	( > count ) [ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
 	&>l ( -- )
 		INC2r
 		( is used ) INC2k INC2 LDA .SymType/used AND ?{
-			( is capitalized ) DUP2 #0003 ADD2 LDA is-uppercase ?{
+			( get letter ) DUP2 #0003 ADD2 LDA
+			( is uppercase ) [ LIT "A ] SUB #1a LTH ?{
 				;dict/unused <pstr>/
 				DUP2 #0003 ADD2 <pstr>/
 				#0a18 DEO } }
@@ -120,7 +112,7 @@
 	POP2 POP2
 	( | result )
 	;dict/assembled <pstr>/
-	;dst <pstr>/
+	;dst/buf <pstr>/
 	;dict/in <pstr>/
 	.rom/length LDZ2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
@@ -157,7 +149,7 @@
 @asm-default ( t* -- )
 	LDZk runes/find INC2k ORA ?{
 		POP2 is-hex ?rom/<write-rawhex>
-		is-opcode ?rom/<write-opcode>
+		( is opcode ) opcodes/find INC ?rom/<write-opcode>
 		DUP2 macros/find INC2k ORA ?rom/<write-macro>
 		POP2 !lib/litjsi }
 	INC2 LDA2 JMP2
@@ -295,8 +287,8 @@
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
 	is-hex ?&invalid
-	is-runic ?&invalid
-	is-opcode ?&invalid
+	( is runic ) LDAk runes/find INC2 ORA ?&invalid
+	( is opcode ) opcodes/find INC ?&invalid
 	( >> )
 
 @syms/<push-string> ( word* -- )
@@ -318,7 +310,7 @@
 	( ! ) ;dict/invalid ;dict/Symbol !<set-error-token>
 
 @syms/<save> ( -- )
-	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
+	( add ext ) ;dst/buf DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
 	SWP2 .File/name DEO2
 	;syms/mem-end ;syms/mem
 	&>w ( -- )
@@ -518,7 +510,7 @@
 	.&head LDZ2 JMP2r
 
 @rom/<save> ( -: )
-	;dst .File/name DEO2
+	;dst/buf .File/name DEO2
 	.&length LDZ2 #00ff SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	JMP2r
