@@ -104,7 +104,7 @@
 	#2019 DEO
 	<pstr>
 	;dict/in <pstr>/
-	;scope/buf <pstr>/
+	;sublabel/buf <pstr>/
 	#0a19 DEO
 	[ LIT2 01 -System/state ] DEO
 	JMP2r
@@ -129,7 +129,7 @@
 	STZ2
 	JMP2r
 
-@scope/<set-string> ( str* -- )
+@scope/<set-label> ( str* -- )
 	.&buf ,&ptr STR
 	( >> )
 
@@ -333,7 +333,7 @@
 @|References )
 
 @<set-scope> ( t* -- )
-	DUP2 scope/<set-string>
+	DUP2 scope/<set-label>
 	( | prepare sublabel pointer )
 	;scope/buf ;sublabel/buf <scpy>
 	[ LIT2 "/ 00 ] ;sublabel/buf scap/
