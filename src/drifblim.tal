@@ -270,7 +270,7 @@
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
-@syms/find-alloc ( name* -- addr* )
+@syms/find-alloc ( name* -- <addr>* )
 	DUP2 /find INC2k ORA ?{
 		( null* -> ptr* ) POP2 ,&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
@@ -590,7 +590,7 @@
 (
 @|Assets )
 
-@opcodes/find ( str* -- str* opc )
+@opcodes/find ( str* -- str* <opc> )
 	LDA2k ,&xxo STR2
 	INC2k INC2 LDA ,&oox STR
 	;&db-end ;&db
