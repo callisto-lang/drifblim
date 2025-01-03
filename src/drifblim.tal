@@ -110,7 +110,7 @@
 	JMP2r
 
 (
-@|Tokenizer )
+@|Buffers )
 
 @token/<new> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -126,6 +126,21 @@
 	( overflow ) DUP .&cap NEQ ?{
 		( ! ) ;dict/exceeded ;dict/Token <set-error-token> }
 	( move ptr ) INCk ,&ptr STR
+	STZ2
+	JMP2r
+
+@scope/<set-string> ( str* -- )
+	.&buf ,&ptr STR
+	( >> )
+
+@scope/<push-string> ( str* -- )
+	LDAk [ LIT "/ ] EQU ?{
+		LDAk /<push-char>
+		INC2 LDAk ?&<push-string> }
+	POP2 JMP2r
+
+@scope/<push-char> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -318,13 +333,7 @@
 @|References )
 
 @<set-scope> ( t* -- )
-	( | copy scope until sublabel )
-	DUP2 [ LITr -scope/buf ]
-	&>w ( -- )
-		LDAk [ LIT "/ ] EQU ?{
-			LDAk STHkr STZ
-			INCr INC2 LDAk ?&>w }
-	POP2 #00 STHr STZ
+	DUP2 scope/<set-string>
 	( | prepare sublabel pointer )
 	;scope/buf ;sublabel/buf <scpy>
 	[ LIT2 "/ 00 ] ;sublabel/buf scap/
