@@ -48,7 +48,7 @@
 	refs/<resolve>
 	#0f DEI ?{
 		.rom/length LDZ2 ORA ?on-complete
-		;dst ;err/output-empty <set-error> }
+		;dst ;err/empty ;err/output <set-error> }
 	BRK
 
 @on-complete ( -> )
@@ -76,17 +76,19 @@
 		#0f DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;src ;err/file-missing <set-error> }
+			ORAk ?{ ;src ;err/missing ;err/file <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push> !&>s
 
-@<set-error-token> ( name* -- )
-	;token/buf SWP2
+@<set-error-token> ( adj* name* -- )
+	;token/buf ROT2 ROT2
 	( >> )
 
-@<set-error> ( keyword* name* -- )
+@<set-error> ( keyword* adj* name* -- )
 	<pstr>
+	#2018 DEO
+<pstr>
 	[ LIT2 ": 18 ] DEO
 	#2018 DEO
 	<pstr>
@@ -140,7 +142,7 @@
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap NEQ ?{
-		( ! ) ;err/token-exceeded <set-error-token> }
+		( ! ) ;err/exceeded ;err/token <set-error-token> }
 	( move ptr ) INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -253,7 +255,7 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;err/macros-exceeded !<set-error-token> }
+		( ! ) ;err/exceeded ;err/macros !<set-error-token> }
 	JMP2r
 
 (
@@ -286,7 +288,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;err/label-duplicate !<set-error-token>
+	( ! ) ;err/duplicate ;err/label !<set-error-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -308,12 +310,12 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;err/syms-exceeded !<set-error-token> }
+		( ! ) ;err/exceeded ;err/symbols !<set-error-token> }
 	JMP2r
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	( ! ) ;err/label-invalid !<set-error-token>
+	( ! ) ;err/invalid ;err/label !<set-error-token>
 
 @syms/<save> ( -- )
 	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -349,7 +351,7 @@
 @get-sublabel ( name* -- sublabel* )
 	DUP2 slen NIP ;sublabel slen NIP ADD
 	( check length ) #30 LTH ?{
-		( ! ) ;err/sublabel-overflow !<set-error-token> }
+		( ! ) ;err/overflow ;err/sublabel !<set-error-token> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -382,7 +384,7 @@
 	( save ) INC2r [ LITr _&ptr ] STR2r
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;err/refs-exceeded !<set-error-token> }
+		( ! ) ;err/exceeded ;err/references !<set-error-token> }
 	JMP2r
 
 @refs/<resolve> ( -- )
@@ -399,7 +401,7 @@
 			( | validate distance )
 			OVR2 #0080 ADD2 POP #00 EQU ?{
 				( sym* ) STH2kr INC2 INC2 LDA2
-				( sym/name* ) #0003 ADD2 ;err/distance-far <set-error> }
+				( sym/name* ) #0003 ADD2 ;err/far ;err/distance <set-error> }
 			STA
 			POP }
 		( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
@@ -410,7 +412,7 @@
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) OVR2 #0003 ADD2 ;err/reference-invalid <set-error> }
+		( ! ) OVR2 #0003 ADD2 ;err/invalid ;err/reference <set-error> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
@@ -435,7 +437,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;err/distance-far !<set-error-token>
+	( ! ) ;err/far ;err/distance !<set-error-token>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short get-ref-type rom/get-head INC2 INC2 SUB2 JMP2r
@@ -467,12 +469,12 @@
 			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			( ! ) ;err/opcode-invalid <set-error-token> &r INC2 !&>w }
+			( ! ) ;err/invalid ;err/opcode <set-error-token> &r INC2 !&>w }
 	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
 	is-hex ?{
-		( ! ) ;err/hex-invalid <set-error-token> }
+		( ! ) ;err/invalid ;err/hex <set-error-token> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
@@ -484,7 +486,7 @@
 	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
 	#04 NEQ ?{ shex !&<write-short> }
 	POP2
-	( ! ) ;err/hex-invalid !<set-error-token>
+	( ! ) ;err/invalid ;err/hex !<set-error-token>
 
 @rom/<write-call> ( str* opc -: )
 	/<write-byte>
@@ -502,9 +504,9 @@
 	?{ JMP2r }
 	.&head LDZ2
 	( ) OVR ?{
-		( ! ) ;err/writing-invalid <set-error-token> }
+		( ! ) ;err/invalid ;err/writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
-		( ! ) ;err/rom-exceeded <set-error-token> }
+		( ! ) ;err/exceeded ;err/rom <set-error-token> }
 	.&length STZ2
 	JMP2r
 
@@ -659,6 +661,24 @@
 	&invalid "invalid $1
 	&duplicate "duplicate $1
 	&missing "missing $1
+
+	&empty "empty $1
+	&output "output $1
+	&file "file $1
+	&token "token $1
+	&macros "macros $1
+	&label "label $1
+	&symbols "synbols $1
+	&overflow "overflow $1
+	&sublabel "sublabel $1
+	&references "references $1
+	&reference "reference $1
+	&far "far $1
+	&distance "distance $1
+	&opcode "opcode $1
+	&hex "hex $1
+	&writing "writing $1
+	&rom "rom $1	
 
 (
 @|Buffers )
