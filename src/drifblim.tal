@@ -19,7 +19,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	#0100 rom/<set-head>
-	;dict/reset <set-scope>
+	;dict/reset scope/<set-label>
 	;src/on-console
 	( >> )
 
@@ -189,7 +189,7 @@
 @lib ( runics )
 	&padabs INC2 get-any !rom/<set-head>
 	&padrel INC2 get-any rom/get-head ADD2 !rom/<set-head>
-	&toplab INC2 !<set-scope>
+	&toplab INC2 DUP2 scope/<set-label> !syms/<create>
 	&sublab INC2 get-sublabel !syms/<create>
 	&coment POP2 !<set-comment>
 	&macros INC2 macros/<push-word> !<set-macro>
@@ -326,9 +326,6 @@
 
 (
 @|References )
-
-@<set-scope> ( t* -- )
-	DUP2 scope/<set-label> !syms/<create>
 
 @get-sublabel ( name* -- sublabel* )
 	#00 ;scope/ptr LDA [ LIT2 "/ 00 ] OVR2 STA2
