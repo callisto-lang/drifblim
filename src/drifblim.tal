@@ -288,7 +288,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;dict/duplicate ;dict/Label !<set-error-token>
+	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -315,7 +315,7 @@
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	( ! ) ;dict/invalid ;dict/Label !<set-error-token>
+	( ! ) ;dict/invalid ;dict/Symbol !<set-error-token>
 
 @syms/<save> ( -- )
 	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -636,7 +636,7 @@
 	&sym-ext ".sym $1
 	&File "File $1
 	&Token "Token $1
-	&Label "Label $1
+	&Symbol "Symbol $1
 	&Reference "Reference $1
 	&Sublabel "Sublabel $1
 	&Opcode "Opcode $1

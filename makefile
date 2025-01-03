@@ -10,7 +10,9 @@ run: run-drifblim
 
 test: bin/drifblim.rom
 	@ ./tests.sh
-	
+acid: bin/drifblim.rom
+	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/res.rom
+	@ ${EMU} bin/res.rom
 run-drifblim: bin/drifblim.rom
 	@ printf "Assemble drifblim-bootstrap.rom with drifblim.rom\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
