@@ -306,7 +306,7 @@
 	&>w ( -- )
 		( addr ) #0002 .File/length DEO2
 		DUP2 .File/write DEO2
-		( name ) #0003 ADD2 DUP2 slen INC2 STH2k .File/length DEO2
+		( name ) #0003 ADD2 DUP2k scap/ SWP2 SUB2 INC2 STH2k .File/length DEO2
 		DUP2 .File/write DEO2
 		STH2r ADD2 GTH2k ?&>w
 	POP2 POP2
@@ -331,7 +331,7 @@
 	( cap ) STA2 !syms/<create>
 
 @get-sublabel ( name* -- sublabel* )
-	DUP2 slen NIP ;sublabel slen NIP ADD
+	DUP2 zlen ;sublabel zlen ADD
 	( check length ) #30 LTH ?{
 		( ! ) ;dict/exceeded ;dict/Sublabel !<set-error-token> }
 	[ LIT2 &ptr $2 ] <scpy>
@@ -456,11 +456,11 @@
 	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	DUP2 slen NIP
+	DUP2 zlen
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
 @rom/<write-rawhex> ( str* -- )
-	DUP2 slen NIP
+	DUP2 zlen
 	( >> )
 
 @rom/<write-hex> ( str* len -- )
@@ -536,8 +536,8 @@
 	INC2 & LDAk ?scap
 	JMP2r
 
-@slen ( str* -- len* )
-	DUP2 scap/ SWP2 SUB2 JMP2r
+@zlen ( str* -- len )
+	DUP2 scap/ SWP2 SUB2 NIP JMP2r
 
 @wcmp ( a* b* -- f )
 	STH2
