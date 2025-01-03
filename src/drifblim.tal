@@ -10,9 +10,9 @@
 
 	@src/buf $30
 	@dst/buf $30
-	@token &buf $2f &cap $1
-	@scope $30
-	@sublabel $30
+	@token/buf $2f &cap $1
+	@scope/buf $30
+	@sublabel/buf $2f &cap $1
 	@rom/head $2 &length $2
 
 |100
@@ -104,7 +104,7 @@
 	#2019 DEO
 	<pstr>
 	;dict/in <pstr>/
-	;scope <pstr>/
+	;scope/buf <pstr>/
 	#0a19 DEO
 	[ LIT2 01 -System/state ] DEO
 	JMP2r
@@ -319,24 +319,24 @@
 
 @<set-scope> ( t* -- )
 	( | copy scope until sublabel )
-	DUP2 [ LITr -scope ]
+	DUP2 [ LITr -scope/buf ]
 	&>w ( -- )
 		LDAk [ LIT "/ ] EQU ?{
 			LDAk STHkr STZ
 			INCr INC2 LDAk ?&>w }
 	POP2 #00 STHr STZ
 	( | prepare sublabel pointer )
-	;scope ;sublabel <scpy>
-	[ LIT2 "/ 00 ] ;sublabel scap/
+	;scope/buf ;sublabel/buf <scpy>
+	[ LIT2 "/ 00 ] ;sublabel/buf scap/
 	( ptr ) INC2k ,get-sublabel/ptr STR2
 	( cap ) STA2 !syms/<create>
 
 @get-sublabel ( name* -- sublabel* )
-	DUP zlen .sublabel zlen ADD
-	( check length ) #30 LTH ?{
-		( ! ) ;dict/exceeded ;dict/Sublabel !<set-error-token> }
-	[ LIT2 &ptr $2 ] <scpy>
-	;sublabel JMP2r
+	[ LIT2 &ptr $2 ]
+	( | check overflow )
+	DUP .sublabel/cap LTH ?{ ;dict/exceeded ;dict/Sublabel <set-error-token> }
+	<scpy>
+	;sublabel/buf JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
