@@ -138,10 +138,11 @@
 
 @asm-default ( t* -- )
 	LDZk runes/find INC2k ORA ?{
-		POP2 is-hex ?rom/<write-rawhex>
-		( is opcode ) opcodes/find INC ?rom/<write-opcode>
-		DUP2 macros/find INC2k ORA ?rom/<write-macro>
-		POP2 !lib/litjsi }
+		POP2
+		( hex ) is-hex ?rom/<write-rawhex>
+		( opc ) opcodes/find INC ?rom/<write-opcode>
+		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
+		( imm ) POP2 !lib/litjsi }
 	INC2 LDA2 JMP2
 
 @<set-comment> ( -- )
@@ -331,7 +332,7 @@
 	( cap ) STA2 !syms/<create>
 
 @get-sublabel ( name* -- sublabel* )
-	DUP2 zlen ;sublabel zlen ADD
+	DUP zlen .sublabel zlen ADD
 	( check length ) #30 LTH ?{
 		( ! ) ;dict/exceeded ;dict/Sublabel !<set-error-token> }
 	[ LIT2 &ptr $2 ] <scpy>
@@ -456,11 +457,11 @@
 	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	DUP2 zlen
+	DUP zlen
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
 @rom/<write-rawhex> ( str* -- )
-	DUP2 zlen
+	DUP zlen
 	( >> )
 
 @rom/<write-hex> ( str* len -- )
@@ -536,8 +537,11 @@
 	INC2 & LDAk ?scap
 	JMP2r
 
-@zlen ( str* -- len )
-	DUP2 scap/ SWP2 SUB2 NIP JMP2r
+@zlen ( ztr -- len )
+	[ LITr 00 ]
+	&>w ( -- )
+		INCr INC LDZk ?&>w
+	POP STHr JMP2r
 
 @wcmp ( a* b* -- f )
 	STH2
