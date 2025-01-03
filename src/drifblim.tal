@@ -1,5 +1,6 @@
 ( usage: drifblim.rom input.tal output.rom )
 
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 |00 @RefType &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
@@ -23,8 +24,9 @@
 
 @bind ( vector* -> )
 	.Console/vector DEO2
-	.Console/type DEI ?{ ;dict/usage <pstr>
-		#010f DEO }
+	.Console/type DEI ?{
+		;dict/usage <pstr>
+		[ LIT2 01 -System/state ] DEO }
 	BRK
 
 @src/on-console ( -> )
@@ -46,7 +48,7 @@
 	;dict/reset <set-scope>
 	;src/buf <handle-file>
 	refs/<resolve>
-	#0f DEI ?{
+	.System/state DEI ?{
 		.rom/length LDZ2 ORA ?on-complete
 		;dst/buf ;dict/empty ;dict/File <set-error> }
 	BRK
@@ -54,8 +56,25 @@
 @on-complete ( -> )
 	rom/<save>
 	syms/<save>
-	<print-info>
-	#800f DEO
+	( | print summary )
+	[ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
+	&>l ( -- )
+		( is used ) INC2k INC2 LDA .SymType/used AND ?{
+			( is uppercase ) DUP2 #0003 ADD2 LDA [ LIT "A ] SUB #1a LTH ?{
+				;dict/unused <pstr>/
+				DUP2 #0003 ADD2 <pstr>/
+				#0a18 DEO } }
+		INC2r #0003 ADD2 scap/ INC2 GTH2k ?&>l
+	POP2 POP2
+	( | result )
+	;dict/assembled <pstr>/
+	;dst/buf <pstr>/
+	;dict/in <pstr>/
+	.rom/length LDZ2 #00ff SUB2 <pdec>
+	;dict/bytes <pstr>/
+	STH2r #0001 SUB2 <pdec>
+	;dict/labels <pstr>/
+	[ LIT2 80 -System/state ] DEO
 	BRK
 
 (
@@ -65,7 +84,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "2 20 "Jan 20 "2025 $2
+	( date ) "3 20 "Jan 20 "2025 $2
 
 @<handle-file> ( f* -- )
 	.File/name DEO2
@@ -73,7 +92,7 @@
 	token/<new>
 	#0000
 	&>s ( len* -- )
-		#0f DEI ?&end
+		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
 			ORAk ?{ ;src/buf ;dict/missing ;dict/File <set-error> }
@@ -95,29 +114,8 @@
 	;dict/in <pstr>/
 	;scope <pstr>/
 	#0a18 DEO
-	#010f DEO
+	[ LIT2 01 -System/state ] DEO
 	JMP2r
-
-@<print-info> ( -- )
-	( > count ) [ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
-	&>l ( -- )
-		INC2r
-		( is used ) INC2k INC2 LDA .SymType/used AND ?{
-			( get letter ) DUP2 #0003 ADD2 LDA
-			( is uppercase ) [ LIT "A ] SUB #1a LTH ?{
-				;dict/unused <pstr>/
-				DUP2 #0003 ADD2 <pstr>/
-				#0a18 DEO } }
-		#0003 ADD2 scap/ INC2 GTH2k ?&>l
-	POP2 POP2
-	( | result )
-	;dict/assembled <pstr>/
-	;dst/buf <pstr>/
-	;dict/in <pstr>/
-	.rom/length LDZ2 #00ff SUB2 <pdec>
-	;dict/bytes <pstr>/
-	( labels ) STH2r #0001 SUB2 <pdec>
-	;dict/labels !<pstr>/
 
 (
 @|Tokenizer )
@@ -393,7 +391,7 @@
 			( | validate distance )
 			OVR2 #0080 ADD2 POP #00 EQU ?{
 				( sym* ) STH2kr INC2 INC2 LDA2
-				( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Distance <set-error> }
+				( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Reference <set-error> }
 			STA
 			POP }
 		( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
@@ -429,7 +427,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;dict/too-far ;dict/Distance !<set-error-token>
+	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short get-ref-type rom/get-head INC2 INC2 SUB2 JMP2r
@@ -633,7 +631,6 @@
 	&Sublabel "Sublabel $1
 	&Opcode "Opcode $1
 	&Number "Number $1
-	&Distance "Distance $1
 	&Writing "Writing $1
 	&Macros "Macros $1
 	&Symbols "Symbols $1

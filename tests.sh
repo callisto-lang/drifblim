@@ -15,7 +15,7 @@ echo "File missing: missing.tal"
 $asm "missing.tal" "bin/res.rom"
 
 echo ""
-echo "Output empty: bin/res.rom"
+echo "File empty: bin/res.rom"
 $asm "tests/err-empty.tal" "bin/res.rom"
 
 echo ""
@@ -23,32 +23,28 @@ echo "File missing: project.tal"
 $asm "tests/err-file.tal" "bin/res.rom"
 
 echo ""
-echo "Label duplicate: &sub"
+echo "Symbol duplicate: &sub"
 $asm "tests/err-dup1.tal" "bin/res.rom"
 
 echo ""
-echo "Label duplicate: @TEST"
+echo "Symbol duplicate: @TEST"
 $asm "tests/err-dup2.tal" "bin/res.rom"
 
 echo ""
-echo "Label invalid: @1234"
+echo "Symbol invalid: @1234"
 $asm "tests/err-hex.tal" "bin/res.rom"
 
 echo ""
-echo "Hexadecimal invalid: #122325"
+echo "Number invalid: #122325"
 $asm "tests/err-lithex.tal" "bin/res.rom"
 
 echo ""
-echo "Hexadecimal invalid: 122325"
+echo "Number invalid: 122325"
 $asm "tests/err-rawhex.tal" "bin/res.rom"
 
 echo ""
-echo "Writing zero-page: #12"
+echo "Writing invalid: #12"
 $asm "tests/err-zep.tal" "bin/res.rom"
-
-echo ""
-echo "Writing rewind: #1234 |0100"
-$asm "tests/err-rew.tal" "bin/res.rom"
 
 echo ""
 echo "Opcode invalid: ADD2q"
@@ -71,7 +67,7 @@ echo "Token exceeded: @aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 $asm "tests/err-token.tal" "bin/res.rom"
 
 echo ""
-echo "Rom exceeded: ab"
+echo "File exceeded: ab"
 $asm "tests/err-length.tal" "bin/res.rom"
 
 echo ""
@@ -86,5 +82,8 @@ echo ""
 echo "Label duplicate: %TEST"
 $asm "tests/err-macrodup2.tal" "bin/res.rom"
 
+echo ""
+echo "Writing rewind: #1234 |0100"
+$asm "tests/err-rew.tal" "bin/res.rom"
 
 
