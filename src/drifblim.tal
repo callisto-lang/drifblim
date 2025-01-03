@@ -12,7 +12,6 @@
 	@dst/buf $30
 	@token/buf $2f &cap $1
 	@scope/buf $30
-	@sublabel/buf $2f &cap $1
 	@rom/head $2 &length $2
 
 |100
@@ -104,7 +103,7 @@
 	#2019 DEO
 	<pstr>
 	;dict/in <pstr>/
-	;sublabel/buf <pstr>/
+	;scope/buf <pstr>/
 	#0a19 DEO
 	[ LIT2 01 -System/state ] DEO
 	JMP2r
@@ -130,19 +129,15 @@
 	JMP2r
 
 @scope/<set-label> ( str* -- )
-	.&buf ,&ptr STR
+	[ LIT2 -&buf _&ptr ] STR
 	( >> )
 
 @scope/<push-string> ( str* -- )
 	LDAk [ LIT "/ ] EQU ?{
-		LDAk /<push-char>
+		LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+		STZ2
 		INC2 LDAk ?&<push-string> }
 	POP2 JMP2r
-
-@scope/<push-char> ( c -- )
-	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	STZ2
-	JMP2r
 
 (
 @|Assembly )
@@ -336,10 +331,9 @@
 	DUP2 scope/<set-label> !syms/<create>
 
 @get-sublabel ( name* -- sublabel* )
-	;scope/buf ;sublabel/buf <scpy>
-	;sublabel/buf scap/ [ LIT2 "/ 00 ] OVR2 STA2
+	#00 ;scope/ptr LDA [ LIT2 "/ 00 ] OVR2 STA2
 	INC2 <scpy>
-	;sublabel/buf JMP2r
+	;scope/buf JMP2r
 
 @get-any ( str* -- value* )
 	is-hex ?shex
@@ -632,7 +626,6 @@
 	&Token "Token $1
 	&Symbol "Symbol $1
 	&Reference "Reference $1
-	&Sublabel "Sublabel $1
 	&Opcode "Opcode $1
 	&Number "Number $1
 	&Writing "Writing $1
