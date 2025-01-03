@@ -48,7 +48,7 @@
 	refs/<resolve>
 	#0f DEI ?{
 		.rom/length LDZ2 ORA ?on-complete
-		;dst ;err/empty ;err/output <set-error> }
+		;dst ;dict/empty ;dict/File <set-error> }
 	BRK
 
 @on-complete ( -> )
@@ -76,7 +76,7 @@
 		#0f DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;src ;err/missing ;err/file <set-error> }
+			ORAk ?{ ;src ;dict/missing ;dict/File <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push> !&>s
@@ -88,7 +88,7 @@
 @<set-error> ( keyword* adj* name* -- )
 	<pstr>
 	#2018 DEO
-<pstr>
+	<pstr>
 	[ LIT2 ": 18 ] DEO
 	#2018 DEO
 	<pstr>
@@ -142,7 +142,7 @@
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap NEQ ?{
-		( ! ) ;err/exceeded ;err/token <set-error-token> }
+		( ! ) ;dict/exceeded ;dict/Token <set-error-token> }
 	( move ptr ) INCk ,&ptr STR
 	STZ2
 	JMP2r
@@ -255,7 +255,7 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;err/exceeded ;err/macros !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/Macros !<set-error-token> }
 	JMP2r
 
 (
@@ -288,7 +288,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;err/duplicate ;err/label !<set-error-token>
+	( ! ) ;dict/duplicate ;dict/Label !<set-error-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -310,12 +310,12 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;err/exceeded ;err/symbols !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/Symbols !<set-error-token> }
 	JMP2r
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	( ! ) ;err/invalid ;err/label !<set-error-token>
+	( ! ) ;dict/invalid ;dict/Label !<set-error-token>
 
 @syms/<save> ( -- )
 	( add ext ) ;dst DUP2 scap/ ;dict/sym-ext OVR2 <scpy>
@@ -351,7 +351,7 @@
 @get-sublabel ( name* -- sublabel* )
 	DUP2 slen NIP ;sublabel slen NIP ADD
 	( check length ) #30 LTH ?{
-		( ! ) ;err/overflow ;err/sublabel !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/Sublabel !<set-error-token> }
 	[ LIT2 &ptr $2 ] <scpy>
 	;sublabel JMP2r
 
@@ -384,7 +384,7 @@
 	( save ) INC2r [ LITr _&ptr ] STR2r
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;err/exceeded ;err/references !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/References !<set-error-token> }
 	JMP2r
 
 @refs/<resolve> ( -- )
@@ -401,7 +401,7 @@
 			( | validate distance )
 			OVR2 #0080 ADD2 POP #00 EQU ?{
 				( sym* ) STH2kr INC2 INC2 LDA2
-				( sym/name* ) #0003 ADD2 ;err/far ;err/distance <set-error> }
+				( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Distance <set-error> }
 			STA
 			POP }
 		( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
@@ -412,7 +412,7 @@
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) OVR2 #0003 ADD2 ;err/invalid ;err/reference <set-error> }
+		( ! ) OVR2 #0003 ADD2 ;dict/invalid ;dict/Reference <set-error> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
@@ -437,7 +437,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;err/far ;err/distance !<set-error-token>
+	( ! ) ;dict/too-far ;dict/Distance !<set-error-token>
 
 @refs/get-rel-short ( label* -- distance* )
 	.RefType/rel-short get-ref-type rom/get-head INC2 INC2 SUB2 JMP2r
@@ -469,12 +469,12 @@
 			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			( ! ) ;err/invalid ;err/opcode <set-error-token> &r INC2 !&>w }
+			( ! ) ;dict/invalid ;dict/Opcode <set-error-token> &r INC2 !&>w }
 	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -: )
 	is-hex ?{
-		( ! ) ;err/invalid ;err/hex <set-error-token> }
+		( ! ) ;dict/invalid ;dict/Number <set-error-token> }
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
@@ -486,7 +486,7 @@
 	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
 	#04 NEQ ?{ shex !&<write-short> }
 	POP2
-	( ! ) ;err/invalid ;err/hex !<set-error-token>
+	( ! ) ;dict/invalid ;dict/Number !<set-error-token>
 
 @rom/<write-call> ( str* opc -: )
 	/<write-byte>
@@ -504,9 +504,9 @@
 	?{ JMP2r }
 	.&head LDZ2
 	( ) OVR ?{
-		( ! ) ;err/invalid ;err/writing <set-error-token> }
+		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
-		( ! ) ;err/exceeded ;err/rom <set-error-token> }
+		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
 	.&length STZ2
 	JMP2r
 
@@ -630,55 +630,28 @@
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
+	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&sym-ext ".sym $1
-	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
-
-@err
-	&file-missing "File 20 "missing $1
-
-	&label-duplicate "Label 20 "duplicate $1
-
-	&label-invalid "Label 20 "invalid $1
-	&hex-invalid "Hexadecimal 20 "invalid $1
-	&opcode-invalid "Opcode 20 "invalid $1
-	&reference-invalid "Reference 20 "invalid $1
-
-	&writing-invalid "Writing 20 "invalid $1
-	&distance-far "Reference 20 "too 20 "far $1
-
-	&output-empty "Output 20 "empty $1
-	&sublabel-overflow "Sublabel 20 "overflow $1
-
-	&token-exceeded "Token 20 "exceeded $1
-	&rom-exceeded "Rom 20 "exceeded $1
-	&refs-exceeded "References 20 "exceeded $1
-	&syms-exceeded "Symbols 20 "exceeded $1
-	&macros-exceeded "Macros 20 "exceeded $1
-
+	&File "File $1
+	&Token "Token $1
+	&Label "Label $1
+	&Reference "Reference $1
+	&Sublabel "Sublabel $1
+	&Opcode "Opcode $1
+	&Number "Number $1
+	&Distance "Distance $1
+	&Writing "Writing $1
+	&Macros "Macros $1
+	&Symbols "Symbols $1
+	&References "References $1
 	&exceeded "exceeded $1
 	&invalid "invalid $1
 	&duplicate "duplicate $1
 	&missing "missing $1
-
 	&empty "empty $1
-	&output "output $1
-	&file "file $1
-	&token "token $1
-	&macros "macros $1
-	&label "label $1
-	&symbols "synbols $1
-	&overflow "overflow $1
-	&sublabel "sublabel $1
-	&references "references $1
-	&reference "reference $1
-	&far "far $1
-	&distance "distance $1
-	&opcode "opcode $1
-	&hex "hex $1
-	&writing "writing $1
-	&rom "rom $1	
+	&too-far "too 20 "far $1
 
 (
 @|Buffers )
