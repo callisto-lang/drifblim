@@ -38,22 +38,22 @@
 
 @dst/on-console ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP !on-ready }
+	( ) DUP #20 GTH ?{ POP <assemble> }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	STZ2
 	BRK
 
-@on-ready ( -> )
+@<assemble> ( -- )
 	#0100 rom/<set-head>
 	;dict/reset <set-scope>
 	;src/buf <handle-file>
 	refs/<resolve>
 	.System/state DEI ?{
-		.rom/length LDZ2 ORA ?on-complete
-		;dst/buf ;dict/empty ;dict/File <set-error> }
-	BRK
+		.rom/length LDZ2 ORA ?<complete>
+		;dst/buf ;dict/empty ;dict/File !<set-error> }
+	JMP2r
 
-@on-complete ( -> )
+@<complete> ( -- )
 	rom/<save>
 	syms/<save>
 	( | print summary )
@@ -75,7 +75,7 @@
 	STH2r #0001 SUB2 <pdec>
 	;dict/labels <pstr>/
 	[ LIT2 80 -System/state ] DEO
-	BRK
+	JMP2r
 
 (
 @|Core )
