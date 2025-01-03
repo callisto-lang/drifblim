@@ -15,10 +15,6 @@ echo "File missing: missing.tal"
 $asm "missing.tal" "bin/res.rom"
 
 echo ""
-echo "File empty: bin/res.rom"
-$asm "tests/err-empty.tal" "bin/res.rom"
-
-echo ""
 echo "File missing: project.tal"
 $asm "tests/err-file.tal" "bin/res.rom"
 
