@@ -438,12 +438,12 @@
 		INC2 LDAk ?&>body
 	NIP2 LDA !token/<push>
 
-@rom/<write-str> ( str* -: )
+@rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
 	INC2 LDAk ?&<write-str>
 	POP2 JMP2r
 
-@rom/<write-opcode> ( str* -: )
+@rom/<write-opcode> ( str* -- )
 	opcodes/find #63 SWP SUB #03 DIV #1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
@@ -455,13 +455,11 @@
 			( ! ) ;dict/invalid ;dict/Opcode <set-error-token> &r INC2 !&>w }
 	POP2 STHr !&<write-byte>
 
-@rom/<write-lithex> ( str* -: )
-	is-hex ?{
-		( ! ) ;dict/invalid ;dict/Number <set-error-token> }
+@rom/<write-lithex> ( str* -- )
 	DUP2 slen NIP
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
-@rom/<write-rawhex> ( str* -: )
+@rom/<write-rawhex> ( str* -- )
 	DUP2 slen NIP
 	( >> )
 
@@ -471,16 +469,16 @@
 	POP2
 	( ! ) ;dict/invalid ;dict/Number !<set-error-token>
 
-@rom/<write-call> ( str* opc -: )
+@rom/<write-call> ( str* opc -- )
 	/<write-byte>
 	refs/get-rel-short
 	( >> )
 
-@rom/<write-short> ( short* -: )
+@rom/<write-short> ( short* -- )
 	SWP /<write-byte>
 	( >> )
 
-@rom/<write-byte> ( byte -: )
+@rom/<write-byte> ( byte -- )
 	DUP .&head LDZ2 INC2k .&head STZ2
 	;&mem ADD2 STA
 	( | change length )
@@ -493,14 +491,14 @@
 	.&length STZ2
 	JMP2r
 
-@rom/<set-head> ( addr* -: )
+@rom/<set-head> ( addr* -- )
 	.&head STZ2
 	JMP2r
 
 @rom/get-head ( -- addr* )
 	.&head LDZ2 JMP2r
 
-@rom/<save> ( -: )
+@rom/<save> ( -- )
 	;dst/buf .File/name DEO2
 	.&length LDZ2 #00ff SUB2 .File/length DEO2
 	;&output .File/write DEO2
@@ -516,7 +514,7 @@
 		INC2 LDAk ?&>w
 	POP2 #01 JMP2r
 
-@shex ( str* -: value* )
+@shex ( str* -- value* )
 	[ LIT2r 0000 ]
 	&>w ( `i* -- )
 		( acc ) [ LITr 40 ] SFT2r
@@ -529,33 +527,33 @@
 		SUB [ LIT "a ] ADD JMP2r }
 	POP [ LIT "0 ] ADD JMP2r
 
-@chex ( c -: <val> )
+@chex ( c -- <val> )
 	[ LIT "0 ] SUB DUP #0a LTH ?{
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
 
-@scap ( str* -: end* )
+@scap ( str* -- end* )
 	INC2 & LDAk ?scap
 	JMP2r
 
-@slen ( str* -: len* )
+@slen ( str* -- len* )
 	DUP2 scap/ SWP2 SUB2 JMP2r
 
-@wcmp ( a* b* -: f )
+@wcmp ( a* b* -- f )
 	STH2
 	&>l ( a* `b* -- f )
 		LDAk #21 LTH ?{
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
-@<scpy> ( src* dst* -: )
+@<scpy> ( src* dst* -- )
 	STH2
 	&>w ( src* `dst* -- )
 		LDAk #00 STH2kr STA2
 		INC2r INC2 LDAk ?&>w
 	POP2 POP2r JMP2r
 
-@<pstr> ( str* -: )
+@<pstr> ( str* -- )
 	LDAk #19 DEO
 	INC2 & LDAk ?<pstr>
 	POP2 JMP2r
