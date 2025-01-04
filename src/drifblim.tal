@@ -57,7 +57,7 @@
 			ORAk ?{ ;src/buf ;dict/missing ;dict/File <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
-		INC2 [ LIT &c $1 ] token/<push> !&>s
+		INC2 [ LIT &c $1 ] token/<push-char> !&>s
 
 (
 @|Core )
@@ -116,7 +116,7 @@
 	[ LIT2 00 -&buf ] STZ
 	JMP2r
 
-@token/<push> ( c -- )
+@token/<push-char> ( c -- )
 	DUP #20 GTH ?{
 		POP ;&buf LDZk ?{ POP2 JMP2r }
 		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
@@ -130,13 +130,11 @@
 
 @scope/<set-label> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
-	( >> )
-
-@scope/<push-string> ( str* -- )
-	LDAk [ LIT "/ ] EQU ?{
-		LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-		STZ2
-		INC2 LDAk ?&<push-string> }
+	&>w ( -- )
+		LDAk [ LIT "/ ] EQU ?{
+			LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+			STZ2
+			INC2 LDAk ?&>w }
 	POP2 JMP2r
 
 @scope/label ( name* -- scope/label* )
@@ -439,9 +437,9 @@
 		INC2 LDAk #20 GTH ?&>wcap
 	INC2
 	&>body ( body* -- cap* )
-		LDAk token/<push>
+		LDAk token/<push-char>
 		INC2 LDAk ?&>body
-	NIP2 LDA !token/<push>
+	NIP2 LDA !token/<push-char>
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
