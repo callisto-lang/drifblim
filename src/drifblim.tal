@@ -10,8 +10,8 @@
 
 	@token/buf $2f &cap $1
 	@scope/buf $30
-	@src/buf $30
-	@dst/buf $30
+	@src/buf $2f &cap $1
+	@dst/buf $2f &cap $1
 
 |100
 
@@ -32,14 +32,16 @@
 	.Console/read DEI
 	( ) DUP #20 GTH ?{ POP ;dst/on-console !bind }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
 	STZ2
 	BRK
 
 @dst/on-console ( -> )
 	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;src/buf <handle-file>
+	( ) DUP #20 GTH ?{ ;src/buf <handle-file>
 		<assemble> }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
 	STZ2
 	BRK
 
@@ -622,6 +624,7 @@
 	&File "File $1
 	&Token "Token $1
 	&Symbol "Symbol $1
+	&Path "Path $1
 	&Reference "Reference $1
 	&Opcode "Opcode $1
 	&Number "Number $1
@@ -650,7 +653,5 @@
 	$1000 &mem-end
 
 @rom/mem ( zeropage )
-	$100
-
-@rom/output
+	$100 &output
 
