@@ -420,6 +420,9 @@
 (
 @|Rom )
 
+@rom/get-head ( -- addr* )
+	[ LIT2 &head 0100 ] JMP2r
+
 @rom/<set-head-rel> ( addr* -- )
 	rom/get-head ADD2
 	( >> )
@@ -427,9 +430,6 @@
 @rom/<set-head> ( addr* -- )
 	,&head STR2
 	JMP2r
-
-@rom/get-head ( -- addr* )
-	[ LIT2 &head 0100 ] JMP2r
 
 @rom/<write-macro> ( t* macro* -- )
 	token/<new>
@@ -459,11 +459,11 @@
 	POP2 STHr !&<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	DUP zlen
+	zlen
 	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
 
 @rom/<write-rawhex> ( str* -- )
-	DUP zlen
+	zlen
 	( >> )
 
 @rom/<write-hex> ( str* len -- )
@@ -505,7 +505,7 @@
 @is-hex ( str* -- str* f )
 	DUP2
 	&>w ( -- )
-		LDAk chex INC ?{ POP2 #00 JMP2r }
+		chex INC ?{ POP2 #00 JMP2r }
 		INC2 LDAk ?&>w
 	POP2 #01 JMP2r
 
@@ -513,7 +513,7 @@
 	[ LIT2r 0000 ]
 	&>w ( `i* -- )
 		( acc ) [ LITr 40 ] SFT2r
-		( res ) LDAk chex [ LITr 00 ] STH
+		( res ) chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
 
@@ -522,8 +522,8 @@
 		SUB [ LIT "a ] ADD JMP2r }
 	POP [ LIT "0 ] ADD JMP2r
 
-@chex ( c -- <val> )
-	[ LIT "0 ] SUB DUP #0a LTH ?{
+@chex ( str* c -- str* <val> )
+	LDAk [ LIT "0 ] SUB DUP #0a LTH ?{
 		#27 SUB DUP #10 LTH ?{ POP #ff } }
 	JMP2r
 
@@ -531,8 +531,8 @@
 	INC2 & LDAk ?scap
 	JMP2r
 
-@zlen ( ztr -- len )
-	[ LITr 00 ]
+@zlen ( ztr -- ztr len )
+	DUP [ LITr 00 ]
 	&>w ( -- )
 		INCr INC LDZk ?&>w
 	POP STHr JMP2r
