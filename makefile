@@ -6,24 +6,24 @@ EMU=uxncli
 
 all: bin/drifloon.rom bin/drifblim.rom
 
-run: run-drifblim 
+run: drifblim drifloon
 
+drifblim: bin/drifblim.rom
+	@ printf "Assemble drifblim-bootstrap.rom with drifblim.rom\n"
+	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
+	@ printf "Test drifblim-bootstrap.rom\n"
+	@ ${EMU} bin/drifblim.rom examples/acid-macros.tal bin/res.rom
+	@ ${EMU} bin/res.rom
+drifloon: bin/drifloon.rom
+	@ printf ".. Assemble drifloon-bootstrap from itself\n"
+	@ cat src/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
+	@ printf "\n.. Test drifloon-bootstrap\n"
+	@ cat examples/acid.tal | ${EMU} bin/drifloon-bootstrap.rom > bin/res.rom
+	@ ${EMU} bin/res.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
 acid: bin/drifblim.rom
 	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/res.rom
-	@ ${EMU} bin/res.rom
-run-drifblim: bin/drifblim.rom
-	@ printf "Assemble drifblim-bootstrap.rom with drifblim.rom\n"
-	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
-	@ printf "Test drifblim-bootstrap.rom\n"
-	@ ${EMU} bin/drifblim.rom examples/hello.tal bin/res.rom
-	@ ${EMU} bin/res.rom
-run-drifloon: bin/drifloon.rom
-	@ printf "++ Assemble drifloon-bootstrap from itself\n"
-	@ cat src/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
-	@ printf "\n++ Test drifloon-bootstrap\n"
-	@ cat examples/acid.tal | ${EMU} bin/drifloon-bootstrap.rom > bin/res.rom
 	@ ${EMU} bin/res.rom
 clean:
 	@ rm -fr bin
@@ -46,7 +46,7 @@ uninstall:
 	@ rm -f ${DIR}/drifloon.rom
 	@ rm -f ${DIR}/drifblim.rom
 
-.PHONY: all clean lint test run archive install uninstall run-drifloon run-drifblim
+.PHONY: all clean lint test run archive install uninstall drifloon drifblim
 
 bin/drifloon.rom: src/drifloon.tal
 	@ mkdir -p bin

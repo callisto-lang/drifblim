@@ -8,17 +8,16 @@
 
 |000
 
-	@src/buf $30
-	@dst/buf $30
 	@token/buf $2f &cap $1
 	@scope/buf $30
-	@rom/head $2 &length $2
+	@rom/length $2
+	@src/buf $30
+	@dst/buf $30
 
 |100
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	#0100 rom/<set-head>
 	;dict/reset scope/<set-label>
 	;src/on-console
 	( >> )
@@ -474,11 +473,11 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	DUP .&head LDZ2 INC2k .&head STZ2
+	DUP /get-head INC2k /<set-head>
 	;&mem ADD2 STA
 	( | change length )
 	?{ JMP2r }
-	.&head LDZ2
+	/get-head
 	( ) OVR ?{
 		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
@@ -487,11 +486,11 @@
 	JMP2r
 
 @rom/<set-head> ( addr* -- )
-	.&head STZ2
+	,&head STR2
 	JMP2r
 
 @rom/get-head ( -- addr* )
-	.&head LDZ2 JMP2r
+	[ LIT2 &head 0100 ] JMP2r
 
 @rom/<save> ( -- )
 	;dst/buf .File/name DEO2
@@ -611,7 +610,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "3 20 "Jan 20 "2025 $2
+	( date ) "4 20 "Jan 20 "2025 $2
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
