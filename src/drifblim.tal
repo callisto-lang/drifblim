@@ -218,7 +218,7 @@
 	( >> )
 
 @lambda/name ( id -- str* )
-	DUP #04 SFT hexc SWP hexc ,&id STR2
+	hexs ,&id STR2
 	;&sym JMP2r
 
 @lambda/pop ( -- )
@@ -516,6 +516,10 @@
 		( res ) chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
 	POP2 STH2r JMP2r
+
+@hexs ( hex -- char char )
+	DUP #04 SFT hexc SWP
+	( >> )
 
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
