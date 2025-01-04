@@ -10,7 +10,6 @@
 
 	@token/buf $2f &cap $1
 	@scope/buf $30
-	@rom/length $2
 	@src/buf $30
 	@dst/buf $30
 
@@ -83,7 +82,7 @@
 	;dict/assembled <pstr>/
 	;dst/buf <pstr>/
 	;dict/in <pstr>/
-	.rom/length LDZ2 #00ff SUB2 <pdec>
+	;rom/length LDA2 #00ff SUB2 <pdec>
 	;dict/bytes <pstr>/
 	STH2r #0001 SUB2 <pdec>
 	;dict/labels <pstr>/
@@ -187,7 +186,7 @@
 
 @lib ( runics )
 	&padabs INC2 get-any !rom/<set-head>
-	&padrel INC2 get-any rom/get-head ADD2 !rom/<set-head>
+	&padrel INC2 get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<create>
 	&sublab INC2 get-sublabel !syms/<create>
 	&coment POP2 !<set-comment>
@@ -422,6 +421,17 @@
 (
 @|Rom )
 
+@rom/<set-head-rel> ( addr* -- )
+	rom/get-head ADD2
+	( >> )
+
+@rom/<set-head> ( addr* -- )
+	,&head STR2
+	JMP2r
+
+@rom/get-head ( -- addr* )
+	[ LIT2 &head 0100 ] JMP2r
+
 @rom/<write-macro> ( t* macro* -- )
 	token/<new>
 	&>wcap ( name* -- body* )
@@ -475,26 +485,18 @@
 @rom/<write-byte> ( byte -- )
 	DUP /get-head INC2k /<set-head>
 	;&mem ADD2 STA
-	( | change length )
-	?{ JMP2r }
+	( not zero ) ?{ JMP2r }
 	/get-head
 	( ) OVR ?{
 		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
-	.&length STZ2
+	,&length STR2
 	JMP2r
-
-@rom/<set-head> ( addr* -- )
-	,&head STR2
-	JMP2r
-
-@rom/get-head ( -- addr* )
-	[ LIT2 &head 0100 ] JMP2r
 
 @rom/<save> ( -- )
 	;dst/buf .File/name DEO2
-	.&length LDZ2 #00ff SUB2 .File/length DEO2
+	[ LIT2 &length $2 ] #00ff SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	JMP2r
 
