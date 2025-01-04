@@ -205,8 +205,7 @@
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
 	&macros INC2 macros/<push-word> !<set-macro>
-	&inctal INC2 ;include/mem <scpy>
-	;include/mem !<handle-file>
+	&inctal INC2 !<handle-file>
 	&ignore POP2 JMP2r
 
 (
@@ -640,8 +639,6 @@
 @|Buffers )
 
 @lambda/mem $100
-
-@include/mem $30
 
 @refs/mem ( addr*, symbol*, RefType )
 	$1800 &mem-end
