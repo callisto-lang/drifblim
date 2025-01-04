@@ -137,6 +137,11 @@
 		INC2 LDAk ?&<push-string> }
 	POP2 JMP2r
 
+@scope/label ( name* -- scope/label* )
+	[ LIT2 00 _&ptr ] LDR [ LIT2 "/ 00 ] OVR2 STA2
+	INC2 <scpy>
+	;&buf JMP2r
+
 (
 @|Assembly )
 
@@ -188,9 +193,7 @@
 	&padabs INC2 get-any !rom/<set-head>
 	&padrel INC2 get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<create>
-	&sublab INC2 get-sublabel !syms/<create>
-	&coment POP2 !<set-comment>
-	&macros INC2 macros/<push-word> !<set-macro>
+	&sublab INC2 scope/label !syms/<create>
 	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
 	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-abs-byte !rom/<write-byte>
 	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-abs-short !rom/<write-short>
@@ -200,6 +203,8 @@
 	&lithex INC2 !rom/<write-lithex>
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
+	&coment POP2 !<set-comment>
+	&macros INC2 macros/<push-word> !<set-macro>
 	&inctal INC2 ;include/mem <scpy>
 	;include/mem !<handle-file>
 	&ignore POP2 JMP2r
@@ -325,11 +330,6 @@
 (
 @|References )
 
-@get-sublabel ( name* -- sublabel* )
-	#00 ;scope/ptr LDA [ LIT2 "/ 00 ] OVR2 STA2
-	INC2 <scpy>
-	;scope/buf JMP2r
-
 @get-any ( str* -- value* )
 	is-hex ?shex
 	!get-ref
@@ -340,8 +340,8 @@
 
 @get-ref ( token* -- addr* )
 	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/push }
-	LDAk [ LIT "/ ] NEQ ?{ INC2 get-sublabel }
-	LDAk [ LIT "& ] NEQ ?{ INC2 get-sublabel }
+	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/label }
+	LDAk [ LIT "& ] NEQ ?{ INC2 scope/label }
 	( | find symbol or create it )
 	syms/find-alloc
 	( | check if declared )
