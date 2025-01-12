@@ -9,7 +9,7 @@
 |000
 
 	@token/buf $2f &cap $1
-	@scope/buf $30
+	@scope/buf $2f &cap $1
 	@src/buf $2f &cap $1
 	@dst/buf $2f &cap $1
 
@@ -128,19 +128,28 @@
 	STZ2
 	JMP2r
 
+@scope/<push-char> ( c -- )
+	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
+	DUP .&anchor LTH ?{ ;&buf ;dict/exceeded ;dict/Symbol <set-error> }
+	STZ2
+	JMP2r
+
 @scope/<set-label> ( str* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w ( -- )
 		LDAk [ LIT "/ ] EQU ?{
-			LDAk [ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-			STZ2
+			LDAk /<push-char>
 			INC2 LDAk ?&>w }
-	POP2 JMP2r
+	POP2 ,&ptr LDR ,&anchor STR
+	JMP2r
 
 @scope/label ( name* -- scope/label* )
-	[ LIT2 00 _&ptr ] LDR [ LIT2 "/ 00 ] OVR2 STA2
-	INC2 <scpy>
-	;&buf JMP2r
+	[ LIT2 &anchor $1 _&ptr ] STR
+	[ LIT "/ ] /<push-char>
+	&>wl ( -- )
+		LDAk /<push-char>
+		INC2 LDAk ?&>wl
+	POP2 ;&buf JMP2r
 
 (
 @|Assembly )
@@ -615,7 +624,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Jan 20 "2025 $2
+	( date ) "11 20 "Jan 20 "2025 $2
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
