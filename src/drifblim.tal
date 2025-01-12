@@ -142,7 +142,7 @@
 	POP2 ,&ptr LDR ,&anchor STR
 	JMP2r
 
-@scope/label ( name* -- scope/label* )
+@scope/make-name ( name* -- scope/label* )
 	[ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl ( -- )
@@ -201,7 +201,7 @@
 	&padabs INC2 get-any !rom/<set-head>
 	&padrel INC2 get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<new>
-	&sublab INC2 scope/label !syms/<new>
+	&sublab INC2 scope/make-name !syms/<new>
 	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
 	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-abs-byte !rom/<write-byte>
 	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-abs-short !rom/<write-short>
@@ -219,7 +219,7 @@
 (
 @|Lambda )
 
-@lambda/push ( -- name* )
+@lambda/make-name ( -- name* )
 	[ LIT &count $1 ] INCk ,&count STR
 	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
@@ -327,14 +327,14 @@
 	is-hex ?shex
 	!get-ref
 
-@get-ref-type ( token* type -- addr* )
+@refs/get-type ( token* type -- addr* )
 	,get-ref/type STR
 	( >> )
 
 @get-ref ( token* -- addr* )
-	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/push }
-	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/label }
-	LDAk [ LIT "& ] NEQ ?{ INC2 scope/label }
+	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/make-name }
+	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/make-name }
+	LDAk [ LIT "& ] NEQ ?{ INC2 scope/make-name }
 	( | find symbol or create it )
 	syms/find-alloc
 	( | check if declared )
@@ -386,30 +386,36 @@
 	NIP2 JMP2r
 
 @refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym
-	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
+	( value* ) /resolve-sym !/resolve
 
 @refs/resolve-rel ( ref* -- value* addr* )
 	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
+	( >> )
+
+@refs/resolve ( ref* -- value* addr* )
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/get-abs-byte ( label* -- addr )
-	.RefType/abs-byte get-ref-type NIP JMP2r
+	.RefType/abs-byte /get-type NIP JMP2r
 
 @refs/get-abs-short ( label* -- addr* )
-	.RefType/abs-short !get-ref-type
+	.RefType/abs-short !/get-type
 
 @refs/get-rel-byte ( label* -- distance )
-	.RefType/rel-byte get-ref-type INC2k ORA ?{
+	.RefType/rel-byte /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head INC2 INC2 SUB2
+	/get-rel
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
 	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
 
 @refs/get-rel-short ( label* -- distance* )
-	.RefType/rel-short get-ref-type rom/get-head INC2 INC2 SUB2 JMP2r
+	.RefType/rel-short /get-type
+	( >> )
+
+@refs/get-rel ( addr* -- distance* )
+	rom/get-head INC2 INC2 SUB2 JMP2r
 
 (
 @|Rom )
