@@ -29,16 +29,14 @@
 	BRK
 
 @src/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{ POP ;dst/on-console !bind }
+	.Console/read DEI DUP #20 GTH ?{ POP ;dst/on-console !bind }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
 	STZ2
 	BRK
 
 @dst/on-console ( -> )
-	.Console/read DEI
-	( ) DUP #20 GTH ?{ <assemble> }
+	.Console/read DEI DUP #20 GTH ?{ <assemble> }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	DUP .&cap LTH ?{ ;&buf ;dict/exceeded ;dict/Path <set-error> }
 	STZ2
@@ -363,7 +361,7 @@
 	&>l ( -- )
 		.System/state DEI ?{
 			/<resolve>
-			( ) #0005 ADD2 GTH2k ?&>l }
+			#0005 ADD2 GTH2k ?&>l }
 	POP2 POP2 JMP2r
 
 @refs/<resolve> ( addr* -- addr* )
@@ -423,18 +421,19 @@
 @refs/get-rb ( label* -- distance )
 	.RefType/rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	/get-rel
+	rom/get-head #01 /get-distance
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
 	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
 
 @refs/get-rs ( label* -- distance* )
-	.RefType/rs /get-type
+	.RefType/rs /get-type rom/get-head #00
 	( >> )
 
-@refs/get-rel ( addr* -- distance* )
-	rom/get-head INC2 INC2 SUB2 JMP2r
+@refs/get-distance ( addr* byte -- distance* )
+	POP
+	( ) INC2 INC2 SUB2 JMP2r
 
 (
 @|Rom )
