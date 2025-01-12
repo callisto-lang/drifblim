@@ -3,7 +3,7 @@
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |a0 @File &vector $2 &success $1 &success-lb $1 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
-|00 @RefType &abs-byte $1 &abs-short $1 &rel-byte $1 &rel-short $1
+|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
 
 |000
@@ -64,7 +64,7 @@
 @<assemble> ( -- )
 	;src/buf <handle-file>
 	.System/state DEI ?{
-		refs/<resolve>
+		refs/<resolve-all>
 		.System/state DEI ?{ <print-summary>
 			rom/<save> } }
 	JMP2r
@@ -202,9 +202,9 @@
 	&padrel INC2 refs/get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<new>
 	&sublab INC2 scope/make-name !syms/<new>
-	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
-	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-abs-byte !rom/<write-byte>
-	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-abs-short !rom/<write-short>
+	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rb !rom/<write-byte>
+	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-ab !rom/<write-byte>
+	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-as !rom/<write-short>
 	&litjci INC2 #20 !rom/<write-call>
 	&litjmi INC2 #40 !rom/<write-call>
 	&litjsi #60 !rom/<write-call>
@@ -325,13 +325,13 @@
 
 @refs/get-any ( str* -- value* )
 	is-hex ?shex
-	!get-ref
+	!/get-ref
 
 @refs/get-type ( token* type -- addr* )
-	,get-ref/type STR
+	,&type STR
 	( >> )
 
-@get-ref ( token* -- addr* )
+@refs/get-ref ( token* -- addr* )
 	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/make-name }
 	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/make-name }
 	LDAk [ LIT "& ] NEQ ?{ INC2 scope/make-name }
@@ -358,37 +358,37 @@
 	STA
 	JMP2r
 
-@refs/<resolve> ( -- )
+@refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		.System/state DEI ?{
-			/<resolve-entry>
+			/<resolve>
 			( ) #0005 ADD2 GTH2k ?&>l }
 	POP2 POP2 JMP2r
 
-@refs/<resolve-entry> ( addr* -- addr* )
+@refs/<resolve> ( addr* -- addr* )
 	DUP2 DUP2 #0004 ADD2 LDA
 	( | handlers )
-	DUP .RefType/abs-byte EQU ?&do-ab
-	DUP .RefType/abs-short EQU ?&do-as
-	DUP .RefType/rel-byte EQU ?&do-rb
-	DUP .RefType/rel-short EQU ?&do-rs
+	DUP .RefType/ab EQU ?/<set-ab>
+	DUP .RefType/as EQU ?/<set-as>
+	DUP .RefType/rb EQU ?/<set-rb>
+	DUP .RefType/rs EQU ?/<set-rs>
 	POP JMP2r
 
-	&do-ab ( addr* type -- )
-	POP /resolve-abs STA
+@refs/<set-ab> ( addr* type -- )
+	/resolve-abs STA
 	POP JMP2r
 
-	&do-as ( addr* type -- )
-	POP /resolve-abs STA2
+@refs/<set-as> ( addr* type -- )
+	/resolve-abs STA2
 	JMP2r
 
-	&do-rs ( addr* type -- )
-	POP /resolve-rel STA2
+@refs/<set-rs> ( addr* type -- )
+	/resolve-rel STA2
 	JMP2r
 
-	&do-rb ( addr* type -- )
-	POP /resolve-rel
+@refs/<set-rb> ( addr* type -- )
+	/resolve-rel
 	( | validate distance )
 	OVR2 #0080 ADD2 POP #00 EQU ?{
 		( sym* ) STH2kr INC2 INC2 LDA2
@@ -403,24 +403,26 @@
 	( | sym* addr* )
 	NIP2 JMP2r
 
-@refs/resolve-abs ( ref* -- value* addr* )
+@refs/resolve-abs ( ref* type -- value* addr* )
+	POP
 	( value* ) /resolve-sym !/resolve
 
-@refs/resolve-rel ( ref* -- value* addr* )
+@refs/resolve-rel ( ref* type -- value* addr* )
+	POP
 	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
 	( >> )
 
 @refs/resolve ( ref* -- value* addr* )
 	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
-@refs/get-abs-byte ( label* -- addr )
-	.RefType/abs-byte /get-type NIP JMP2r
+@refs/get-ab ( label* -- addr )
+	.RefType/ab /get-type NIP JMP2r
 
-@refs/get-abs-short ( label* -- addr* )
-	.RefType/abs-short !/get-type
+@refs/get-as ( label* -- addr* )
+	.RefType/as !/get-type
 
-@refs/get-rel-byte ( label* -- distance )
-	.RefType/rel-byte /get-type INC2k ORA ?{
+@refs/get-rb ( label* -- distance )
+	.RefType/rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
 	/get-rel
 	( | check distance )
@@ -428,8 +430,8 @@
 	NIP
 	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
 
-@refs/get-rel-short ( label* -- distance* )
-	.RefType/rel-short /get-type
+@refs/get-rs ( label* -- distance* )
+	.RefType/rs /get-type
 	( >> )
 
 @refs/get-rel ( addr* -- distance* )
@@ -492,7 +494,7 @@
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
-	refs/get-rel-short
+	refs/get-rs
 	( >> )
 
 @rom/<write-short> ( short* -- )
