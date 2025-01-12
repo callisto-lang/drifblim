@@ -88,6 +88,9 @@
 	[ LIT2 80 -System/state ] DEO
 	JMP2r
 
+@<set-error-ref> ( adj* name* -- )
+	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
+
 @<set-error-token> ( adj* name* -- )
 	;token/buf ROT2 ROT2
 	( >> )
@@ -359,6 +362,7 @@
 @refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
+		INC2k INC2 LDA2 ;<set-error-ref>/ref STA2
 		.System/state DEI ?{
 			/<resolve>
 			#0005 ADD2 GTH2k ?&>l }
@@ -386,19 +390,17 @@
 	JMP2r
 
 @refs/<set-rb> ( ref* type -- )
-	POP DUP2 ,&ref-err STR2
-	/resolve-rel
+	POP /resolve-rel
 	( | validate distance )
 	OVR2 #0080 ADD2 POP #00 EQU ?{
-		( sym* ) [ LIT2 &ref-err $2 ] INC2 INC2 LDA2
-		( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Reference <set-error> }
+		( ! ) ;dict/too-far ;dict/Reference <set-error-ref> }
 	STA
 	POP JMP2r
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) OVR2 #0003 ADD2 ;dict/invalid ;dict/Reference <set-error> }
+		( ! ) ;dict/invalid ;dict/Reference <set-error-ref> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
