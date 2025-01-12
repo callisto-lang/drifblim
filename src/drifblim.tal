@@ -367,22 +367,34 @@
 	POP2 POP2 JMP2r
 
 @refs/<resolve-entry> ( addr* -- addr* )
-	STH2k
-	( | route )
-	DUP2 #0004 ADD2 LDA
-	( ) DUP .RefType/abs-byte NEQ ?{ STH2kr /resolve-abs STA
-		POP }
-	( ) DUP .RefType/abs-short NEQ ?{ STH2kr /resolve-abs STA2 }
-	( ) DUP .RefType/rel-byte NEQ ?{
-		STH2kr /resolve-rel
-		( | validate distance )
-		OVR2 #0080 ADD2 POP #00 EQU ?{
-			( sym* ) STH2kr INC2 INC2 LDA2
-			( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Reference <set-error> }
-		STA
-		POP }
-	( ) DUP .RefType/rel-short NEQ ?{ STH2kr /resolve-rel STA2 }
-	POP POP2r JMP2r
+	DUP2 DUP2 #0004 ADD2 LDA
+	( | handlers )
+	DUP .RefType/abs-byte EQU ?&do-ab
+	DUP .RefType/abs-short EQU ?&do-as
+	DUP .RefType/rel-byte EQU ?&do-rb
+	DUP .RefType/rel-short EQU ?&do-rs
+	POP JMP2r
+
+	&do-ab ( addr* type -- )
+	POP /resolve-abs STA
+	POP JMP2r
+
+	&do-as ( addr* type -- )
+	POP /resolve-abs STA2
+	JMP2r
+
+	&do-rs ( addr* type -- )
+	POP /resolve-rel STA2
+	JMP2r
+
+	&do-rb ( addr* type -- )
+	POP /resolve-rel
+	( | validate distance )
+	OVR2 #0080 ADD2 POP #00 EQU ?{
+		( sym* ) STH2kr INC2 INC2 LDA2
+		( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Reference <set-error> }
+	STA
+	POP JMP2r
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
