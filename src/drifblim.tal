@@ -375,23 +375,24 @@
 	DUP .RefType/rs EQU ?/<set-rs>
 	POP JMP2r
 
-@refs/<set-ab> ( addr* type -- )
-	/resolve-abs STA
+@refs/<set-ab> ( ref* type -- )
+	POP /resolve-abs STA
 	POP JMP2r
 
-@refs/<set-as> ( addr* type -- )
-	/resolve-abs STA2
+@refs/<set-as> ( ref* type -- )
+	POP /resolve-abs STA2
 	JMP2r
 
-@refs/<set-rs> ( addr* type -- )
-	/resolve-rel STA2
+@refs/<set-rs> ( ref* type -- )
+	POP /resolve-rel STA2
 	JMP2r
 
-@refs/<set-rb> ( addr* type -- )
+@refs/<set-rb> ( ref* type -- )
+	POP DUP2 ,&ref-err STR2
 	/resolve-rel
 	( | validate distance )
 	OVR2 #0080 ADD2 POP #00 EQU ?{
-		( sym* ) STH2kr INC2 INC2 LDA2
+		( sym* ) [ LIT2 &ref-err $2 ] INC2 INC2 LDA2
 		( sym/name* ) #0003 ADD2 ;dict/too-far ;dict/Reference <set-error> }
 	STA
 	POP JMP2r
@@ -404,11 +405,9 @@
 	NIP2 JMP2r
 
 @refs/resolve-abs ( ref* type -- value* addr* )
-	POP
 	( value* ) /resolve-sym !/resolve
 
 @refs/resolve-rel ( ref* type -- value* addr* )
-	POP
 	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
 	( >> )
 
