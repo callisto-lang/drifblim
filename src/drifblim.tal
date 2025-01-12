@@ -402,11 +402,11 @@
 	( | sym* addr* )
 	NIP2 JMP2r
 
-@refs/resolve-abs ( ref* type -- value* addr* )
+@refs/resolve-abs ( ref* -- value* addr* )
 	( value* ) /resolve-sym !/resolve
 
-@refs/resolve-rel ( ref* type -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 INC2 INC2 SUB2
+@refs/resolve-rel ( ref* -- value* addr* )
+	( value* ) /resolve-sym OVR2 LDA2 /get-distance
 	( >> )
 
 @refs/resolve ( ref* -- value* addr* )
@@ -421,18 +421,17 @@
 @refs/get-rb ( label* -- distance )
 	.RefType/rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head #01 /get-distance
+	rom/get-head /get-distance
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
 	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
 
 @refs/get-rs ( label* -- distance* )
-	.RefType/rs /get-type rom/get-head #00
+	.RefType/rs /get-type rom/get-head
 	( >> )
 
-@refs/get-distance ( addr* byte -- distance* )
-	POP
+@refs/get-distance ( addr* -- distance* )
 	( ) INC2 INC2 SUB2 JMP2r
 
 (
