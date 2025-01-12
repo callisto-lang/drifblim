@@ -198,8 +198,8 @@
 	JMP2r
 
 @lib ( runics )
-	&padabs INC2 get-any !rom/<set-head>
-	&padrel INC2 get-any !rom/<set-head-rel>
+	&padabs INC2 refs/get-any !rom/<set-head>
+	&padrel INC2 refs/get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<new>
 	&sublab INC2 scope/make-name !syms/<new>
 	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rel-byte !rom/<write-byte>
@@ -323,7 +323,7 @@
 (
 @|References )
 
-@get-any ( str* -- value* )
+@refs/get-any ( str* -- value* )
 	is-hex ?shex
 	!get-ref
 
@@ -339,20 +339,23 @@
 	syms/find-alloc
 	( | check if declared )
 	INC2k INC2 STH2k LDA .SymType/declared AND ?{
-		STH2k [ LIT &type $1 ] STH2r rom/get-head refs/<new> }
+		STH2k [ LIT &type $1 ] STH2r rom/get-head
+		( addr* ) refs/<push-short>
+		( value* ) refs/<push-short>
+		( type ) refs/<push-byte> }
 	( | mark as used )
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
 
-@refs/<new> ( type value* addr* -- )
-	[ LIT2 &ptr =&mem ] STH2k
-	( addr* ) STA2
-	( value* ) INC2r INC2r STH2kr STA2
-	( type ) INC2r INC2r STH2kr STA
-	( save ) INC2r [ LITr _&ptr ] STR2r
-	( | check overflow )
-	,&ptr LDR2 ;&mem-end LTH2 ?{
+@refs/<push-short> ( -- )
+	SWP /<push-byte>
+	( >> )
+
+@refs/<push-byte> ( byte -- )
+	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
+	DUP2 ;&mem-end LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/References !<set-error-token> }
+	STA
 	JMP2r
 
 @refs/<resolve> ( -- )
