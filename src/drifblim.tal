@@ -22,7 +22,7 @@
 
 @bind ( vector* -> )
 	.Console/vector DEO2
-	.Console/type DEI ?{
+	[ LIT2 03 -Console/type ] DEI AND ?{
 		;dict/usage <pstr>
 		[ LIT2 01 -System/state ] DEO }
 	BRK
@@ -628,7 +628,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "11 20 "Jan 20 "2025 $2
+	( date ) "14 20 "Jan 20 "2025 $2
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1

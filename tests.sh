@@ -7,6 +7,10 @@ asm="uxncli bin/drifblim.rom"
 echo "usage: drifblim.rom in.tal out.rom"
 $asm
 
+# Usage(missing dst)
+echo "usage: drifblim.rom in.tal out.rom"
+$asm examples/hello.tal
+
 echo ""
 echo "======================="
 
