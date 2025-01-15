@@ -123,15 +123,13 @@
 		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
-	( overflow ) DUP .&cap NEQ ?{
-		( ! ) ;dict/exceeded ;dict/Token <set-error-token> }
-	( move ptr ) INCk ,&ptr STR
+	( overflow ) DUP .&cap EQU ?{ INCk ,&ptr STR }
 	STZ2
 	JMP2r
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Symbol ;&buf <set-error> }
+	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;dict/Symbol ;&buf <set-error> }
 	STZ2
 	JMP2r
 
@@ -636,7 +634,6 @@
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&File "File $1
-	&Token "Token $1
 	&Symbol "Symbol $1
 	&Path "Path $1
 	&Reference "Reference $1
