@@ -174,10 +174,10 @@
 	JMP2r
 
 @asm-comment ( t* -- )
-	[ LITr &depth $1 ] LDA DUP
+	[ LITr &depth $1 ] LDA2 DUP2
 	( | nested comments )
-	[ LIT ") ] NEQ ?{ LITr 01 SUBr }
-	[ LIT "( ] NEQ ?{ INCr }
+	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
+	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
 	STHkr [ LITr _&depth ] STRr
 	?{ !<set-default> }
 	JMP2r
@@ -628,7 +628,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "14 20 "Jan 20 "2025 $2
+	( date ) "15 20 "Jan 20 "2025 $2
 
 @dict
 	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
