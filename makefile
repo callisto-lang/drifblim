@@ -28,11 +28,13 @@ lint: all
 	@ ${LIN} src/drifblim.tal
 	@ ${LIN} etc/hx.tal
 archive: all bin/hx.rom
-	@ cp src/drifloon.tal ../oscean/etc/drifloon.tal.txt
-	@ cp src/drifblim.tal ../oscean/etc/drifblim.tal.txt
-	@ cat bin/drifloon.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifloon.rom.txt
-	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifblim.rom.txt
-install: all bin/hx.rom
+	@ cat src/drifblim.tal src/core.tal | sed 's/~[^[:space:]]\+//' > bin/drifblim.tal
+	@ cat src/drifloon.tal src/core.tal > bin/drifloon.tal
+	@ cp bin/drifblim.tal ../oscean/etc/drifblim.tal.txt
+	@ cp bin/drifloon.tal ../oscean/etc/drifloon.tal.txt
+	@ ${EMU} bin/hx.rom bin/drifblim.rom > ../oscean/etc/drifblim.rom.txt
+	@ ${EMU} bin/hx.rom bin/drifloon.rom > ../oscean/etc/drifloon.rom.txt
+install: bin/drifloon.rom bin/drifblim.rom
 	@ cp bin/drifloon.rom ${DIR}
 	@ cp bin/drifblim.rom ${DIR}
 uninstall:
