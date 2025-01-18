@@ -1,4 +1,4 @@
-( @|Core )
+( Core )
 
 @<set-error-ref> ( adj* name* -- )
 	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
@@ -430,9 +430,8 @@
 		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
 	( ) DUP2 #8000 LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
-	,&length STR2
+	;&length STA2
 	JMP2r
-	&length $2
 
 (
 @|Stdlib )

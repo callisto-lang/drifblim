@@ -10,10 +10,10 @@
 	{ { "hello 0a $1 } STH2r !print-str } STH2r JSR2
 
 	( function application )
-	{ 01 02 03 04 05 } STH2r { LIT "0 ADD #18 DEO #0a18 DEO JMP2r } STH2r foreach
+	{ 01 02 03 04 05 } STH2r { LIT "0 ADD #18 DEO #2018 DEO JMP2r } STH2r foreach
 
 	( get lambda length )
-	{ "Dindeldums $1 } STH2r get-lambda-length <print-dec> #0a18 DEO
+	{ "Dindeldums $1 } STH2r get-lambda-length <print-dec> #2018 DEO
 
 	( allocated string )
 	;hello-word print-str
