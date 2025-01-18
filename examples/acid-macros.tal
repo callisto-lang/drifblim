@@ -111,10 +111,10 @@ yellow-macro
 @|tests )
 
 
-%add1 { #0001 ADD2 }
+%add-1 { #0001 ADD2 }
 
 @test-macro ( -- )
-	#0001 add1 #0002 EQU2 ?{
+	#0001 add-1 #0002 EQU2 ?{
 		;err-macro <print-str>
 	}
 	JMP2r
