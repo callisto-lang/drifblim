@@ -528,13 +528,11 @@
 	NIP2 POPr JMP2r
 
 @dict
-	&usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
 	&File "File $1
 	&Symbol "Symbol $1
-	&Path "Path $1
 	&Reference "Reference $1
 	&Opcode "Opcode $1
 	&Number "Number $1
@@ -545,7 +543,6 @@
 	&exceeded "exceeded $1
 	&invalid "invalid $1
 	&duplicate "duplicate $1
-	&missing "missing $1
 	&too-far "too 20 "far $1
 
 (

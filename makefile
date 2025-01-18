@@ -9,17 +9,17 @@ all: bin/drifloon.rom bin/drifblim.rom
 run: drifblim drifloon
 
 drifblim: bin/drifblim.rom
-	@ printf "Drifblim Bootstrap\n"
+	@ printf "\nDrifblim Bootstrap\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
-	@ printf "Drifblim Bootstrap(acid)\n"
-	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/acid.rom
-	@ ${EMU} bin/acid.rom
+	@ printf "\nDrifblim Bootstrap(acid)\n"
+	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/blimacid.rom
+	@ ${EMU} bin/blimacid.rom
 drifloon: bin/drifloon.rom
-	@ printf "Drifloon Bootstrap\n"
+	@ printf "\nDrifloon Bootstrap\n"
 	@ cat bin/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
-	@ printf "Drifloon Bootstrap(acid)\n"
-	@ cat examples/acid.tal | ${EMU} bin/drifloon.rom > bin/acid.rom
-	@ ${EMU} bin/acid.rom
+	@ printf "\nDrifloon Bootstrap(acid)\n"
+	@ cat examples/acid.tal | ${EMU} bin/drifloon.rom > bin/loonacid.rom
+	@ ${EMU} bin/loonacid.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
 acid: bin/drifblim.rom

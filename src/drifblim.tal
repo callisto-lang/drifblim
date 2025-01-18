@@ -17,6 +17,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	;dict/reset scope/<set-label>
 	;src/on-console
 	( >> )
 
@@ -42,7 +43,6 @@
 	BRK
 
 @<assemble> ( -- )
-	;dict/reset scope/<set-label>
 	;src/buf <handle-file>
 	.System/state DEI ?{
 		refs/<resolve-all>
@@ -61,7 +61,7 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/missing ;dict/File ;src/buf <set-error> }
+			ORAk ?{ ;dict/invalid ;dict/File ;src/buf <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
@@ -94,6 +94,10 @@
 	"# =lib/lithex "" =lib/rawstr
 	"} =lib/lambda "~ =lib/inctal
 	5b =lib/ignore 5d =lib/ignore ] &db-end
+
+@dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
+
+@dict/Path "Path $1
 
 @meta $1
 	( name ) "Drifblim 0a

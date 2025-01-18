@@ -14,6 +14,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
+	;dict/reset scope/<set-label>
 	;on-console .Console/vector DEO2
 	BRK
 
