@@ -1,8 +1,7 @@
 DIR=~/roms
 ASM=uxnasm
-LIN=uxncli ${DIR}/uxnlin.rom
-BAL=uxncli ${DIR}/uxnbal.rom
 EMU=uxncli
+LIN=${EMU} ${DIR}/uxnlin.rom
 
 all: bin/drifloon.rom bin/drifblim.rom
 
@@ -12,28 +11,22 @@ drifblim: bin/drifblim.rom
 	@ printf "\nDrifblim Bootstrap\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
 	@ printf "\nDrifblim Bootstrap(acid)\n"
-	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/blimacid.rom
+	@ ${EMU} bin/drifblim-bootstrap.rom examples/acid.tal bin/blimacid.rom
 	@ ${EMU} bin/blimacid.rom
 drifloon: bin/drifloon.rom
 	@ printf "\nDrifloon Bootstrap\n"
 	@ cat bin/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
 	@ printf "\nDrifloon Bootstrap(acid)\n"
-	@ cat examples/acid.tal | ${EMU} bin/drifloon.rom > bin/loonacid.rom
+	@ cat examples/acid.tal | ${EMU} bin/drifloon-bootstrap.rom > bin/loonacid.rom
 	@ ${EMU} bin/loonacid.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
-acid: bin/drifblim.rom
-	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/res.rom
-	@ ${EMU} bin/res.rom
 clean:
 	@ rm -fr bin
 lint: all
 	@ ${LIN} src/drifloon.tal
 	@ ${LIN} src/drifblim.tal
-	@ ${LIN} src/hx.tal
-bal: all
-	@ ${BAL} src/drifloon.tal
-	@ ${BAL} src/drifblim.tal
+	@ ${LIN} etc/hx.tal
 archive: all bin/hx.rom
 	@ cp src/drifloon.tal ../oscean/etc/drifloon.tal.txt
 	@ cp src/drifblim.tal ../oscean/etc/drifblim.tal.txt
@@ -58,7 +51,7 @@ bin/drifblim.rom: src/drifblim.tal src/core.tal
 	@ mkdir -p bin
 	@ ${ASM} src/drifblim.tal bin/drifblim.rom
 
-bin/hx.rom: src/hx.tal
+bin/hx.rom: etc/hx.tal
 	@ mkdir -p bin
-	@ ${ASM} src/hx.tal bin/hx.rom
+	@ ${ASM} etc/hx.tal bin/hx.rom
 
