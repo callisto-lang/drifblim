@@ -1,0 +1,72 @@
+( cat input.tal
+| uxncli drifloon.rom >
+	output.rom )
+
+|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
+|00 @SymType $40 &used $40 &declared
+
+|000
+
+	@token/buf $2f &cap $1
+	@scope/buf $2f &cap $1
+
+|100
+
+@on-reset ( -> )
+	;meta #06 DEO2
+	;on-console .Console/vector DEO2
+	BRK
+
+@on-console ( -> )
+	.Console/read DEI token/<push-byte>
+	[ LIT2 04 -Console/type ] DEI EQU ?{ BRK }
+	refs/<resolve-all>
+	.System/state DEI ?{ <finish> }
+	BRK
+
+@<finish> ( -- )
+	( | unused )
+	[ LIT2r 0000 ] ;syms/ptr LDA2 ;syms/mem
+	&>lu ( -- )
+		( used ) INC2k INC2 LDA .SymType/used AND ?{
+			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+				;dict/unused <pstr>
+				DUP2 <pstr>/
+				#0a19 DEO }
+			POP2 }
+		INC2r #0003 ADD2 scap/ GTH2k ?&>lu
+	POP2 POP2
+	( | result )
+	;dict/assembled <pstr>
+	;rom/length LDA2 #00ff SUB2 <pdec>
+	;dict/bytes <pstr>
+	STH2r #0001 SUB2 <pdec>
+	;dict/labels <pstr>
+	( | output )
+	;rom/mem ;rom/length LDA2 ADD2 ;rom/output
+	&>l ( -- )
+		LDAk #18 DEO
+		INC2 GTH2k ?&>l
+	POP2 POP2 [ LIT2 80 -System/state ] DEO
+	JMP2r
+
+@runes/db [
+	"| =lib/padabs "$ =lib/padrel
+	"@ =lib/toplab "& =lib/sublab
+	"% =lib/macros "( =lib/coment
+	", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep
+	"; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi
+	"# =lib/lithex "" =lib/rawstr
+	5b =lib/ignore 5d =lib/ignore
+	"} =lib/lambda ] &db-end
+
+@meta $1
+	( name ) "Drifloon 0a
+	( desc ) "Uxntal 20 "Assembler 0a
+	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
+	( date ) "18 20 "Jan 20 "2025 $2
+
