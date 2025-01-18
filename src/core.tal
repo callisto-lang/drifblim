@@ -230,6 +230,18 @@
 	/<push-string>
 	( ! ) ;dict/invalid ;dict/Symbol !<set-error-token>
 
+@syms/<summary> ( -- )
+	[ LIT2r ffff ] ;&ptr LDA2 ;&mem
+	&>ls ( -- )
+		( used ) INC2k INC2 LDA .SymType/used AND ?{
+			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+				;dict/unused <pstr>
+				DUP2 <pstr>/
+				#0a19 DEO }
+			POP2 }
+		INC2r #0003 ADD2 scap/ GTH2k ?&>ls
+	POP2 POP2 STH2r JMP2r
+
 (
 @|References )
 

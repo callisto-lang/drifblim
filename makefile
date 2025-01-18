@@ -9,19 +9,17 @@ all: bin/drifloon.rom bin/drifblim.rom
 run: drifblim drifloon
 
 drifblim: bin/drifblim.rom
-	@ printf "Assemble drifblim-bootstrap.rom with drifblim.rom\n"
+	@ printf "Drifblim Bootstrap\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
-	@ printf "Test drifblim-bootstrap.rom\n"
-	@ ${EMU} bin/drifblim.rom examples/acid-macros.tal bin/res.rom
-	@ ${EMU} bin/res.rom
+	@ printf "Drifblim Bootstrap(acid)\n"
+	@ ${EMU} bin/drifblim.rom examples/acid.tal bin/acid.rom
+	@ ${EMU} bin/acid.rom
 drifloon: bin/drifloon.rom
-	@ cat examples/acid.tal | ${EMU} bin/drifloon.rom > bin/res.rom
-
-#	@ printf ".. Assemble drifloon-bootstrap from itself\n"
-#	@ cat src/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
-#	@ printf "\n.. Test drifloon-bootstrap\n"
-#	@ cat examples/acid.tal | ${EMU} bin/drifloon-bootstrap.rom > bin/res.rom
-#	@ ${EMU} bin/res.rom
+	@ printf "Drifloon Bootstrap\n"
+	@ cat bin/drifloon.tal | ${EMU} bin/drifloon.rom > bin/drifloon-bootstrap.rom
+	@ printf "Drifloon Bootstrap(acid)\n"
+	@ cat examples/acid.tal | ${EMU} bin/drifloon.rom > bin/acid.rom
+	@ ${EMU} bin/acid.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
 acid: bin/drifblim.rom
