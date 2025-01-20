@@ -1,4 +1,6 @@
-( cat input.tal | uxncli drifloon.rom > output.rom )
+( cat input.tal
+| uxncli drifloon.rom >
+	output.rom )
 
 |00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
@@ -29,7 +31,7 @@
 	( +length ) [ LIT2 &length $2 ]
 	( +labels ) syms/<summary>
 	;dict/assembled <pstr>
-	;rom/length LDA2 #00ff SUB2 <pdec>
+	;rom/length LDA2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
 	( -labels ) <pdec>
 	;dict/labels <pstr>
@@ -59,5 +61,5 @@
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Jan 20 "2025 $2
+	( date ) "19 20 "Jan 20 "2025 $2
 

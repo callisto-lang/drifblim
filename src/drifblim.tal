@@ -72,13 +72,13 @@
 	;dict/assembled <pstr>
 	;dst/buf <pstr>/
 	;dict/in <pstr>
-	OVR2 #00ff SUB2 <pdec>
+	OVR2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
 	( -labels ) <pdec>
 	;dict/labels <pstr>
 	( | export )
 	;dst/buf .File/name DEO2
-	( -length ) #00ff SUB2 .File/length DEO2
+	( -length ) #0100 SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	( | success )
 	[ LIT2 80 -System/state ] DEO
@@ -104,7 +104,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Jan 20 "2025 $2
+	( date ) "19 20 "Jan 20 "2025 $2
 
 ~src/core.tal
 
