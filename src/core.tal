@@ -72,9 +72,9 @@
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( opc ) opcodes/find INC ?rom/<write-opcode>
 		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
-		( imm ) POP2 !lib/litjsi }
+		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
+		( imm )  !lib/litjsi }
 	INC2 LDA2 JMP2
 
 @<set-comment> ( -- )
