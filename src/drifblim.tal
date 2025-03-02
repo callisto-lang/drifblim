@@ -36,7 +36,7 @@
 	BRK
 
 @dst/on-console ( -> )
-	.Console/read DEI DUP #20 GTH ?{ POP <assemble> #010e DEO BRK }
+	.Console/read DEI DUP #20 GTH ?{ POP <assemble> BRK }
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
 	DUP .&cap LTH ?{ ;dict/exceeded ;dict/Path ;&buf <set-error> }
 	STZ2

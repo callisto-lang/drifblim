@@ -24,11 +24,11 @@ $asm "tests/err-file.tal" "bin/res.rom"
 
 echo ""
 echo "Symbol duplicate: &sub"
-$asm "tests/err-dup1.tal" "bin/res.rom"
+$asm "tests/err-symdup1.tal" "bin/res.rom"
 
 echo ""
 echo "Symbol duplicate: @TEST"
-$asm "tests/err-dup2.tal" "bin/res.rom"
+$asm "tests/err-symdup2.tal" "bin/res.rom"
 
 echo ""
 echo "Symbol invalid: @1234"
@@ -72,14 +72,6 @@ $asm "tests/err-macrodup1.tal" "bin/res.rom"
 
 echo ""
 echo "Macro duplicate: %TEST"
-$asm "tests/err-macrodup2.tal" "bin/res.rom"
-
-echo ""
-echo "Label duplicate: %TEST"
-$asm "tests/err-macrodup1.tal" "bin/res.rom"
-
-echo ""
-echo "Label duplicate: %TEST"
 $asm "tests/err-macrodup2.tal" "bin/res.rom"
 
 echo ""
