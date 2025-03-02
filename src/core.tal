@@ -295,7 +295,7 @@
 	POP2 POP2 JMP2r
 
 @refs/<resolve> ( addr* -- addr* )
-	DUP2 DUP2 #0004 ADD2 LDA
+	DUP2k #0004 ADD2 LDA
 	( | handlers )
 	DUP .RefType/ab EQU ?/<set-ab>
 	DUP .RefType/as EQU ?/<set-as>

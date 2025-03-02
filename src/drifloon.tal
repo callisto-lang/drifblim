@@ -36,7 +36,7 @@
 	( -labels ) <pdec>
 	;dict/labels <pstr>
 	( | output )
-	( -length ) ;rom/mem SWP2 ADD2 ;rom/output
+	( -length ) ;rom/mem ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
