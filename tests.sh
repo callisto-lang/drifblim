@@ -63,16 +63,16 @@ echo "Reference too far: back"
 $asm "tests/err-farbwd.tal" "bin/res.rom"
 
 echo ""
-echo "Token exceeded: @aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-$asm "tests/err-token.tal" "bin/res.rom"
-
-echo ""
 echo "File exceeded: ab"
 $asm "tests/err-length.tal" "bin/res.rom"
 
 echo ""
-echo "Macro invalid: %ADD"
-$asm "tests/err-macro.tal" "bin/res.rom"
+echo "Macro duplicate: %TEST"
+$asm "tests/err-macrodup1.tal" "bin/res.rom"
+
+echo ""
+echo "Macro duplicate: %TEST"
+$asm "tests/err-macrodup2.tal" "bin/res.rom"
 
 echo ""
 echo "Label duplicate: %TEST"

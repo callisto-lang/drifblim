@@ -74,7 +74,7 @@
 		( hex ) is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
 		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
-		( imm )  !lib/litjsi }
+		( imm ) !lib/litjsi }
 	INC2 LDA2 JMP2
 
 @<set-comment> ( -- )
@@ -123,7 +123,7 @@
 	&rawstr INC2 !rom/<write-str>
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
-	&macros INC2 macros/<push-word> !<set-macro>
+	&macros INC2 !macros/<new>
 	&ignore POP2 JMP2r
 
 (
@@ -147,6 +147,11 @@
 
 (
 @|Macros )
+
+@macros/<new> ( name* -- name* )
+	DUP2 /find INC2 ORA ?{
+		DUP2 syms/find INC2 ORA ?{ macros/<push-word> !<set-macro> } }
+	POP2 ;dict/duplicate ;dict/Macro !<set-error-token>
 
 @macros/find ( name* -- <addr>* )
 	STH2
@@ -174,6 +179,20 @@
 (
 @|Syms )
 
+@syms/<new> ( name* -- )
+	DUP2 macros/find INC2 ORA ?&duplicate
+	DUP2 /find INC2k ORA ?{
+		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
+	( | name* sym* -- )
+	INC2k INC2 LDA .SymType/declared AND ?{
+		( addr* ) rom/get-head OVR2 STA2
+		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
+		( name* ) POP2 JMP2r }
+	POP2
+	&duplicate ( name* -- )
+	POP2
+	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
+
 @syms/find ( name* -- <addr>* )
 	STH2
 	;&ptr LDA2 ;&mem
@@ -188,20 +207,6 @@
 		( null* -> ptr* ) POP2 ,&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
 	NIP2 JMP2r
-
-@syms/<new> ( name* -- )
-	DUP2 macros/find INC2 ORA ?&duplicate
-	DUP2 /find INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
-	( | name* sym* -- )
-	INC2k INC2 LDA .SymType/declared AND ?{
-		( addr* ) rom/get-head OVR2 STA2
-		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
-		( name* ) POP2 JMP2r }
-	POP2
-	&duplicate ( name* -- )
-	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
 
 @syms/<push> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
@@ -537,6 +542,7 @@
 	&Number "Number $1
 	&Writing "Writing $1
 	&Macros "Macros $1
+	&Macro "Macro $1
 	&Symbols "Symbols $1
 	&References "References $1
 	&exceeded "exceeded $1
