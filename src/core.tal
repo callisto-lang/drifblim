@@ -31,7 +31,7 @@
 @token/<push-byte> ( c -- )
 	DUP #20 GTH ?{
 		POP ;&buf LDZk ?{ POP2 JMP2r }
-		[ LIT2 &mode =asm-default ] JSR2 !&<new> }
+		[ LIT2 &mode =asm-default ] JSR2 !/<new> }
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
 	( overflow ) DUP .&cap EQU ?{ INCk ,&ptr STR }
@@ -401,19 +401,19 @@
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
 			( ! ) ;dict/invalid ;dict/Opcode <set-error-token> &r INC2 !&>w }
-	POP2 STHr !&<write-byte>
+	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
 	zlen
-	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !&<write-hex>
+	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !/<write-hex>
 
 @rom/<write-rawhex> ( str* -- )
 	zlen
 	( >> )
 
 @rom/<write-hex> ( str* len -- )
-	DUP #02 NEQ ?{ POP shex NIP !&<write-byte> }
-	#04 NEQ ?{ shex !&<write-short> }
+	DUP #02 NEQ ?{ POP shex NIP !/<write-byte> }
+	#04 NEQ ?{ shex !/<write-short> }
 	POP2
 	( ! ) ;dict/invalid ;dict/Number !<set-error-token>
 
