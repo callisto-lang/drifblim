@@ -1,9 +1,7 @@
-( cat input.tal
-| uxncli drifloon.rom >
-	output.rom )
+( cat input.tal | uxncli drifloon.rom > output.rom )
 
-|00 @System &vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
-|10 @Console &vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 |00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
 
@@ -46,16 +44,11 @@
 	JMP2r
 
 @runes/db [
-	"| =lib/padabs "$ =lib/padrel
-	"@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment
-	", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi
-	"# =lib/lithex "" =lib/rawstr
-	5b =lib/ignore 5d =lib/ignore
-	"} =lib/lambda ] &db-end
+	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
+	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
+	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
+	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
+	5b =lib/ignore 5d =lib/ignore "} =lib/lambda ] &db-end
 
 @meta $1
 	( name ) "Drifloon 0a
