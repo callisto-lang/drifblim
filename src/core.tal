@@ -404,16 +404,13 @@
 	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	is-bos #04 EQU #50 SFT #80 ORA /<write-byte>
+	INCk INC LDZ #00 EQU #50 SFT #a0 EOR /<write-byte>
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	is-bos
-	( >> )
-
-@rom/<write-hex> ( str* len -- )
-	#04 NEQ ?{ shex !/<write-short> }
-	shex NIP !/<write-byte>
+	INCk INC LDZk ?{ POP shex NIP !/<write-byte> }
+	INC INC LDZ ?{ shex !/<write-short> }
+	POP2 ;dict/invalid ;dict/Number !<set-error-token>
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
@@ -438,11 +435,6 @@
 
 (
 @|Stdlib )
-
-@is-bos ( ztr* -- ztr* len )
-	INCk INC LDZk ?{ POP #02 JMP2r }
-	INC INC LDZ ?{ #04 JMP2r }
-	#00 ;dict/invalid ;dict/Number !<set-error-token>
 
 @is-hex ( str* -- str* f )
 	DUP2
