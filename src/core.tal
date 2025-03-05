@@ -220,7 +220,7 @@
 @syms/<push-string> ( word* -- )
 	LDAk /<push-byte>
 	INC2 LDAk ?&<push-string>
-	POP2 #00
+	LDA
 	( >> )
 
 @syms/<push-byte> ( byte -- )
