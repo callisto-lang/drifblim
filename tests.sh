@@ -15,11 +15,11 @@ echo ""
 echo "======================="
 
 echo ""
-echo "File missing: missing.tal"
+echo "File invalid: missing.tal"
 $asm "missing.tal" "bin/res.rom"
 
 echo ""
-echo "File missing: project.tal"
+echo "File invalid: project.tal"
 $asm "tests/err-file.tal" "bin/res.rom"
 
 echo ""
