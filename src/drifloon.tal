@@ -43,16 +43,16 @@
 	[ LIT2 80 -System/state ] DEO
 	JMP2r
 
-@runes/db [
+@runes/lut [
 	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
 	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
 	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
-	5b =lib/ignore 5d =lib/ignore "} =lib/lambda ] &db-end
+	5b =lib/ignore 5d =lib/ignore "} =lib/lambda ] $1
 
 @meta $1
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "4 20 "Mar 20 "2025 $2
+	( date ) "5 20 "Mar 20 "2025 $2
 

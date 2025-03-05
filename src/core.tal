@@ -513,12 +513,12 @@
 
 @runes/find ( char -- <addr>* )
 	STH
-	;&db-end ;&db
+	;&lut
 	&>l ( -- )
 		LDAk STHkr EQU ?{
-			#0003 ADD2 GTH2k ?&>l
+			#0003 ADD2 LDAk ?&>l
 		POP2 #ffff }
-	NIP2 POPr JMP2r
+	POPr JMP2r
 
 @dict
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
