@@ -108,7 +108,7 @@
 	[ LITr _&depth ] STRr
 	JMP2r
 
-@lib ( runics )
+@lib/ignore POP2 JMP2r
 	&padabs INC2 refs/get-any !rom/<set-head>
 	&padrel INC2 refs/get-any !rom/<set-head-rel>
 	&toplab INC2 DUP2 scope/<set-label> !syms/<new>
@@ -124,7 +124,6 @@
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
 	&macros INC2 !macros/<new>
-	&ignore POP2 JMP2r
 
 (
 @|Lambda )
@@ -428,8 +427,6 @@
 	/get-head
 	( ) OVR ?{
 		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
-	( ) DUP2 #8000 LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/File <set-error-token> }
 	;&length STA2
 	JMP2r
 
@@ -522,11 +519,9 @@
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	"BRK ] $1
 
-@dict
-	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
+@dict/assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&reset "RESET $1
-	&File "File $1
 	&Symbol "Symbol $1
 	&Reference "Reference $1
 	&Opcode "Opcode $1

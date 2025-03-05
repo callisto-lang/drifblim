@@ -95,8 +95,8 @@
 	"} =lib/lambda "~ =lib/inctal 5b =lib/ignore 5d =lib/ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
-
 @dict/Path "Path $1
+@dict/File "File $1
 
 @meta $1
 	( name ) "Drifblim 0a
