@@ -404,18 +404,16 @@
 	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	zlen
-	( LIT ) DUP #04 EQU #50 SFT #80 ORA /<write-byte> !/<write-hex>
+	is-bos #04 EQU #50 SFT #80 ORA /<write-byte>
+	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	zlen
+	is-bos
 	( >> )
 
 @rom/<write-hex> ( str* len -- )
-	DUP #02 NEQ ?{ POP shex NIP !/<write-byte> }
 	#04 NEQ ?{ shex !/<write-short> }
-	POP2
-	( ! ) ;dict/invalid ;dict/Number !<set-error-token>
+	shex NIP !/<write-byte>
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
@@ -440,6 +438,11 @@
 
 (
 @|Stdlib )
+
+@is-bos ( ztr* -- ztr* len )
+	INCk INC LDZk ?{ POP #02 JMP2r }
+	INC INC LDZ ?{ #04 JMP2r }
+	#00 ;dict/invalid ;dict/Number !<set-error-token>
 
 @is-hex ( str* -- str* f )
 	DUP2
@@ -473,12 +476,6 @@
 @scap ( str* -- end* )
 	INC2 & LDAk ?scap
 	INC2 JMP2r
-
-@zlen ( ztr -- ztr len )
-	DUP [ LITr 00 ]
-	&>w ( -- )
-		INCr INC LDZk ?&>w
-	POP STHr JMP2r
 
 @wcmp ( a* b* -- f )
 	STH2
