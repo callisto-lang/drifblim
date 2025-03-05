@@ -392,7 +392,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* opc -- )
-	#63 SWP SUB #03 DIV #1f AND STH
+	STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
@@ -494,22 +494,24 @@
 (
 @|Assets )
 
-@opcodes/find ( str* -- str* <opc> )
-	LDA2k ,&xxo STR2
-	INC2k INC2 LDA ,&oox STR
-	;&db-end ;&db
-	&>l ( -- )
-		LDA2k [ LIT2 &xxo $2 ] NEQ2 ?{
-			INC2k INC2 LDA [ LIT &oox $1 ] NEQ ?{ SUB2 NIP JMP2r } }
-		#0003 ADD2 GTH2k ?&>l
-	POP2 POP2 #ff JMP2r
+@scmp3 ( a* b* -- f )
+	LDA2k ROT2 LDA2k ROT2 EQU2 STH
+	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
-@opcodes/db [
+@opcodes/find ( str* -- str* <opc> )
+	;&lut
+	&>l ( -- )
+		SWP2k scmp3 ?{
+			#0003 ADD2 LDAk ?&>l
+		POP2 #ff JMP2r }
+	;&lut SUB2 NIP #03 DIV #1f AND JMP2r
+
+@opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] &db-end
+	"BRK ] $1
 
 @runes/find ( char -- <addr>* )
 	STH
