@@ -404,7 +404,7 @@
 	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	INCk INC LDZ #00 EQU #50 SFT #a0 EOR /<write-byte>
+	INCk INC LDZ #00 NEQ #50 SFT #80 ORA /<write-byte>
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
