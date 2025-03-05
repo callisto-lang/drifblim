@@ -392,7 +392,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* opc -- )
-	STH
+	#1f AND STH
 	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
 	ORAr #0003 ADD2
 	&>w ( -- )
@@ -476,6 +476,10 @@
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
 
+@scmp3 ( a* b* -- f )
+	LDA2k ROT2 LDA2k ROT2 EQU2 STH
+	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+
 @<pstr> ( str* -- )
 	LDAk #19 DEO
 	INC2 & LDAk ?<pstr>
@@ -494,25 +498,6 @@
 (
 @|Assets )
 
-@scmp3 ( a* b* -- f )
-	LDA2k ROT2 LDA2k ROT2 EQU2 STH
-	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
-
-@opcodes/find ( str* -- str* <opc> )
-	;&lut
-	&>l ( -- )
-		SWP2k scmp3 ?{
-			#0003 ADD2 LDAk ?&>l
-		POP2 #ff JMP2r }
-	;&lut SUB2 NIP #03 DIV #1f AND JMP2r
-
-@opcodes/lut [
-	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
-	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
-	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] $1
-
 @runes/find ( char -- <addr>* )
 	STH
 	;&lut
@@ -521,6 +506,21 @@
 			#0003 ADD2 LDAk ?&>l
 		POP2 #ffff }
 	POPr JMP2r
+
+@opcodes/find ( str* -- str* <opc> )
+	[ LITr 00 ] ;&lut
+	&>l ( -- )
+		SWP2k scmp3 ?{
+			INCr #0003 ADD2 LDAk ?&>l
+		POPr [ LITr ff ] }
+	POP2 STHr JMP2r
+
+@opcodes/lut [
+	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
+	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
+	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
+	"BRK ] $1
 
 @dict
 	&assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
