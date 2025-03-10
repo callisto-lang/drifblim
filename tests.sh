@@ -39,8 +39,16 @@ echo "Number invalid: #122325"
 $asm "tests/err-lithex.tal" "bin/res.rom"
 
 echo ""
+echo "Number invalid: #123g"
+$asm "tests/err-lithex2.tal" "bin/res.rom"
+
+echo ""
 echo "Number invalid: 122325"
 $asm "tests/err-rawhex.tal" "bin/res.rom"
+
+echo ""
+echo "Number invalid: 2"
+$asm "tests/err-rawhex2.tal" "bin/res.rom"
 
 echo ""
 echo "Writing invalid: #12"
