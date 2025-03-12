@@ -340,7 +340,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;dict/too-far !/<error>
+	( ! ) ;dict/too-far ;token/buf INC2 ;dict/Reference !<set-error>
 
 @refs/get-rs ( label* -- distance* )
 	.RefType/rs /get-type rom/get-head
