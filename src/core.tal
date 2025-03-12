@@ -435,7 +435,7 @@
 	( not zero ) ?{ JMP2r }
 	/get-head
 	( ) OVR ?{
-		( ! ) ;dict/invalid ;dict/Writing <set-error-token> }
+		( ! ) ;dict/zero-page ;dict/Writing <set-error-token> }
 	;&length STA2
 	JMP2r
 
@@ -530,24 +530,25 @@
 
 @dict/assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
 	&unused "-- 20 "Unused: 20 $1
-	&reset "RESET $1
-	&Symbol "Symbol $1
+	&References "References $1
 	&Reference "Reference $1
+	&Writing "Writing $1
+	&Comment "Comment $1
+	&Symbols "Symbols $1
+	&Symbol "Symbol $1
 	&Opcode "Opcode $1
 	&Number "Number $1
-	&Writing "Writing $1
 	&Macros "Macros $1
 	&Token "Token $1
 	&Macro "Macro $1
-	&Comment "Comment $1
-	&Symbols "Symbols $1
-	&References "References $1
 	&exceeded "exceeded $1
 	&invalid "invalid $1
+	&zero-page "in 20 "zero-page $1
 	&duplicate "duplicate $1
 	&too-far "too 20 "far $1
 	&open "open $1
 	&trail ".. $1
+	&reset "RESET $1
 
 (
 @|Buffers )

@@ -49,18 +49,15 @@ echo "Token invalid: ? in scope"
 echo "" && echo "@scope # @end" | $as > bin/res.tal
 echo "Token invalid: # in scope"
 
-echo "" && echo "Mode -----------------------------------------------"
+echo "" && echo "Comment --------------------------------------------"
 
 echo "" && echo "@scope ( BRK @end" | $as > bin/res.tal
 echo "Comment invalid: label"
 
-echo "" && echo "%scope { BRK @end" | $as > bin/res.tal
-echo "Macro invalid: label"
-
 echo "" && echo "Writing --------------------------------------------"
 
 echo "" && echo "@scope |80 #1234 @end" | $as > bin/res.tal
-echo "Writing invalid: #1234 in scope"
+echo "Writing in zero-page: #1234 in scope"
 
 echo "" && echo "Symbol ---------------------------------------------"
 
@@ -107,6 +104,9 @@ echo "" && echo "%label { ADD } %label { SUB }" | $as > bin/res.tal
 echo "Macro duplicate: label"
 
 echo "" && echo "%label #1234" | $as > bin/res.tal
+echo "Macro open: label"
+
+echo "" && echo "%scope { BRK @end" | $as > bin/res.tal
 echo "Macro invalid: label"
 
 echo "" && echo "References -----------------------------------------"
