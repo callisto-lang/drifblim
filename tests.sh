@@ -49,6 +49,14 @@ echo "Token invalid: ? in scope"
 echo "" && echo "@scope # @end" | $as > bin/res.tal
 echo "Token invalid: # in scope"
 
+echo "" && echo "Mode -----------------------------------------------"
+
+echo "" && echo "@scope ( BRK @end" | $as > bin/res.tal
+echo "Comment invalid: label"
+
+echo "" && echo "%scope { BRK @end" | $as > bin/res.tal
+echo "Macro invalid: label"
+
 echo "" && echo "Writing --------------------------------------------"
 
 echo "" && echo "@scope |80 #1234 @end" | $as > bin/res.tal
@@ -76,6 +84,30 @@ echo "" && echo "Opcode ---------------------------------------------"
 echo "" && echo "@scope ADD2q @end" | $as > bin/res.tal
 echo "Opcode invalid: ADD2q in scope"
 
+echo "" && echo "Number ---------------------------------------------"
+
+echo "" && echo "@scope 2 @end" | $as > bin/res.tal
+echo "Number invalid: 2 in scope"
+
+echo "" && echo "@scope 123 @end" | $as > bin/res.tal
+echo "Number invalid: 123 in scope"
+
+echo "" && echo "@scope 12345 @end" | $as > bin/res.tal
+echo "Number invalid: 12345 in scope"
+
+echo "" && echo "@scope #1g @end" | $as > bin/res.tal
+echo "Number invalid: #1g in scope"
+
+echo "" && echo "@scope #123g @end" | $as > bin/res.tal
+echo "Number invalid: #123g in scope"
+
+echo "" && echo "Macros ---------------------------------------------"
+
+echo "" && echo "%label { ADD } %label { SUB }" | $as > bin/res.tal
+echo "Macro duplicate: label"
+
+echo "" && echo "%label #1234" | $as > bin/res.tal
+echo "Macro invalid: label"
 
 echo "" && echo "References -----------------------------------------"
 
@@ -100,28 +132,4 @@ echo "Reference too far: next in scope"
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
 echo "Reference too far: back in scope"
 
-echo "" && echo "Macros ---------------------------------------------"
-
-echo "" && echo "%label { ADD } %label { SUB }" | $as > bin/res.tal
-echo "Macro duplicate: label"
-
-echo "" && echo "%label #1234" | $as > bin/res.tal
-echo "Macro invalid: label"
-
-echo "" && echo "Number ---------------------------------------------"
-
-echo "" && echo "@scope 2 @end" | $as > bin/res.tal
-echo "Number invalid: 2 in scope"
-
-echo "" && echo "@scope 123 @end" | $as > bin/res.tal
-echo "Number invalid: 123 in scope"
-
-echo "" && echo "@scope 12345 @end" | $as > bin/res.tal
-echo "Number invalid: 12345 in scope"
-
-echo "" && echo "@scope #1g @end" | $as > bin/res.tal
-echo "Number invalid: #1g in scope"
-
-echo "" && echo "@scope #123g @end" | $as > bin/res.tal
-echo "Number invalid: #123g in scope"
 

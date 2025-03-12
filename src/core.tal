@@ -126,7 +126,7 @@
 	&macros req-name !macros/<new>
 
 @req-name ( str* -- str1* )
-	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token <set-error-token> }
+	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !<set-error-token> }
 	JMP2r
 
 (
@@ -289,6 +289,10 @@
 	JMP2r
 
 @refs/<resolve-all> ( -- )
+	;token/mode LDA2 ;asm-comment NEQ2 ?{
+		( open cmt ) ;dict/open ;dict/Comment ;dict/trail !<set-error> }
+	;token/mode LDA2 ;asm-macro NEQ2 ?{
+		( open mac ) ;dict/open ;dict/Macro ;dict/trail !<set-error> }
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		INC2k INC2 LDA2 ;<set-error-ref>/ref STA2
@@ -535,12 +539,15 @@
 	&Macros "Macros $1
 	&Token "Token $1
 	&Macro "Macro $1
+	&Comment "Comment $1
 	&Symbols "Symbols $1
 	&References "References $1
 	&exceeded "exceeded $1
 	&invalid "invalid $1
 	&duplicate "duplicate $1
 	&too-far "too 20 "far $1
+	&open "open $1
+	&trail ".. $1
 
 (
 @|Buffers )
