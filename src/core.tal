@@ -505,17 +505,19 @@
 	POP2 STHr JMP2r
 
 @<set-error> ( adj* keyword* topic* -- )
-	<pstr>
-	#2019 DEO
-	SWP2 <pstr>
-	[ LIT2 ": 19 ] DEO
-	#2019 DEO
-	<pstr>
-	;dict/in <pstr>/
-	;scope/buf <pstr>/
-	#0a19 DEO
-	[ LIT2 01 -System/state ] DEO
-	JMP2r
+	.System/state DEI ?{
+		<pstr>
+		#2019 DEO
+		SWP2 <pstr>
+		[ LIT2 ": 19 ] DEO
+		#2019 DEO
+		<pstr>
+		;dict/in <pstr>/
+		;scope/buf <pstr>/
+		#0a19 DEO
+		[ LIT2 01 -System/state ] DEO
+		JMP2r }
+	POP2 POP2 POP2 JMP2r
 
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
