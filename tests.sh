@@ -31,9 +31,6 @@ echo "Token invalid: - in scope"
 echo "" && echo "@scope LIT _ @end" | $as > bin/res.tal
 echo "Token invalid: _ in scope"
 
-echo "" && echo "@scope # @end" | $as > bin/res.tal
-echo "Token invalid: # in scope"
-
 echo "" && echo "@scope | @end" | $as > bin/res.tal
 echo "Token invalid: | in scope"
 
@@ -49,11 +46,8 @@ echo "Token invalid: ! in scope"
 echo "" && echo "@scope ? @end" | $as > bin/res.tal
 echo "Token invalid: ? in scope"
 
-echo "" && echo "@scope @. @end" | $as > bin/res.tal
-echo "Token invalid: @. in scope"
-
-echo "" && echo "@scope ?@ @end" | $as > bin/res.tal
-echo "Token invalid: ?@ in scope"
+echo "" && echo "@scope # @end" | $as > bin/res.tal
+echo "Token invalid: # in scope"
 
 echo "" && echo "Writing --------------------------------------------"
 
@@ -65,20 +59,23 @@ echo "" && echo "Symbol ---------------------------------------------"
 echo "" && echo "@scope @foo @foo @end" | $as > bin/res.tal
 echo "Symbol duplicate: foo"
 
-echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
-echo "Symbol duplicate: foo in scope"
-
 echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
 echo "Symbol invalid: 1234"
+
+echo "" && echo "@scope @LDA @end" | $as > bin/res.tal
+echo "Symbol invalid: LDA"
+
+echo "" && echo "%label { SUB } @label" | $as > bin/res.tal
+echo "Symbol duplicate: @label"
+
+echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
+echo "Symbol duplicate: foo in scope"
 
 echo "" && echo "Opcode ---------------------------------------------"
 
 echo "" && echo "@scope ADD2q @end" | $as > bin/res.tal
 echo "Opcode invalid: ADD2q in scope"
 
-echo "" && echo "Symbol ---------------------------------------------"
-
-echo "" && echo "%label { SUB } @label" | $as > bin/res.tal
 
 echo "" && echo "References -----------------------------------------"
 

@@ -109,21 +109,25 @@
 	JMP2r
 
 @lib/ignore POP2 JMP2r
-	&padabs INC2 refs/get-any !rom/<set-head>
-	&padrel INC2 refs/get-any !rom/<set-head-rel>
-	&toplab INC2 DUP2 scope/<set-label> !syms/<new>
+	&padabs req-name refs/get-any !rom/<set-head>
+	&padrel req-name refs/get-any !rom/<set-head-rel>
+	&toplab req-name DUP2 scope/<set-label> !syms/<new>
 	&sublab INC2 scope/make-name !syms/<new>
-	&litrel #80 rom/<write-byte> &rawrel INC2 refs/get-rb !rom/<write-byte>
-	&litzep #80 rom/<write-byte> &rawzep INC2 refs/get-ab !rom/<write-byte>
-	&litabs #a0 rom/<write-byte> &rawabs INC2 refs/get-as !rom/<write-short>
-	&litjci INC2 #20 !rom/<write-call>
-	&litjmi INC2 #40 !rom/<write-call>
+	&litrel #80 rom/<write-byte> &rawrel req-name refs/get-rb !rom/<write-byte>
+	&litzep #80 rom/<write-byte> &rawzep req-name refs/get-ab !rom/<write-byte>
+	&litabs #a0 rom/<write-byte> &rawabs req-name refs/get-as !rom/<write-short>
+	&litjci req-name #20 !rom/<write-call>
+	&litjmi req-name #40 !rom/<write-call>
 	&litjsi #60 !rom/<write-call>
-	&lithex INC2 !rom/<write-lithex>
-	&rawstr INC2 !rom/<write-str>
+	&lithex req-name !rom/<write-lithex>
+	&rawstr req-name !rom/<write-str>
 	&lambda POP2 !lambda/pop
 	&coment POP2 !<set-comment>
-	&macros INC2 !macros/<new>
+	&macros req-name !macros/<new>
+
+@req-name ( str* -- str1* )
+	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token <set-error-token> }
+	JMP2r
 
 (
 @|Lambda )
@@ -529,6 +533,7 @@
 	&Number "Number $1
 	&Writing "Writing $1
 	&Macros "Macros $1
+	&Token "Token $1
 	&Macro "Macro $1
 	&Symbols "Symbols $1
 	&References "References $1
