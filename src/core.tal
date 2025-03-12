@@ -5,7 +5,7 @@
 	( >> )
 
 @<set-error> ( adj* topic* keyword* -- )
-	SWP2 <pstr>
+	<pstr>
 	#2019 DEO
 	SWP2 <pstr>
 	[ LIT2 ": 19 ] DEO
@@ -37,7 +37,7 @@
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;dict/Symbol ;&buf <set-error> }
+	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol <set-error> }
 	STZ2
 	JMP2r
 
@@ -287,9 +287,9 @@
 
 @refs/<resolve-all> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
-		( open cmt ) ;dict/open ;dict/Comment ;dict/trail !<set-error> }
+		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !<set-error> }
 	;token/mode LDA2 ;asm-macro NEQ2 ?{
-		( open mac ) ;dict/open ;dict/Macro ;dict/trail !<set-error> }
+		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
 		INC2k INC2 LDA2 ;&err STA2
@@ -367,7 +367,7 @@
 	( ) INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
-	[ LIT2 &err $2 ] #0003 ADD2 ;dict/Reference SWP2 !<set-error>
+	[ LIT2 &err $2 ] #0003 ADD2 ;dict/Reference !<set-error>
 
 (
 @|Rom )
