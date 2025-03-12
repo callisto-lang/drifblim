@@ -1,6 +1,6 @@
 #!/bin/sh
 
-roms_dir=${UXN_ROMS_DIR-"$HOME/roms"}
+as="uxncli bin/drifloon.rom"
 asm="uxncli bin/drifblim.rom"
 
 # Usage(missing src)
@@ -11,79 +11,116 @@ $asm
 echo "usage: drifblim.rom in.tal out.rom"
 $asm examples/hello.tal
 
-echo ""
-echo "======================="
+echo "" && echo "Token ----------------------------------------------"
 
-echo ""
-echo "File invalid: missing.tal"
-$asm "missing.tal" "bin/res.rom"
+echo "" && echo "@scope ; @end" | $as > bin/res.tal
+echo "Token invalid: ; in scope"
 
-echo ""
-echo "File invalid: project.tal"
-$asm "tests/err-file.tal" "bin/res.rom"
+echo "" && echo "@scope . @end" | $as > bin/res.tal
+echo "Token invalid: . in scope"
 
-echo ""
-echo "Symbol duplicate: &sub"
-$asm "tests/err-symdup1.tal" "bin/res.rom"
+echo "" && echo "@scope , @end" | $as > bin/res.tal
+echo "Token invalid: , in scope"
 
-echo ""
-echo "Symbol duplicate: @TEST"
-$asm "tests/err-symdup2.tal" "bin/res.rom"
+echo "" && echo "@scope LIT2 = @end" | $as > bin/res.tal
+echo "Token invalid: = in scope"
 
-echo ""
-echo "Symbol invalid: @1234"
-$asm "tests/err-hex.tal" "bin/res.rom"
+echo "" && echo "@scope LIT - @end" | $as > bin/res.tal
+echo "Token invalid: - in scope"
 
-echo ""
-echo "Number invalid: #122325"
-$asm "tests/err-lithex.tal" "bin/res.rom"
+echo "" && echo "@scope LIT _ @end" | $as > bin/res.tal
+echo "Token invalid: _ in scope"
 
-echo ""
-echo "Number invalid: #123g"
-$asm "tests/err-lithex2.tal" "bin/res.rom"
+echo "" && echo "@scope # @end" | $as > bin/res.tal
+echo "Token invalid: # in scope"
 
-echo ""
-echo "Number invalid: 122325"
-$asm "tests/err-rawhex.tal" "bin/res.rom"
+echo "" && echo "@scope | @end" | $as > bin/res.tal
+echo "Token invalid: | in scope"
 
-echo ""
-echo "Number invalid: 2"
-$asm "tests/err-rawhex2.tal" "bin/res.rom"
+echo "" && echo "@scope $ @end" | $as > bin/res.tal
+echo "Token invalid: $ in scope"
 
-echo ""
-echo "Writing invalid: #12"
-$asm "tests/err-zep.tal" "bin/res.rom"
+echo "" && echo "@scope \" @end" | $as > bin/res.tal
+echo "Token invalid: \" in scope"
 
-echo ""
-echo "Opcode invalid: ADD2q"
-$asm "tests/err-opc.tal" "bin/res.rom"
+echo "" && echo "@scope ! @end" | $as > bin/res.tal
+echo "Token invalid: ! in scope"
 
-echo ""
-echo "Reference invalid: missing"
-$asm "tests/err-ref.tal" "bin/res.rom"
+echo "" && echo "@scope ? @end" | $as > bin/res.tal
+echo "Token invalid: ? in scope"
 
-echo ""
-echo "Reference too far: next"
-$asm "tests/err-farfwd.tal" "bin/res.rom"
+echo "" && echo "Writing --------------------------------------------"
 
-echo ""
-echo "Reference too far: back"
-$asm "tests/err-farbwd.tal" "bin/res.rom"
+echo "" && echo "@scope |80 #1234 @end" | $as > bin/res.tal
+echo "Writing invalid: #1234 in scope"
 
-echo ""
-echo "File exceeded: ab"
-$asm "tests/err-length.tal" "bin/res.rom"
+echo "" && echo "Symbol ---------------------------------------------"
 
-echo ""
-echo "Macro duplicate: %TEST"
-$asm "tests/err-macrodup1.tal" "bin/res.rom"
+echo "" && echo "@scope @foo @foo @end" | $as > bin/res.tal
+echo "Symbol duplicate: foo"
 
-echo ""
-echo "Macro duplicate: %TEST"
-$asm "tests/err-macrodup2.tal" "bin/res.rom"
+echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
+echo "Symbol duplicate: foo in scope"
 
-echo ""
-echo "Writing rewind: #1234 |0100"
-$asm "tests/err-rew.tal" "bin/res.rom"
+echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
+echo "Symbol invalid: 1234"
 
+echo "" && echo "Opcode ---------------------------------------------"
 
+echo "" && echo "@scope ADD2q @end" | $as > bin/res.tal
+echo "Opcode invalid: ADD2q in scope"
+
+echo "" && echo "Symbol ---------------------------------------------"
+
+echo "" && echo "%label { SUB } @label" | $as > bin/res.tal
+
+echo "" && echo "References -----------------------------------------"
+
+echo "" && echo "@scope LIT2 =label @end" | $as > bin/res.tal
+echo "Reference invalid: label in scope"
+
+echo "" && echo "@scope ;label @end" | $as > bin/res.tal
+echo "Reference invalid: label in scope"
+
+echo "" && echo "@scope .label @end" | $as > bin/res.tal
+echo "Reference invalid: label in scope"
+
+echo "" && echo "@scope ,label @end" | $as > bin/res.tal
+echo "Reference invalid: label in scope"
+
+echo "" && echo "@scope LIT _label @end" | $as > bin/res.tal
+echo "Reference invalid: label in scope"
+
+echo "" && echo "@scope ,next \$81 @next @end" | $as > bin/res.tal
+echo "Reference too far: next in scope"
+
+echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
+echo "Reference too far: back in scope"
+
+echo "" && echo "Macros ---------------------------------------------"
+
+echo "" && echo "%label { ADD } %label { SUB }" | $as > bin/res.tal
+echo "Macro duplicate: label"
+
+echo "" && echo "%label #1234" | $as > bin/res.tal
+echo "Macro invalid: label"
+
+echo "" && echo "Number ---------------------------------------------"
+
+echo "" && echo "@scope 2 @end" | $as > bin/res.tal
+echo "Number invalid: 2 in scope"
+
+echo "" && echo "@scope 123 @end" | $as > bin/res.tal
+echo "Number invalid: 123 in scope"
+
+echo "" && echo "@scope 12345 @end" | $as > bin/res.tal
+echo "Number invalid: 12345 in scope"
+
+echo "" && echo "@scope #1g @end" | $as > bin/res.tal
+echo "Number invalid: #1g in scope"
+
+echo "" && echo "@scope #123g @end" | $as > bin/res.tal
+echo "Number invalid: #123g in scope"
+
+echo "" && echo "@scope # @end" | $as > bin/res.tal
+echo "Number invalid: in scope"

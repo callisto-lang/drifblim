@@ -1,7 +1,0 @@
-( distance too far )
-
-( fff5 ) &a $8 ,&a
-( 0007 ) ,&b $8 &b
-
-( ok ff80 -128 ) &back-ok $7d ,&back-ok
-( ok 007f +127 ) ,&next-ok $80 &next-ok

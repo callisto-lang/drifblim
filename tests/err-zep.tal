@@ -1,3 +1,0 @@
-( zero-page write )
-|0080 #12 BRK
-

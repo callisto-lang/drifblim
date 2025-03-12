@@ -1,7 +1,0 @@
-( token length too long )
-|0100 #1234 BRK
-
-@token-length-20-aaaaaaaaaaaaaaaa
-	&some-long-sublabel
-	;&some-long-sublabel
-
