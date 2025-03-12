@@ -1,13 +1,10 @@
 ( Core )
 
-@<set-error-ref> ( adj* name* -- )
-	[ LIT2 &ref $2 ] #0003 ADD2 !<set-error>
-
-@<set-error-token> ( adj* name* -- )
+@<set-error-token> ( adj* topic* -- )
 	;token/buf
 	( >> )
 
-@<set-error> ( adj* name* keyword* -- )
+@<set-error> ( adj* topic* keyword* -- )
 	SWP2 <pstr>
 	#2019 DEO
 	SWP2 <pstr>
@@ -295,7 +292,7 @@
 		( open mac ) ;dict/open ;dict/Macro ;dict/trail !<set-error> }
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
-		INC2k INC2 LDA2 ;<set-error-ref>/ref STA2
+		INC2k INC2 LDA2 ;&err STA2
 		.System/state DEI ?{
 			/<resolve>
 			#0005 ADD2 GTH2k ?&>l }
@@ -326,14 +323,14 @@
 	POP /resolve-rel
 	( | validate distance )
 	OVR2 #0080 ADD2 POP #00 EQU ?{
-		( ! ) ;dict/too-far ;dict/Reference <set-error-ref> }
+		( ! ) ;dict/too-far /<error> }
 	STA
 	POP JMP2r
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( sym* ) INC2k INC2 LDA2
 	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) ;dict/invalid ;dict/Reference <set-error-ref> }
+		( ! ) ;dict/invalid /<error> }
 	( | sym* addr* )
 	NIP2 JMP2r
 
@@ -360,7 +357,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;dict/too-far ;dict/Reference !<set-error-token>
+	( ! ) ;dict/too-far !/<error>
 
 @refs/get-rs ( label* -- distance* )
 	.RefType/rs /get-type rom/get-head
@@ -368,6 +365,9 @@
 
 @refs/get-distance ( addr* -- distance* )
 	( ) INC2 INC2 SUB2 JMP2r
+
+@refs/<error> ( adj* -- )
+	[ LIT2 &err $2 ] #0003 ADD2 ;dict/Reference SWP2 !<set-error>
 
 (
 @|Rom )
