@@ -1,24 +1,4 @@
-( Core )
-
-@<set-error-token> ( adj* topic* -- )
-	;token/buf
-	( >> )
-
-@<set-error> ( adj* topic* keyword* -- )
-	<pstr>
-	#2019 DEO
-	SWP2 <pstr>
-	[ LIT2 ": 19 ] DEO
-	#2019 DEO
-	<pstr>
-	;dict/in <pstr>/
-	;scope/buf <pstr>/
-	#0a19 DEO
-	[ LIT2 01 -System/state ] DEO
-	JMP2r
-
-(
-@|Buffers )
+( @|Core )
 
 @token/<new> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -34,6 +14,9 @@
 	( overflow ) DUP .&cap EQU ?{ INCk ,&ptr STR }
 	STZ2
 	JMP2r
+
+@token/<error> ( adj* -- )
+	;&buf SWP2 !<set-error>
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
@@ -123,7 +106,7 @@
 	&macros req-name !macros/<new>
 
 @req-name ( str* -- str1* )
-	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !<set-error-token> }
+	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !token/<error> }
 	JMP2r
 
 (
@@ -151,7 +134,7 @@
 @macros/<new> ( name* -- name* )
 	DUP2 /find INC2 ORA ?{
 		DUP2 syms/find INC2 ORA ?{ macros/<push-word> !<set-macro> } }
-	POP2 ;dict/duplicate ;dict/Macro !<set-error-token>
+	POP2 ;dict/duplicate ;dict/Macro !token/<error>
 
 @macros/find ( name* -- <addr>* )
 	STH2
@@ -173,7 +156,7 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Macros !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/Macros !token/<error> }
 	JMP2r
 
 (
@@ -191,7 +174,7 @@
 	POP2
 	&duplicate ( name* -- )
 	POP2
-	( ! ) ;dict/duplicate ;dict/Symbol !<set-error-token>
+	( ! ) ;dict/duplicate ;dict/Symbol !token/<error>
 
 @syms/find ( name* -- <addr>* )
 	STH2
@@ -228,12 +211,12 @@
 	STA
 	( | check overflow )
 	,&ptr LDR2 ;&mem-end LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/Symbols !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/Symbols !token/<error> }
 	JMP2r
 
 @syms/invalid ( name* -- )
 	/<push-string>
-	( ! ) ;dict/invalid ;dict/Symbol !<set-error-token>
+	( ! ) ;dict/invalid ;dict/Symbol !token/<error>
 
 @syms/<summary> ( -- )
 	[ LIT2r ffff ] ;&ptr LDA2 ;&mem
@@ -281,7 +264,7 @@
 @refs/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	DUP2 ;&mem-end LTH2 ?{
-		( ! ) ;dict/exceeded ;dict/References !<set-error-token> }
+		( ! ) ;dict/exceeded ;dict/References !token/<error> }
 	STA
 	JMP2r
 
@@ -407,18 +390,18 @@
 			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
 			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			( ! ) ;dict/invalid ;dict/Opcode <set-error-token> &r INC2 !&>w }
+			( ! ) ;dict/invalid ;dict/Opcode token/<error> &r INC2 !&>w }
 	POP2 STHr !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
 	INC2k INC LDZ NEQ #50 SFT #80 ORA /<write-byte>
-	is-hex ?{ ;dict/invalid ;dict/Number <set-error-token> }
+	is-hex ?{ ;dict/invalid ;dict/Number token/<error> }
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
 	INCk INC LDZk ?{ POP shex NIP !/<write-byte> }
 	INC INC LDZ ?{ shex !/<write-short> }
-	POP2 ;dict/invalid ;dict/Number !<set-error-token>
+	POP2 ;dict/invalid ;dict/Number !token/<error>
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
@@ -435,7 +418,7 @@
 	( not zero ) ?{ JMP2r }
 	/get-head
 	( ) OVR ?{
-		( ! ) ;dict/zero-page ;dict/Writing <set-error-token> }
+		( ! ) ;dict/zero-page ;dict/Writing token/<error> }
 	;&length STA2
 	JMP2r
 
@@ -520,6 +503,19 @@
 			INCr #0003 ADD2 LDAk ?&>l
 		POPr [ LITr ff ] }
 	POP2 STHr JMP2r
+
+@<set-error> ( adj* keyword* topic* -- )
+	<pstr>
+	#2019 DEO
+	SWP2 <pstr>
+	[ LIT2 ": 19 ] DEO
+	#2019 DEO
+	<pstr>
+	;dict/in <pstr>/
+	;scope/buf <pstr>/
+	#0a19 DEO
+	[ LIT2 01 -System/state ] DEO
+	JMP2r
 
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR

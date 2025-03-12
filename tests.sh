@@ -52,7 +52,7 @@ echo "Token invalid: # in scope"
 echo "" && echo "Comment --------------------------------------------"
 
 echo "" && echo "@scope ( BRK @end" | $as > bin/res.tal
-echo "Comment invalid: label"
+echo "Comment open: .. in scope"
 
 echo "" && echo "Writing --------------------------------------------"
 
