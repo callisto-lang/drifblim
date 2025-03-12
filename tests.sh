@@ -49,6 +49,12 @@ echo "Token invalid: ! in scope"
 echo "" && echo "@scope ? @end" | $as > bin/res.tal
 echo "Token invalid: ? in scope"
 
+echo "" && echo "@scope @. @end" | $as > bin/res.tal
+echo "Token invalid: @. in scope"
+
+echo "" && echo "@scope ?@ @end" | $as > bin/res.tal
+echo "Token invalid: ?@ in scope"
+
 echo "" && echo "Writing --------------------------------------------"
 
 echo "" && echo "@scope |80 #1234 @end" | $as > bin/res.tal
@@ -122,5 +128,3 @@ echo "Number invalid: #1g in scope"
 echo "" && echo "@scope #123g @end" | $as > bin/res.tal
 echo "Number invalid: #123g in scope"
 
-echo "" && echo "@scope # @end" | $as > bin/res.tal
-echo "Number invalid: in scope"
