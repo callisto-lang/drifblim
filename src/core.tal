@@ -52,7 +52,7 @@
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( mac ) DUP2 macros/find INC2k ORA ?rom/<write-macro>
+		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
 		( opc ) POP2 opcodes/find INCk ?rom/<write-opcode>
 		( imm ) POP !lib/litjsi }
 	INC2 LDA2 JMP2
@@ -132,11 +132,11 @@
 @|Macros )
 
 @macros/<new> ( name* -- name* )
-	DUP2 /find INC2 ORA ?{
-		DUP2 syms/find INC2 ORA ?{ macros/<push-word> !<set-macro> } }
+	DUP2 /find-name INC2 ORA ?{
+		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word> !<set-macro> } }
 	POP2 ;dict/duplicate ;dict/Macro !token/<error>
 
-@macros/find ( name* -- <addr>* )
+@macros/find-name ( name* -- <addr>* )
 	STH2
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
@@ -163,8 +163,8 @@
 @|Syms )
 
 @syms/<new> ( name* -- )
-	DUP2 macros/find INC2 ORA ?&duplicate
-	DUP2 /find INC2k ORA ?{
+	DUP2 macros/find-name INC2 ORA ?&duplicate
+	DUP2 /find-name INC2k ORA ?{
 		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
 	( | name* sym* -- )
 	INC2k INC2 LDA .SymType/declared AND ?{
@@ -176,17 +176,25 @@
 	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !token/<error>
 
-@syms/find ( name* -- <addr>* )
+@syms/find-name ( name* -- <sym>* )
 	STH2
 	;&ptr LDA2 ;&mem
-	&>l ( -- )
+	&>lfn ( -- )
 		DUP2 #0003 ADD2 STH2kr wcmp ?{
-			#0003 ADD2 scap/ GTH2k ?&>l
+			#0003 ADD2 scap/ GTH2k ?&>lfn
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
+@syms/find-addr ( addr* -- sym* )
+	LDA2 STH2
+	;&ptr LDA2 ;&mem
+	&>lfa ( -- )
+		DUP2 #0003 ADD2 scap/ LDA2 STH2kr SWP2 LTH2 ?{
+			#0003 ADD2 scap/ GTH2k ?&>lfa }
+	NIP2 POP2r JMP2r
+
 @syms/find-alloc ( name* -- <addr>* )
-	DUP2 /find INC2k ORA ?{
+	DUP2 /find-name INC2k ORA ?{
 		( null* -> ptr* ) POP2 ,&ptr LDR2
 		( alloc ) OVR2 .SymType/used #ffff /<push> }
 	NIP2 JMP2r
@@ -275,7 +283,7 @@
 		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
-		INC2k INC2 LDA2 ;&err STA2
+		DUP2 ;&err STA2
 		.System/state DEI ?{
 			/<resolve>
 			#0005 ADD2 GTH2k ?&>l }
@@ -350,7 +358,8 @@
 	( ) INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
-	[ LIT2 &err $2 ] #0003 ADD2 ;dict/Reference !<set-error>
+	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set-label>
+	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !<set-error>
 
 (
 @|Rom )
