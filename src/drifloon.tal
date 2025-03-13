@@ -14,15 +14,14 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;dict/reset scope/<set-label>
+	assembly/<new>
 	;on-console .Console/vector DEO2
 	BRK
 
 @on-console ( -> )
 	.Console/read DEI token/<push-byte>
 	[ LIT2 04 -Console/type ] DEI EQU ?{ BRK }
-	refs/<resolve-all>
-	.System/state DEI ?{ rom/<finish> }
+	assembly/<resolve>
 	BRK
 
 @rom/<finish> ( -- )

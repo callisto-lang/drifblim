@@ -1,5 +1,18 @@
 ( @|Core )
 
+@assembly/<new> ( -- )
+	;dict/reset !scope/<set>
+
+@assembly/<resolve> ( -- )
+	;token/mode LDA2 ;asm-comment NEQ2 ?{
+		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !<set-error> }
+	;token/mode LDA2 ;asm-macro NEQ2 ?{
+		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
+	.System/state DEI ?{
+		refs/<resolve-all>
+		.System/state DEI ?{ rom/<finish> } }
+	JMP2r
+
 @token/<new> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
 	[ LIT2 00 -&buf ] STZ
@@ -24,7 +37,7 @@
 	STZ2
 	JMP2r
 
-@scope/<set-label> ( str* -- )
+@scope/<set> ( name* -- )
 	[ LIT2 -&buf _&ptr ] STR
 	&>w ( -- )
 		LDAk [ LIT "/ ] EQU ?{
@@ -91,7 +104,7 @@
 @lib/ignore POP2 JMP2r
 	&padabs req-name refs/get-any !rom/<set-head>
 	&padrel req-name refs/get-any !rom/<set-head-rel>
-	&toplab req-name DUP2 scope/<set-label> !syms/<new>
+	&toplab req-name DUP2 scope/<set> !syms/<new>
 	&sublab INC2 scope/make-name !syms/<new>
 	&litrel #80 rom/<write-byte> &rawrel req-name refs/get-rb !rom/<write-byte>
 	&litzep #80 rom/<write-byte> &rawzep req-name refs/get-ab !rom/<write-byte>
@@ -277,19 +290,14 @@
 	JMP2r
 
 @refs/<resolve-all> ( -- )
-	;token/mode LDA2 ;asm-comment NEQ2 ?{
-		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !<set-error> }
-	;token/mode LDA2 ;asm-macro NEQ2 ?{
-		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
-		DUP2 ;&err STA2
-		.System/state DEI ?{
-			/<resolve>
-			#0005 ADD2 GTH2k ?&>l }
+		/<resolve>
+		#0005 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
 @refs/<resolve> ( addr* -- addr* )
+	DUP2 ;&err STA2
 	DUP2k #0004 ADD2 LDA
 	( | handlers )
 	DUP .RefType/ab EQU ?/<set-ab>
@@ -332,8 +340,8 @@
 	( value* ) /resolve-sym OVR2 LDA2 /get-distance
 	( >> )
 
-@refs/resolve ( ref* -- value* addr* )
-	( addr* ) SWP2 LDA2 ;rom/mem ADD2 JMP2r
+@refs/resolve ( addr* ref* -- value* addr* )
+	SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/get-ab ( label* -- addr )
 	.RefType/ab /get-type NIP JMP2r
@@ -358,7 +366,7 @@
 	( ) INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
-	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set-label>
+	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
 	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !<set-error>
 
 (

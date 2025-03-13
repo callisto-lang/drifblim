@@ -17,7 +17,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	;dict/reset scope/<set-label>
+	assembly/<new>
 	;src/on-console
 	( >> )
 
@@ -34,6 +34,7 @@
 		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
 		NIP STZ
 		BRK }
+	( | src -> dst )
 	;dst/on-console !bind
 
 @dst/on-console ( -> )
@@ -42,15 +43,10 @@
 		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
 		NIP STZ
 		BRK }
-	<assemble>
-	BRK
-
-@<assemble> ( -- )
+	( | assemble )
 	;src/buf <handle-file>
-	.System/state DEI ?{
-		refs/<resolve-all>
-		.System/state DEI ?{ rom/<finish> } }
-	JMP2r
+	assembly/<resolve>
+	BRK
 
 @lib/inctal INC2
 	( >> )
