@@ -10,11 +10,17 @@
 		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
 	.System/state DEI ?{
 		refs/<resolve-all>
-		.System/state DEI ?{
-			syms/<summary>
-			[ LIT2 80 -System/state ] DEO
-			rom/<finish> } }
+		.System/state DEI ?{ rom/<emit> } }
 	JMP2r
+
+@assembly/<finish> ( name* -- length* )
+	syms/<summary>
+	[ LIT2 80 -System/state ] DEO
+	;dict/assembled <pstr>
+	<pstr>
+	;dict/in <pstr>
+	[ LIT2 &length $2 ] DUP2 #0100 SUB2 <pdec>
+	;dict/bytes !<pstr>
 
 @token/<new> ( -- )
 	[ LIT2 -&buf _&ptr ] STR
@@ -216,7 +222,6 @@
 	NIP2 JMP2r
 
 @syms/<push> ( name* type addr* -- )
-	[ LIT2 &count $2 ] INC2 ,&count STR2
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
@@ -440,7 +445,7 @@
 	/get-head
 	( ) OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing token/<error> }
-	;&length STA2
+	;assembly/length STA2
 	JMP2r
 
 (
@@ -533,7 +538,7 @@
 		[ LIT2 ": 19 ] DEO
 		#2019 DEO
 		<pstr>
-		;dict/in <pstr>/
+		;dict/-in <pstr>/
 		;scope/buf <pstr>/
 		#0a19 DEO
 		[ LIT2 01 -System/state ] DEO
@@ -547,7 +552,7 @@
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	"BRK ] $1
 
-@dict/assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
+@dict/assembled "Assembled 20 $1 &bytes 20 "bytes. 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&References "References $1
 	&Reference "Reference $1
