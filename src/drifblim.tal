@@ -69,7 +69,7 @@
 	;dict/assembled <pstr>
 	;dst/buf <pstr>/
 	;dict/in <pstr>
-	[ LIT2 &length $2 ] DUP2 #0100 SUB2 <pdec>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
 	;syms/count LDA2 <pdec>
 	;dict/labels <pstr>
@@ -94,7 +94,7 @@
 	( name ) "Drifblim 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "12 20 "Mar 20 "2025 $2
+	( date ) "13 20 "Mar 20 "2025 $2
 
 ~src/core.tal
 

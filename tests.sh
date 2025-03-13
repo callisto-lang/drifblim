@@ -11,6 +11,9 @@ $asm
 echo "usage: drifblim.rom in.tal out.rom"
 $asm examples/hello.tal
 
+echo "" && echo "@Scope" | $as > bin/res.tal
+echo "Assembled in 0 bytes."
+
 echo "" && echo "Token ----------------------------------------------"
 
 echo "" && echo "@scope ; @end" | $as > bin/res.tal
@@ -100,14 +103,14 @@ echo "Number invalid: #123g in scope"
 
 echo "" && echo "Macros ---------------------------------------------"
 
-echo "" && echo "%label { ADD } %label { SUB }" | $as > bin/res.tal
-echo "Macro duplicate: label"
+echo "" && echo "@scope %label { ADD } %label { SUB }" | $as > bin/res.tal
+echo "Macro duplicate: %label in scope"
 
-echo "" && echo "%label #1234" | $as > bin/res.tal
-echo "Macro open: label"
+echo "" && echo "@scope %label #1234" | $as > bin/res.tal
+echo "Macro open: .. in scope"
 
-echo "" && echo "%scope { BRK @end" | $as > bin/res.tal
-echo "Macro invalid: label"
+echo "" && echo "@scope %test { BRK @end" | $as > bin/res.tal
+echo "Macro open: .. in scope"
 
 echo "" && echo "References -----------------------------------------"
 
@@ -131,5 +134,4 @@ echo "Reference too far: next in scope"
 
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
 echo "Reference too far: back in scope"
-
 
