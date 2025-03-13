@@ -66,21 +66,17 @@
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
 @rom/<finish> ( -- )
-	( +length ) [ LIT2 &length $2 ]
-	( +labels ) syms/<summary>
 	;dict/assembled <pstr>
 	;dst/buf <pstr>/
 	;dict/in <pstr>
-	OVR2 #0100 SUB2 <pdec>
+	[ LIT2 &length $2 ] DUP2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
-	( -labels ) <pdec>
+	;syms/count LDA2 <pdec>
 	;dict/labels <pstr>
 	( | export )
 	;dst/buf .File/name DEO2
-	( -length ) #0100 SUB2 .File/length DEO2
+	#0100 SUB2 .File/length DEO2
 	;&output .File/write DEO2
-	( | success )
-	[ LIT2 80 -System/state ] DEO
 	JMP2r
 
 @runes/lut [

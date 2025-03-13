@@ -25,21 +25,17 @@
 	BRK
 
 @rom/<finish> ( -- )
-	( +length ) [ LIT2 &length $2 ]
-	( +labels ) syms/<summary>
 	;dict/assembled <pstr>
-	;rom/length LDA2 #0100 SUB2 <pdec>
+	[ LIT2 &length $2 ] DUP2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
-	( -labels ) <pdec>
+	;syms/count LDA2 <pdec>
 	;dict/labels <pstr>
 	( | output )
-	( -length ) ;rom/mem ADD2 ;rom/output
+	;rom/mem ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
 	POP2 POP2
-	( | success )
-	[ LIT2 80 -System/state ] DEO
 	JMP2r
 
 @runes/lut [
