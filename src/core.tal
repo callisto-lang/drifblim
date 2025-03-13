@@ -19,7 +19,7 @@
 	;dict/assembled <pstr>
 	<pstr>
 	;dict/in <pstr>
-	[ LIT2 &length $2 ] DUP2 #0100 SUB2 <pdec>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
 	;dict/bytes !<pstr>
 
 @token/<new> ( -- )

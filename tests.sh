@@ -11,6 +11,9 @@ $asm
 echo "usage: drifblim.rom in.tal out.rom"
 $asm examples/hello.tal
 
+echo "" && echo "@Scope" | $as > bin/res.tal
+echo "Assembled in 0 bytes."
+
 echo "" && echo "Token ----------------------------------------------"
 
 echo "" && echo "@scope ; @end" | $as > bin/res.tal
@@ -131,5 +134,6 @@ echo "Reference too far: next in scope"
 
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
 echo "Reference too far: back in scope"
+
 
 
