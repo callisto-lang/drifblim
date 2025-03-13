@@ -1,6 +1,6 @@
 ( @|Core )
 
-@assembly/<new> ( -- )
+@assembly/<start> ( -- )
 	;dict/reset !scope/<set>
 
 @assembly/<resolve> ( -- )

@@ -17,7 +17,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	assembly/<new>
+	assembly/<start>
 	;src/on-console
 	( >> )
 
