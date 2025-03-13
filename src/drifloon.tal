@@ -14,7 +14,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	assembly/<start>
+	assembly/<new>
 	;on-console .Console/vector DEO2
 	BRK
 
@@ -24,9 +24,14 @@
 	assembly/<resolve>
 	BRK
 
-@rom/<emit> ( -- )
-	#ffff assembly/<finish>
-	;&mem ADD2 ;&output
+@rom/<finish> ( -- )
+	;dict/assembled <pstr>
+	[ LIT2 &length $2 ] DUP2 #0100 SUB2 <pdec>
+	;dict/bytes <pstr>
+	;syms/count LDA2 <pdec>
+	;dict/labels <pstr>
+	( | output )
+	;rom/mem ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l
@@ -39,8 +44,6 @@
 	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
 	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
 	5b =lib/ignore 5d =lib/ignore "} =lib/lambda ] $1
-
-@dict/-in 20 &in "in 20 $1
 
 @meta $1
 	( name ) "Drifloon 0a
