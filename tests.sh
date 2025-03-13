@@ -100,14 +100,14 @@ echo "Number invalid: #123g in scope"
 
 echo "" && echo "Macros ---------------------------------------------"
 
-echo "" && echo "%label { ADD } %label { SUB }" | $as > bin/res.tal
-echo "Macro duplicate: label"
+echo "" && echo "@scope %label { ADD } %label { SUB }" | $as > bin/res.tal
+echo "Macro duplicate: %label in scope"
 
-echo "" && echo "%label #1234" | $as > bin/res.tal
-echo "Macro open: label"
+echo "" && echo "@scope %label #1234" | $as > bin/res.tal
+echo "Macro open: .. in scope"
 
-echo "" && echo "%scope { BRK @end" | $as > bin/res.tal
-echo "Macro invalid: label"
+echo "" && echo "@scope %test { BRK @end" | $as > bin/res.tal
+echo "Macro open: .. in scope"
 
 echo "" && echo "References -----------------------------------------"
 
