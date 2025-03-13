@@ -26,7 +26,7 @@
 
 @rom/<emit> ( -- )
 	#ffff assembly/<finish>
-	;rom/mem ADD2 ;rom/output
+	;&mem ADD2 ;&output
 	&>l ( -- )
 		LDAk #18 DEO
 		INC2 GTH2k ?&>l

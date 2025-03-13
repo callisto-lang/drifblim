@@ -69,7 +69,7 @@
 	;dst/buf DUP2 assembly/<finish>
 	.File/name DEO2
 	#0100 SUB2 .File/length DEO2
-	;rom/output .File/write DEO2
+	;&output .File/write DEO2
 	JMP2r
 
 @runes/lut [
