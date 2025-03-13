@@ -14,7 +14,7 @@
 
 @on-reset ( -> )
 	;meta #06 DEO2
-	assembly/<new>
+	;dict/reset scope/<set>
 	;on-console .Console/vector DEO2
 	BRK
 
@@ -24,13 +24,12 @@
 	assembly/<resolve>
 	BRK
 
-@rom/<finish> ( -- )
+@rom/<emit> ( length* -- )
 	;dict/assembled <pstr>
+	;dict/in <pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
 	;dict/bytes <pstr>
-	;syms/count LDA2 <pdec>
-	;dict/labels <pstr>
-	( | output )
+	( | write )
 	;rom/mem ADD2 ;rom/output
 	&>l ( -- )
 		LDAk #18 DEO

@@ -1,8 +1,5 @@
 ( @|Core )
 
-@assembly/<new> ( -- )
-	;dict/reset !scope/<set>
-
 @assembly/<resolve> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
 		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !<set-error> }
@@ -11,9 +8,7 @@
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
-			syms/<summary>
-			[ LIT2 80 -System/state ] DEO
-			rom/<finish> } }
+			[ LIT2 80 -System/state ] DEO !syms/<emit> } }
 	JMP2r
 
 @token/<new> ( -- )
@@ -243,7 +238,7 @@
 	/<push-string>
 	( ! ) ;dict/invalid ;dict/Symbol !token/<error>
 
-@syms/<summary> ( -- )
+@syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
 	&>ls ( -- )
 		( used ) INC2k INC2 LDA .SymType/used AND ?{
@@ -253,7 +248,7 @@
 				#0a19 DEO }
 			POP2 }
 		#0003 ADD2 scap/ GTH2k ?&>ls
-	POP2 POP2 JMP2r
+	POP2 POP2 !rom/<emit>
 
 (
 @|References )
@@ -547,7 +542,7 @@
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
 	"BRK ] $1
 
-@dict/assembled "Assembled 20 $1 &in 20 "in 20 $1 &bytes 20 "bytes( $1 &labels 20 "labels). 0a $1
+@dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
 	&unused "-- 20 "Unused: 20 $1
 	&References "References $1
 	&Reference "Reference $1
