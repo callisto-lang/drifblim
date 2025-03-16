@@ -44,6 +44,9 @@
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
 	( date ) "16 20 "Mar 20 "2025 $2
 
+(
+@|src )
+
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{
 		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
@@ -54,10 +57,27 @@
 	;dst/on-console !bind
 
 @src/<draw> ( -- )
-	#0010 .Screen/x DEO2
-	#0020 .Screen/y DEO2
+	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &y 001c ] .Screen/y DEO2
 	;dict/source ;dict/file-a #01 field/<draw-color>
 	JMP2r
+
+@src/hit ( x* y* -- x* y* )
+	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
+	JMP2r
+
+@src/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@src/on-mouse ( -> )
+	#0001 <phex>
+	#0a18 DEO
+	BRK
+
+(
+@|dst )
 
 @dst/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{
@@ -71,14 +91,35 @@
 	BRK
 
 @dst/<draw> ( -- )
-	#0010 .Screen/x DEO2
-	#0050 .Screen/y DEO2
+	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &y 0050 ] .Screen/y DEO2
 	;dict/result ;dict/file-b #06 field/<draw-color>
+	JMP2r
+
+@dst/hit ( x* y* -- x* y* )
+	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
+	JMP2r
+
+@dst/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	JMP2r
+
+@dst/on-mouse ( -> )
+	#0002 <phex>
+	#0a18 DEO
+	BRK
+
+(
+@|assemble )
+
+@assemble/hit ( x* y* -- x* y* )
 	JMP2r
 
 @on-mouse ( -> )
 	cursor/<update>
-	BRK
+	.Mouse/state DEI ?{ BRK }
+	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit assemble/hit BRK
 
 @lib/inctal INC2
 	( >> )
@@ -141,6 +182,7 @@
 @dict/file-b "Write 20 "output 20 "file: $1
 
 @dict/space-left "49212 20 "bytes 20 "free. $1
+
 @dict/warnings "Ready. $1
 
 @<redraw-all> ( -- )
@@ -236,6 +278,14 @@
 	&core-icn [
 	0000 0000 ff00 ff00 0000 0000 0000 0000
 	0000 0000 0000 0000 00ff 00ff 0000 0000 ]
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+	DUP #04 SFT /c
+	&c ( byte -: )
+	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+	JMP2r
 
 ~src/drif.util.tal
 
