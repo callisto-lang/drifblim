@@ -59,7 +59,7 @@
 @src/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 001c ] .Screen/y DEO2
-	;dict/source ;dict/file-a #01 field/<draw-color>
+	;dict/source ;dict/file-a /color field/<draw-color>
 	JMP2r
 
 @src/hit ( x* y* -- x* y* )
@@ -68,13 +68,16 @@
 	JMP2r
 
 @src/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEO2
-	JMP2r
+	;&on-mouse .Mouse/vector DEO2 !/<draw>
 
 @src/on-mouse ( -> )
 	#0001 <phex>
 	#0a18 DEO
 	BRK
+
+@src/color ( -- color )
+	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
+	#06 JMP2r
 
 (
 @|dst )
@@ -93,7 +96,7 @@
 @dst/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 0050 ] .Screen/y DEO2
-	;dict/result ;dict/file-b #06 field/<draw-color>
+	;dict/result ;dict/file-b /color field/<draw-color>
 	JMP2r
 
 @dst/hit ( x* y* -- x* y* )
@@ -102,13 +105,16 @@
 	JMP2r
 
 @dst/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEO2
-	JMP2r
+	;&on-mouse .Mouse/vector DEO2 !/<draw>
 
 @dst/on-mouse ( -> )
 	#0002 <phex>
 	#0a18 DEO
 	BRK
+
+@dst/color ( -- color )
+	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
+	#06 JMP2r
 
 (
 @|assemble )
