@@ -55,7 +55,7 @@ bin/drifblim.rom: src/drifblim.tal src/core.tal
 	@ mkdir -p bin
 	@ ${ASM} src/drifblim.tal bin/drifblim.rom
 
-bin/drif.rom: src/drif.tal src/core.tal
+bin/drif.rom: src/drif.tal src/drif.util.tal src/core.tal
 	@ printf "Assemble drif.rom\n"
 	@ mkdir -p bin
 	@ ${ASM} src/drif.tal bin/drif.rom
