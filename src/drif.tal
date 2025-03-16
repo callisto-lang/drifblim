@@ -27,7 +27,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	#0180 #00c0 window/<set-size>
+	#0180 #00e8 window/<set-size>
 	;on-mouse .Mouse/vector DEO2
 	;dict/reset scope/<set>
 	<redraw-all>
@@ -56,7 +56,7 @@
 @src/<draw> ( -- )
 	#0010 .Screen/x DEO2
 	#0020 .Screen/y DEO2
-	;dict/source #01 field/<draw-color>
+	;dict/source ;dict/file-a #01 field/<draw-color>
 	JMP2r
 
 @dst/on-console ( -> )
@@ -73,7 +73,7 @@
 @dst/<draw> ( -- )
 	#0010 .Screen/x DEO2
 	#0050 .Screen/y DEO2
-	;dict/result #06 field/<draw-color>
+	;dict/result ;dict/file-b #06 field/<draw-color>
 	JMP2r
 
 @on-mouse ( -> )
@@ -136,14 +136,35 @@
 
 @dict/assemble "Assemble $1
 
+@dict/file-a "Read 20 "source 20 "file: $1
+
+@dict/file-b "Write 20 "output 20 "file: $1
+
+@dict/space-left "49212 20 "bytes 20 "free. $1
+@dict/warnings "Ready. $1
+
 @<redraw-all> ( -- )
 	header/<draw>
 	src/<draw>
 	dst/<draw>
 	#0010 .Screen/x DEO2
-	#0080 .Screen/y DEO2
+	#0088 .Screen/y DEO2
 	;dict/assemble button/<draw>
+	( | labels )
+	#00a8 .Screen/x DEO2
+	#0090 .Screen/y DEO2
+	;dict/space-left #01 chicago/<draw-left-color>
+	( | line )
+	#0000 .Screen/x DEO2
+	#00b8 .Screen/y DEO2
+	#01d0 ;dashhor-icn #01 <draw-times>
+	( | warnings )
+	#0010 .Screen/x DEO2
+	#00c8 .Screen/y DEO2
+	;dict/warnings #01 chicago/<draw-left-color>
 	JMP2r
+
+@dashhor-icn [ ee00 0000 0000 0000 ]
 
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
@@ -170,7 +191,11 @@
 	,&color STR
 	( >> )
 
-@field/<draw> ( src* -- )
+@field/<draw> ( src* label* -- )
+	[ LITr -Screen/x ] DEI2r #01 chicago/<draw-left-color>
+	[ LITr -Screen/x ] DEO2r
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	( | frame )
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
@@ -178,15 +203,15 @@
 	;&edge-icn .Screen/addr DEO2
 	[ LIT2 11 -Screen/sprite ] DEO
 	( | content )
-	.Screen/x DEI2k #00b8 SUB2 ROT DEO2
+	.Screen/x DEI2k #00bb SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
 	[ LIT &color $1 ] chicago/<draw-left-color>
 	JMP2r
 
 @field
 	&edge-icn [
-	0000 0000 0f0f 0c0c 0c0c 0c0c 0c0c 0c0c
-	0c0c 0c0c 0c0c 0c0c 0c0c 0f0f 0000 0000 ]
+	0000 0000 3f7f 6060 6060 6060 6060 6060
+	6060 6060 6060 6060 6060 7f3f 0000 0000 ]
 	&core-icn [
 	0000 0000 ffff 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 ffff 0000 0000 ]
@@ -206,8 +231,8 @@
 
 @button
 	&edge-icn [
-	0000 0000 0304 090a 0a0a 0a0a 0a0a 0a0a
-	0a0a 0a0a 0a0a 0a0a 0a09 0403 0000 0000 ]
+	0000 0000 1f20 4f50 5050 5050 5050 5050
+	5050 5050 5050 5050 504f 201f 0000 0000 ]
 	&core-icn [
 	0000 0000 ff00 ff00 0000 0000 0000 0000
 	0000 0000 0000 0000 00ff 00ff 0000 0000 ]
