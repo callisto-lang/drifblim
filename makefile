@@ -7,6 +7,8 @@ all: bin/drifloon.rom bin/drifblim.rom
 
 run: drifblim drifloon
 
+drif: bin/drif.rom
+	@ uxn11 bin/drif.rom
 drifblim: bin/drifblim.rom
 	@ printf "\nDrifblim Bootstrap\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom
@@ -49,9 +51,14 @@ bin/drifloon.rom: src/drifloon.tal src/core.tal
 	@ ${ASM} bin/drifloon.tal bin/drifloon.rom
 
 bin/drifblim.rom: src/drifblim.tal src/core.tal
-	@ printf "Assemble drifblim.com\n"
+	@ printf "Assemble drifblim.rom\n"
 	@ mkdir -p bin
 	@ ${ASM} src/drifblim.tal bin/drifblim.rom
+
+bin/drif.rom: src/drif.tal src/core.tal
+	@ printf "Assemble drif.rom\n"
+	@ mkdir -p bin
+	@ ${ASM} src/drif.tal bin/drif.rom
 
 bin/hx.rom: etc/hx.tal
 	@ mkdir -p bin
