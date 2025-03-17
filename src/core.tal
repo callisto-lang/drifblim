@@ -244,7 +244,7 @@
 			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
 				;dict/unused err/<pstr>
 				DUP2 err/<pstr>
-				#0a err/<emit> }
+				#0a err/<pchr> }
 			POP2 }
 		#0003 ADD2 scap/ GTH2k ?&>ls
 	POP2 POP2 !rom/<emit>
@@ -490,21 +490,21 @@
 @err/<set> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
 		/<pstr>
-		#20 /<emit>
+		#20 /<pchr>
 		SWP2 /<pstr>
-		[ LIT ": ] /<emit>
-		#20 /<emit>
+		[ LIT ": ] /<pchr>
+		#20 /<pchr>
 		/<pstr>
 		;dict/in /<pstr>
 		;scope/buf /<pstr>
-		#0a /<emit>
+		#0a /<pchr>
 		[ LIT2 01 -System/state ] DEO
 		JMP2r }
 	POP2 POP2 POP2 JMP2r
 
 @err/<pstr> ( str* -- )
 	&>l LDAk DUP ?{ POP POP2 JMP2r }
-		/<emit>
+		/<pchr>
 		INC2 !&>l
 
 @err/<pdec> ( short* -- )
@@ -513,7 +513,7 @@
 		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
 	POP2
 	&>write ( -- )
-		NIP #30 ADD /<emit>
+		NIP #30 ADD /<pchr>
 		OVRr ADDr STHkr ?&>write
 	POP2r JMP2r
 

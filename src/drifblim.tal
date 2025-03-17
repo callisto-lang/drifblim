@@ -48,7 +48,7 @@
 	assembly/<resolve>
 	BRK
 
-@err/<emit> ( c -- )
+@err/<pchr> ( c -- )
 	#19 DEO JMP2r
 
 @lib/inctal INC2
@@ -70,7 +70,7 @@
 
 @rom/<emit> ( length* -- )
 	;dict/assembled err/<pstr>
-	#20 err/<emit>
+	#20 err/<pchr>
 	;dst/buf err/<pstr>
 	;dict/in err/<pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>

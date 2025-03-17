@@ -37,7 +37,7 @@
 	POP2 POP2
 	JMP2r
 
-@err/<emit> ( c -- )
+@err/<pchr> ( c -- )
 	#19 DEO JMP2r
 
 @runes/lut [

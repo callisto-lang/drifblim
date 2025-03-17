@@ -264,7 +264,7 @@
 	#000f DEO
 	JMP2r
 
-@err/<emit> ( c -- )
+@err/<pchr> ( c -- )
 	DUP #0a EQU ?/<emit-lb>
 	!chicago/<draw-char>
 
@@ -291,12 +291,12 @@
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
 @rom/<emit> ( length* -- )
-	;dict/assembled <pstr>
-	#20 err/<emit>
-	;dst/buf <pstr>
-	;dict/in <pstr>
+	;dict/assembled err/<pstr>
+	#20 err/<pchr>
+	;dst/buf err/<pstr>
+	;dict/in err/<pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
-	;dict/bytes <pstr>
+	;dict/bytes err/<pstr>
 	( | write )
 	;dst/buf .File/name DEO2
 	#0100 SUB2 .File/length DEO2
