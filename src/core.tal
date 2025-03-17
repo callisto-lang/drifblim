@@ -492,8 +492,7 @@
 		/<pstr>
 		#20 /<pchr>
 		SWP2 /<pstr>
-		[ LIT ": ] /<pchr>
-		#20 /<pchr>
+		;dict/spacer /<pstr>
 		/<pstr>
 		;dict/in /<pstr>
 		;scope/buf /<pstr>
@@ -545,7 +544,8 @@
 	"BRK ] $1
 
 @dict/assembled "Assembled $1 &in 20 "in 20 $1 &bytes 20 "bytes. 0a $1
-	&unused "-- 20 "Unused: 20 $1
+	&unused "-- 20 "Unused
+	&spacer ": 20 $1
 	&References "References $1
 	&Reference "Reference $1
 	&Writing "Writing $1
