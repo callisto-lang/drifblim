@@ -86,13 +86,16 @@
 	POP dst/<trap>
 	BRK
 
+@src/inactive ( -- f )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
+
 @src/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
 		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
 	JMP2r
 
 @src/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	/inactive ?{ JMP2r }
 	;&on-console .Console/vector DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
@@ -100,15 +103,11 @@
 @src/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 001c ] .Screen/y DEO2
-	;&on-mouse .Mouse/vector DEI2 EQU2 ?{
-		.&buf ;&ptr LDA NEQ ?{
-			( placeholder ) ;&placeholder ;dict/file-a #02 !field/<draw-color> } }
-	;&buf ;dict/file-a /color field/<draw-color>
-	#2001 !chicago/<draw-char-color>
-
-@src/color ( -- color )
-	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
-	#06 JMP2r
+	/inactive ?{
+		;&buf ;dict/file-a #01 field/<draw-color>
+		[ LIT "| ] #01 !chicago/<draw-char-color> }
+	.&buf ;&ptr LDA EQU ?{ ;&buf ;dict/file-a #01 !field/<draw-color> }
+	;&placeholder ;dict/file-a #02 !field/<draw-color>
 
 	&placeholder "source.tal $1
 
@@ -152,13 +151,16 @@
 	POP asm/<trap>
 	BRK
 
+@dst/inactive ( -- f )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
+
 @dst/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
 		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
 	JMP2r
 
 @dst/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	/inactive ?{ JMP2r }
 	;&on-console .Console/vector DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
@@ -166,15 +168,11 @@
 @dst/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 0050 ] .Screen/y DEO2
-	;&on-mouse .Mouse/vector DEI2 EQU2 ?{
-		.&buf ;&ptr LDA NEQ ?{
-			( placeholder ) ;&placeholder ;dict/file-b #02 !field/<draw-color> } }
-	;&buf ;dict/file-b /color field/<draw-color>
-	#2001 !chicago/<draw-char-color>
-
-@dst/color ( -- color )
-	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
-	#06 JMP2r
+	/inactive ?{
+		;&buf ;dict/file-a #01 field/<draw-color>
+		[ LIT "| ] #01 !chicago/<draw-char-color> }
+	.&buf ;&ptr LDA EQU ?{ ;&buf ;dict/file-a #01 !field/<draw-color> }
+	;&placeholder ;dict/file-a #02 !field/<draw-color>
 
 	&placeholder "result.rom $1
 
@@ -182,7 +180,7 @@
 @|assemble )
 
 @asm/<trap> ( -- )
-	BRK
+	JMP2r
 
 @assemble/hit ( x* y* -- x* y* )
 	JMP2r
