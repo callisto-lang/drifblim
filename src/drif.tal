@@ -53,19 +53,39 @@
 @|src )
 
 @src/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{
-		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
-		NIP STZ
-		BRK }
-	( | src -> dst )
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI !/on-push }
 	;dst/on-console !bind
 
-@src/<draw> ( -- )
-	[ LIT2 &x 0010 ] .Screen/x DEO2
-	[ LIT2 &y 001c ] .Screen/y DEO2
-	;dict/source ;dict/file-a /color field/<draw-color>
-	JMP2r
+@src/on-mouse ( -> )
+	cursor/<update-trap>
+	BRK
+
+@src/on-button ( -> )
+	.Controller/key DEI
+	( >> )
+
+@src/on-push ( c -> )
+	DUP ?{ POP BRK }
+	DUP #0d EQU ?/on-done
+	DUP #08 EQU ?/on-pop
+	[ LIT2 -&cap &ptr -&buf ]
+	( clamp ) NEQk ?{ POP POP2 BRK }
+	INCk ,&ptr STR
+	NIP STZ
+	/<draw>
+	BRK
+
+@src/on-pop ( c -> )
+	POP [ LIT2 00 _&ptr ] LDR
+	( clamp ) DUP .&buf NEQ ?{ POP2 BRK }
+	#01 SUB DUP ,&ptr STR
+	STZ
+	/<draw>
+	BRK
+
+@src/on-done ( c -> )
+	POP dst/<trap>
+	BRK
 
 @src/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
@@ -73,11 +93,16 @@
 	JMP2r
 
 @src/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEO2 !<redraw>
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2 !<redraw>
 
-@src/on-mouse ( -> )
-	cursor/<update>
-	BRK
+@src/<draw> ( -- )
+	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &y 001c ] .Screen/y DEO2
+	;&buf ;dict/file-a /color field/<draw-color>
+	#01 ;chicago/color STA
+	#20 chicago/<draw-char>
+	JMP2r
 
 @src/color ( -- color )
 	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
@@ -109,10 +134,14 @@
 	JMP2r
 
 @dst/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEO2 !<redraw>
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2 !<redraw>
 
 @dst/on-mouse ( -> )
 	cursor/<update>
+	BRK
+
+@dst/on-button ( -> )
 	BRK
 
 @dst/color ( -- color )
