@@ -191,9 +191,13 @@
 
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
+	,&enabled LDR ?{ JMP2r }
 	#02 /<set-state>
 	;&on-mouse .Mouse/vector DEO2
-	;&on-button .Controller/vector DEO2 !<redraw>
+	;&on-button .Controller/vector DEO2
+	( | Let's go! )
+	;src/buf <handle-file>
+	assembly/<resolve> !<redraw>
 
 @asm/<validate> ( -- )
 	( src ) #00 .src/buf LDZ NEQ
@@ -243,7 +247,7 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/invalid ;src/buf ;dict/File <set-error> }
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/file <set-error> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
@@ -272,16 +276,6 @@
 	"# =lib/lithex "" =lib/rawstr
 	"} =lib/lambda "~ =lib/inctal
 	5b =lib/ignore 5d =lib/ignore ] $1
-
-@dict/File "File $1
-
-@dict/drifloon "Drifloon $1
-
-@dict/assemble "Assemble $1
-
-@dict/space-left "49212 20 "bytes 20 "free. $1
-
-@dict/warnings "Ready. $1
 
 @<redraw-all> ( -- )
 	header/<draw>
@@ -376,11 +370,13 @@
 	0000 0000 030c 0020 0000 0000 0000 0000
 	2040 0040 4040 0040 0000 0000 0000 0000
 	4000 4040 4000 4020 0000 0000 0000 0000
-	2000 0c03 0000 0000 0000 0000 0000 0000 ] [
+	2000 0c03 0000 0000 0000 0000 0000 0000 ]
+	( active ) [
 	0000 0000 030c 1126 0000 0000 0003 0e19
 	2848 5050 5050 5050 1737 2f2f 2f2f 2f2f
 	5050 5050 5050 4828 2f2f 2f2f 2f2f 3717
-	2611 0c03 0000 0000 190e 0300 0000 0000 ] [
+	2611 0c03 0000 0000 190e 0300 0000 0000 ]
+	( down ) [
 	0000 0000 030c 1126 0000 0000 0000 0001
 	2848 5050 5050 5050 0707 0f0f 0f0f 0f0f
 	5050 5050 5050 4828 0f0f 0f0f 0f0f 0707
@@ -389,11 +385,13 @@
 	0000 0000 7700 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0077 0000 0000 0000 0000 0000 0000 ] [
+	0000 0077 0000 0000 0000 0000 0000 0000 ]
+	( active ) [
 	0000 0000 ff00 ff00 0000 0000 00ff 00ff
 	0000 0000 0000 0000 ffff ffff ffff ffff
 	0000 0000 0000 0000 ffff ffff ffff ffff
-	00ff 00ff 0000 0000 ff00 ff00 0000 0000 ] [
+	00ff 00ff 0000 0000 ff00 ff00 0000 0000 ]
+	( down ) [
 	0000 0000 ff00 ff00 0000 0000 0000 00ff
 	0000 0000 0000 0000 ffff ffff ffff ffff
 	0000 0000 0000 0000 ffff ffff ffff ffff
@@ -406,6 +404,12 @@
 	&c ( byte -: )
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
+
+@dict/drifloon "Drifloon $1
+	&file "File $1
+	&assemble "Assemble $1
+	&space-left "49212 20 "bytes 20 "free. $1
+	&warnings "Ready. $1
 
 ~src/drif.util.tal
 
