@@ -74,16 +74,16 @@
 	/<validate>
 	BRK
 
+@src/on-done ( c -> )
+	POP dst/<trap>
+	BRK
+
 @src/on-pop ( c -> )
 	POP #00 [ LIT2 -&buf _&ptr ] LDR
 	( clamp ) NEQk ?{ POP2 BRK }
 	#01 SUB DUP ,&ptr STR
 	NIP STZ
 	/<validate>
-	BRK
-
-@src/on-done ( c -> )
-	POP dst/<trap>
 	BRK
 
 @src/inactive ( -- f )
@@ -144,16 +144,16 @@
 	/<validate>
 	BRK
 
+@dst/on-done ( c -> )
+	POP asm/<trap>
+	BRK
+
 @dst/on-pop ( c -> )
 	POP #00 [ LIT2 -&buf _&ptr ] LDR
 	( clamp ) NEQk ?{ POP2 BRK }
 	#01 SUB DUP ,&ptr STR
 	NIP STZ
 	/<validate>
-	BRK
-
-@dst/on-done ( c -> )
-	POP asm/<trap>
 	BRK
 
 @dst/inactive ( -- f )
@@ -191,14 +191,14 @@
 
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
-	#02 /<set>
+	#02 /<set-state>
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
 
 @asm/<validate> ( -- )
 	( src ) #00 .src/buf LDZ NEQ
 	( dst ) #00 .dst/buf LDZ NEQ AND #03 MUL ,&enabled STR
-	#01 /<set>
+	#01 /<set-state>
 	( >> )
 
 @asm/<draw> ( -- )
@@ -206,7 +206,7 @@
 	[ LIT2 &y 0088 ] .Screen/y DEO2
 	;dict/assemble [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
 
-@asm/<set> ( state -- )
+@asm/<set-state> ( state -- )
 	DUP ,&state LDR NEQ ?{ POP JMP2r }
 	,&state STR !/<draw>
 
@@ -216,7 +216,7 @@
 @asm/on-mouse ( -> )
 	cursor/<update-trap>
 	.Mouse/state DEI ?on-mouse/check-hit
-	#01 /<set>
+	#01 /<set-state>
 	cursor/<refocus>
 	BRK
 
@@ -331,11 +331,8 @@
 (
 @|GUIs )
 
-@field/<draw-color> ( src* color -- )
-	,&color STR
-	( >> )
-
-@field/<draw> ( src* label* -- )
+@field/<draw-color> ( src* label* color -- )
+	STH
 	[ LITr -Screen/x ] DEI2r #01 chicago/<draw-left-color>
 	[ LITr -Screen/x ] DEO2r
 	.Screen/y DEI2k #0010 ADD2 ROT DEO2
@@ -349,7 +346,7 @@
 	( | content )
 	.Screen/x DEI2k #00bb SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
-	[ LIT &color $1 ] chicago/<draw-left-color>
+	STHr chicago/<draw-left-color>
 	JMP2r
 
 @field
