@@ -25,10 +25,10 @@
 	BRK
 
 @rom/<emit> ( length* -- )
-	;dict/assembled <pstr>
-	;dict/in <pstr>
-	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
-	;dict/bytes <pstr>
+	;dict/assembled err/<pstr>
+	;dict/in err/<pstr>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
+	;dict/bytes err/<pstr>
 	( | write )
 	;rom/mem ADD2 ;rom/output
 	&>l ( -- )

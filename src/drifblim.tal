@@ -24,7 +24,7 @@
 @bind ( vector* -> )
 	.Console/vector DEO2
 	[ LIT2 03 -Console/type ] DEI AND ?{
-		;dict/usage <pstr>
+		;dict/usage err/<pstr>
 		[ LIT2 01 -System/state ] DEO }
 	BRK
 
@@ -69,12 +69,12 @@
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
 @rom/<emit> ( length* -- )
-	;dict/assembled <pstr>
+	;dict/assembled err/<pstr>
 	#20 err/<emit>
-	;dst/buf <pstr>
-	;dict/in <pstr>
-	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
-	;dict/bytes <pstr>
+	;dst/buf err/<pstr>
+	;dict/in err/<pstr>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
+	;dict/bytes err/<pstr>
 	( | write )
 	;dst/buf .File/name DEO2
 	#0100 SUB2 .File/length DEO2

@@ -242,8 +242,8 @@
 	&>ls ( -- )
 		( used ) INC2k INC2 LDA .SymType/used AND ?{
 			( upper ) DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-				;dict/unused <pstr>
-				DUP2 <pstr>/
+				;dict/unused err/<pstr>
+				DUP2 err/<pstr>
 				#0a err/<emit> }
 			POP2 }
 		#0003 ADD2 scap/ GTH2k ?&>ls
@@ -484,38 +484,38 @@
 	LDA2k ROT2 LDA2k ROT2 EQU2 STH
 	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
-@<pstr> ( str* -- )
-	LDAk err/<emit>
-	INC2 & LDAk ?<pstr>
-	POP2 JMP2r
-
-@<pdec> ( short* -- )
-	[ LIT2r ff00 ]
-	&>read ( -- )
-		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
-	POP2
-	&>write ( -- )
-		NIP #30 ADD err/<emit>
-		OVRr ADDr STHkr ?&>write
-	POP2r JMP2r
-
 (
 @|Error )
 
 @err/<set> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
-		<pstr>
-		#20 err/<emit>
-		SWP2 <pstr>
-		[ LIT ": ] err/<emit>
-		#20 err/<emit>
-		<pstr>
-		;dict/in <pstr>/
-		;scope/buf <pstr>/
-		#0a err/<emit>
+		/<pstr>
+		#20 /<emit>
+		SWP2 /<pstr>
+		[ LIT ": ] /<emit>
+		#20 /<emit>
+		/<pstr>
+		;dict/in /<pstr>
+		;scope/buf /<pstr>
+		#0a /<emit>
 		[ LIT2 01 -System/state ] DEO
 		JMP2r }
 	POP2 POP2 POP2 JMP2r
+
+@err/<pstr> ( str* -- )
+	&>l LDAk DUP ?{ POP POP2 JMP2r }
+		/<emit>
+		INC2 !&>l
+
+@err/<pdec> ( short* -- )
+	[ LIT2r ff00 ]
+	&>read ( -- )
+		#000a DIV2k STH2k MUL2 SUB2 STH2r INCr ORAk ?&>read
+	POP2
+	&>write ( -- )
+		NIP #30 ADD /<emit>
+		OVRr ADDr STHkr ?&>write
+	POP2r JMP2r
 
 (
 @|Assets )

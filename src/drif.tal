@@ -295,7 +295,7 @@
 	#20 err/<emit>
 	;dst/buf <pstr>
 	;dict/in <pstr>
-	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
+	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
 	;dict/bytes <pstr>
 	( | write )
 	;dst/buf .File/name DEO2
