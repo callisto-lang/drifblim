@@ -240,6 +240,14 @@
 	#0008 .Screen/x DEO2
 	#001c .Screen/y DEO2
 	#09 ;chicago/color STA
+	( | initialize )
+	;lambda/mem #ffff ;lambda/mem SUB2 <mclr>
+	;lambda/mem ;lambda/ptr STA2
+	;refs/mem ;refs/ptr STA2
+	;macros/mem ;macros/ptr STA2
+	;syms/mem ;syms/ptr STA2
+	#0100 ;rom/head STA2
+	( | go )
 	;src/buf <handle-file>
 	assembly/<resolve>
 	#000f DEO
@@ -274,7 +282,7 @@
 
 @rom/<emit> ( length* -- )
 	;dict/assembled <pstr>
-	#2019 DEO
+	#20 err/<emit>
 	;dst/buf <pstr>
 	;dict/in <pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
@@ -310,8 +318,6 @@
 	#01d0 ;dotthor-icn #01 <draw-times>
 	asm/<draw>
 	JMP2r
-
-@dotthor-icn [ aa00 0000 0000 0000 ]
 
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
@@ -417,10 +423,19 @@
 	#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 	JMP2r
 
+@<mclr> ( src* len* -- )
+	,&length STR2
+	,&addr STR2
+	;&mmu .System/expansion DEO2
+	JMP2r
+	&mmu 00 &length $2 0000 &addr $2 00
+
 @dict/drifloon "Drifloon $1
 	&file "File $1
 	&assemble "Assemble $1
 	&ready "Ready. $1
+
+@dotthor-icn [ aa00 0000 0000 0000 ]
 
 ~src/drif.util.tal
 

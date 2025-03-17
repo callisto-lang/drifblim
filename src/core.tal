@@ -211,7 +211,6 @@
 	NIP2 JMP2r
 
 @syms/<push> ( name* type addr* -- )
-	[ LIT2 &count $2 ] INC2 ,&count STR2
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
@@ -572,11 +571,11 @@
 @refs/mem ( addr*, symbol*, RefType )
 	$1800 &mem-end
 
-@syms/mem ( addr*, SymType, body..00 )
-	$4800 &mem-end
-
 @macros/mem ( name..20, value..00 )
 	$1000 &mem-end
+
+@syms/mem ( addr*, SymType, body..00 )
+	$4800 &mem-end
 
 @rom/mem ( zeropage )
 	$100 &output

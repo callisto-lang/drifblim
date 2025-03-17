@@ -70,7 +70,7 @@
 
 @rom/<emit> ( length* -- )
 	;dict/assembled <pstr>
-	#2019 DEO
+	#20 err/<emit>
 	;dst/buf <pstr>
 	;dict/in <pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 <pdec>
