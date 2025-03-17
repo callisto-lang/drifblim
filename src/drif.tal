@@ -38,7 +38,7 @@
 	cursor/<update>
 	.Mouse/state DEI ?{ BRK }
 	&check-hit ( -> )
-	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit assemble/hit POP2 POP2 BRK
+	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit asm/hit POP2 POP2 BRK
 
 @meta $1
 	( name ) "Drif 0a
@@ -104,12 +104,13 @@
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 001c ] .Screen/y DEO2
 	/inactive ?{
-		;&buf ;dict/file-a #01 field/<draw-color>
+		;&buf ;&label #01 field/<draw-color>
 		[ LIT "| ] #01 !chicago/<draw-char-color> }
-	.&buf ;&ptr LDA EQU ?{ ;&buf ;dict/file-a #01 !field/<draw-color> }
-	;&placeholder ;dict/file-a #02 !field/<draw-color>
+	.&buf ;&ptr LDA EQU ?{ ;&buf ;&label #01 !field/<draw-color> }
+	;&placeholder ;&label #02 !field/<draw-color>
 
 	&placeholder "source.tal $1
+	&label "Read 20 "source 20 "file: $1
 
 (
 @|dst )
@@ -169,21 +170,45 @@
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 0050 ] .Screen/y DEO2
 	/inactive ?{
-		;&buf ;dict/file-a #01 field/<draw-color>
+		;&buf ;&label #01 field/<draw-color>
 		[ LIT "| ] #01 !chicago/<draw-char-color> }
-	.&buf ;&ptr LDA EQU ?{ ;&buf ;dict/file-a #01 !field/<draw-color> }
-	;&placeholder ;dict/file-a #02 !field/<draw-color>
+	.&buf ;&ptr LDA EQU ?{ ;&buf ;&label #01 !field/<draw-color> }
+	;&placeholder ;&label #02 !field/<draw-color>
 
 	&placeholder "result.rom $1
+	&label "Write 20 "output 20 "file: $1
 
 (
 @|assemble )
 
 @asm/<trap> ( -- )
+	/inactive ?{ JMP2r }
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2 !<redraw>
+
+@asm/<draw> ( -- )
+	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &y 0088 ] .Screen/y DEO2
+	;dict/assemble !button/<draw>
+
+@asm/inactive ( -- f )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
+
+@asm/on-mouse ( -> )
+	cursor/<update-trap>
+	.Mouse/state DEI ?on-mouse/check-hit
+	BRK
+
+@asm/on-button ( -> )
+	BRK
+
+@asm/hit ( x* y* -- x* y* )
+	DUP2 ,&y LDR2 #0004 ADD2 SUB2 #0014 GTH2 ?{
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
 	JMP2r
 
-@assemble/hit ( x* y* -- x* y* )
-	JMP2r
+(
+@|builtins )
 
 @lib/inctal INC2
 	( >> )
@@ -233,10 +258,6 @@
 
 @dict/assemble "Assemble $1
 
-@dict/file-a "Read 20 "source 20 "file: $1
-
-@dict/file-b "Write 20 "output 20 "file: $1
-
 @dict/space-left "49212 20 "bytes 20 "free. $1
 
 @dict/warnings "Ready. $1
@@ -248,9 +269,7 @@
 @<redraw> ( -- )
 	src/<draw>
 	dst/<draw>
-	#0010 .Screen/x DEO2
-	#0088 .Screen/y DEO2
-	;dict/assemble button/<draw>
+	asm/<draw>
 	( | labels )
 	#00a8 .Screen/x DEO2
 	#0090 .Screen/y DEO2
@@ -287,6 +306,9 @@
 	DEO2
 	DEOr
 	JMP2r
+
+(
+@|GUIs )
 
 @field/<draw-color> ( src* color -- )
 	,&color STR
