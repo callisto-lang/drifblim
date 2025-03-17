@@ -28,19 +28,16 @@
 	;meta #06 DEO2
 	theme/<load>
 	#0180 #00e8 window/<set-size>
-	;on-mouse .Mouse/vector DEO2
 	;dict/reset scope/<set>
+	;src/on-console .Console/vector DEO2
 	<redraw-all>
-	;src/on-console
-	( >> )
-
-@bind ( vector* -> )
-	.Console/vector DEO2
+	;on-mouse .Mouse/vector DEO2
 	BRK
 
 @on-mouse ( -> )
 	cursor/<update>
 	.Mouse/state DEI ?{ BRK }
+	&check-hit ( -> )
 	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit assemble/hit POP2 POP2 BRK
 
 @meta $1
@@ -54,10 +51,12 @@
 
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI !/on-push }
-	;dst/on-console !bind
+	dst/<trap>
+	BRK
 
 @src/on-mouse ( -> )
 	cursor/<update-trap>
+	.Mouse/state DEI ?on-mouse/check-hit
 	BRK
 
 @src/on-button ( -> )
@@ -76,10 +75,10 @@
 	BRK
 
 @src/on-pop ( c -> )
-	POP [ LIT2 00 _&ptr ] LDR
-	( clamp ) DUP .&buf NEQ ?{ POP2 BRK }
+	POP #00 [ LIT2 -&buf _&ptr ] LDR
+	( clamp ) NEQk ?{ POP2 BRK }
 	#01 SUB DUP ,&ptr STR
-	STZ
+	NIP STZ
 	/<draw>
 	BRK
 
@@ -93,40 +92,65 @@
 	JMP2r
 
 @src/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	;&on-console .Console/vector DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
 
 @src/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 001c ] .Screen/y DEO2
+	;&on-mouse .Mouse/vector DEI2 EQU2 ?{
+		.&buf ;&ptr LDA NEQ ?{
+			( placeholder ) ;&placeholder ;dict/file-a #02 !field/<draw-color> } }
 	;&buf ;dict/file-a /color field/<draw-color>
-	#01 ;chicago/color STA
-	#20 chicago/<draw-char>
-	JMP2r
+	#2001 !chicago/<draw-char-color>
 
 @src/color ( -- color )
 	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
 	#06 JMP2r
 
+	&placeholder "source.tal $1
+
 (
 @|dst )
 
 @dst/on-console ( -> )
-	[ LIT2 02 -Console/type ] DEI LTH ?{
-		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
-		NIP STZ
-		BRK }
-	( | assemble )
-	;src/buf <handle-file>
-	assembly/<resolve>
+	[ LIT2 02 -Console/type ] DEI LTH ?{ .Console/read DEI !/on-push }
+	asm/<trap>
 	BRK
 
-@dst/<draw> ( -- )
-	[ LIT2 &x 0010 ] .Screen/x DEO2
-	[ LIT2 &y 0050 ] .Screen/y DEO2
-	;dict/result ;dict/file-b /color field/<draw-color>
-	JMP2r
+@dst/on-mouse ( -> )
+	cursor/<update-trap>
+	.Mouse/state DEI ?on-mouse/check-hit
+	BRK
+
+@dst/on-button ( -> )
+	.Controller/key DEI
+	( >> )
+
+@dst/on-push ( c -> )
+	DUP ?{ POP BRK }
+	DUP #0d EQU ?/on-done
+	DUP #08 EQU ?/on-pop
+	[ LIT2 -&cap &ptr -&buf ]
+	( clamp ) NEQk ?{ POP POP2 BRK }
+	INCk ,&ptr STR
+	NIP STZ
+	/<draw>
+	BRK
+
+@dst/on-pop ( c -> )
+	POP #00 [ LIT2 -&buf _&ptr ] LDR
+	( clamp ) NEQk ?{ POP2 BRK }
+	#01 SUB DUP ,&ptr STR
+	NIP STZ
+	/<draw>
+	BRK
+
+@dst/on-done ( c -> )
+	POP asm/<trap>
+	BRK
 
 @dst/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
@@ -134,22 +158,31 @@
 	JMP2r
 
 @dst/<trap> ( -- )
+	;&on-mouse .Mouse/vector DEI2 NEQ2 ?{ JMP2r }
+	;&on-console .Console/vector DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
 
-@dst/on-mouse ( -> )
-	cursor/<update>
-	BRK
-
-@dst/on-button ( -> )
-	BRK
+@dst/<draw> ( -- )
+	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &y 0050 ] .Screen/y DEO2
+	;&on-mouse .Mouse/vector DEI2 EQU2 ?{
+		.&buf ;&ptr LDA NEQ ?{
+			( placeholder ) ;&placeholder ;dict/file-b #02 !field/<draw-color> } }
+	;&buf ;dict/file-b /color field/<draw-color>
+	#2001 !chicago/<draw-char-color>
 
 @dst/color ( -- color )
 	;&on-mouse .Mouse/vector DEI2 EQU2 ?{ #01 JMP2r }
 	#06 JMP2r
 
+	&placeholder "result.rom $1
+
 (
 @|assemble )
+
+@asm/<trap> ( -- )
+	BRK
 
 @assemble/hit ( x* y* -- x* y* )
 	JMP2r
@@ -196,17 +229,9 @@
 	"} =lib/lambda "~ =lib/inctal
 	5b =lib/ignore 5d =lib/ignore ] $1
 
-@dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
-
-@dict/Path "Path $1
-
 @dict/File "File $1
 
 @dict/drifloon "Drifloon $1
-
-@dict/source "source.tal $1
-
-@dict/result "result.rom $1
 
 @dict/assemble "Assemble $1
 

@@ -159,6 +159,9 @@
 	ADD2r [ LITr -Screen/x ] DEO2r
 	JMP2r
 
+@chicago/<draw-char-color> ( char color -- )
+		,&color STR ( >> )
+
 @chicago/<draw-char> ( char -- )
 	#00 SWP
 	( ) DUP2 #20 SUB #50 SFT2 ;&glyphs ADD2 .Screen/addr DEO2
