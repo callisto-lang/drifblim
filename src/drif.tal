@@ -183,13 +183,18 @@
 
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
+	#01 /<set>
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 0088 ] .Screen/y DEO2
-	;dict/assemble !button/<draw>
+	;dict/assemble [ LIT &state $1 ] !button/<draw>
+
+@asm/<set> ( state -- )
+	DUP ,&state LDR NEQ ?{ POP JMP2r }
+	,&state STR !/<draw>
 
 @asm/inactive ( -- f )
 	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
@@ -197,6 +202,8 @@
 @asm/on-mouse ( -> )
 	cursor/<update-trap>
 	.Mouse/state DEI ?on-mouse/check-hit
+	#00 /<set>
+	cursor/<refocus>
 	BRK
 
 @asm/on-button ( -> )
@@ -339,26 +346,39 @@
 	0000 0000 ffff 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 ffff 0000 0000 ]
 
-@button/<draw> ( name* -- )
+@button/<draw> ( name* state -- )
+	#00 SWP #60 SFT2 STH2
 	[ LIT2 35 -Screen/auto ] DEO
-	;&edge-icn .Screen/addr DEO2
-	[ LIT2 01 -Screen/sprite ] DEO
-	#01f0 ;&core-icn #35 <draw-times-addr>
-	;&edge-icn .Screen/addr DEO2
-	[ LIT2 11 -Screen/sprite ] DEO
+	;&edge-chr STH2kr ADD2 .Screen/addr DEO2
+	[ LIT2 81 -Screen/sprite ] DEO
+	#81f0 ;&core-chr STH2kr ADD2 #35 <draw-times-addr>
+	;&edge-chr STH2r ADD2 .Screen/addr DEO2
+	[ LIT2 91 -Screen/sprite ] DEO
 	( | content )
 	.Screen/x DEI2k #0038 SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
-	#01 chicago/<draw-center-color>
+	#05 chicago/<draw-center-color>
 	JMP2r
 
 @button
-	&edge-icn [
-	0000 0000 1f20 4f50 5050 5050 5050 5050
-	5050 5050 5050 5050 504f 201f 0000 0000 ]
-	&core-icn [
-	0000 0000 ff00 ff00 0000 0000 0000 0000
-	0000 0000 0000 0000 00ff 00ff 0000 0000 ]
+	&edge-chr [
+	0000 0000 030c 1126 0000 0000 0003 0e19
+	2848 5050 5050 5050 1737 2f2f 2f2f 2f2f
+	5050 5050 5050 4828 2f2f 2f2f 2f2f 3717
+	2611 0c03 0000 0000 190e 0300 0000 0000 ] [
+	0000 0000 030c 1126 0000 0000 0000 0001
+	2848 5050 5050 5050 0707 0f0f 0f0f 0f0f
+	5050 5050 5050 4828 0f0f 0f0f 0f0f 0707
+	2611 0c03 0000 0000 0100 0000 0000 0000 ]
+	&core-chr [
+	0000 0000 ff00 ff00 0000 0000 00ff 00ff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	00ff 00ff 0000 0000 ff00 ff00 0000 0000 ] [
+	0000 0000 ff00 ff00 0000 0000 0000 00ff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	0000 0000 0000 0000 ffff ffff ffff ffff
+	00ff 00ff 0000 0000 ff00 0000 0000 0000 ]
 
 @<phex> ( short* -: )
 	SWP /b
