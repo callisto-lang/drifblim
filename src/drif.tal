@@ -176,7 +176,7 @@
 
 @dst/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
-	[ LIT2 &y 0050 ] .Screen/y DEO2
+	[ LIT2 &y 0052 ] .Screen/y DEO2
 	/inactive ?{
 		;&buf ;&label #01 field/<draw-color>
 		[ LIT "| ] #01 !chicago/<draw-char-color> }
@@ -206,7 +206,7 @@
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0038 ] .Screen/x DEO2
-	[ LIT2 &y 0090 ] .Screen/y DEO2
+	[ LIT2 &y 0092 ] .Screen/y DEO2
 	;&label [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
 
 	&label "Assemble $1
@@ -247,14 +247,10 @@
 	( | bg )
 	#0000 .Screen/x DEO2
 	#0012 .Screen/y DEO2
-	[ LIT2 83 -Screen/pixel ] DEO
-	( | bg 2 )
-	#0000 .Screen/x DEO2
-	#00a0 .Screen/y DEO2
-	[ LIT2 80 -Screen/pixel ] DEO
+	#03e0 ;fill-icn #e1 <draw-times>
 	( | line )
 	#0000 .Screen/x DEO2
-	#00a0 .Screen/y DEO2
+	#0088 .Screen/y DEO2
 	#01d0 ;dotthor-icn #01 <draw-times>
 	asm/<draw>
 	( | text )
@@ -327,10 +323,6 @@
 @<redraw> ( -- )
 	src/<draw>
 	dst/<draw>
-	( | line )
-	#0000 .Screen/x DEO2
-	#00a0 .Screen/y DEO2
-	#01d0 ;dotthor-icn #01 <draw-times>
 	asm/<draw>
 	JMP2r
 
