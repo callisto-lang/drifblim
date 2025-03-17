@@ -37,6 +37,9 @@
 	POP2 POP2
 	JMP2r
 
+@err/<emit> ( c -- )
+	#19 DEO JMP2r
+
 @runes/lut [
 	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
 	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel

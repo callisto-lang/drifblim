@@ -8,7 +8,7 @@ all: bin/drifloon.rom bin/drifblim.rom
 run: drifblim drifloon
 
 drif: bin/drif.rom
-	@ uxn11 bin/drif.rom
+	@ uxn11 bin/drif.rom etc/hello.tal bin/hello.rom
 drifblim: bin/drifblim.rom
 	@ printf "\nDrifblim Bootstrap\n"
 	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-bootstrap.rom

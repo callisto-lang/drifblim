@@ -48,6 +48,9 @@
 	assembly/<resolve>
 	BRK
 
+@err/<emit> ( c -- )
+	#19 DEO JMP2r
+
 @lib/inctal INC2
 	( >> )
 

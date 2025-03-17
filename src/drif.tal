@@ -196,8 +196,10 @@
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
 	( | Let's go! )
+	#1234 <phex> #0a18 DEO
 	;src/buf <handle-file>
-	assembly/<resolve> !<redraw>
+	assembly/<resolve>
+	#000f DEO !<redraw>
 
 @asm/<validate> ( -- )
 	( src ) #00 .src/buf LDZ NEQ
@@ -234,6 +236,9 @@
 
 (
 @|builtins )
+
+@err/<emit> ( c -- )
+	#19 DEO JMP2r
 
 @lib/inctal INC2
 	( >> )
