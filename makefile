@@ -28,6 +28,7 @@ clean:
 lint: all
 	@ ${LIN} src/drifloon.tal
 	@ ${LIN} src/drifblim.tal
+	@ ${LIN} src/drif.tal
 	@ ${LIN} etc/hx.tal
 archive: all bin/hx.rom
 	@ cat src/drifblim.tal src/core.tal | sed 's/~[^[:space:]]\+//' > bin/drifblim.tal

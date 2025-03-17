@@ -199,14 +199,14 @@
 	<redraw> !<assemble>
 
 @asm/<validate> ( -- )
-	( src ) #00 .src/buf LDZ NEQ
-	( dst ) #00 .dst/buf LDZ NEQ AND #03 MUL ,&enabled STR
+	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #03 MUL ,&enabled STR
 	#01 /<set-state>
 	( >> )
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0038 ] .Screen/x DEO2
-	[ LIT2 &y 0092 ] .Screen/y DEO2
+	[ LIT2 &y 0096 ] .Screen/y DEO2
 	;&label [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
 
 	&label "Assemble $1
@@ -250,14 +250,14 @@
 	#03e0 ;fill-icn #e1 <draw-times>
 	( | line )
 	#0000 .Screen/x DEO2
-	#0088 .Screen/y DEO2
-	#01d0 ;dotthor-icn #01 <draw-times>
+	#008a .Screen/y DEO2
+	#81d0 ;frilhor-chr #01 <draw-times>
 	asm/<draw>
 	( | text )
 	[ LIT2 15 -Screen/auto ] DEO
-	#0008 .Screen/x DEO2
+	#0004 .Screen/x DEO2
 	#001c .Screen/y DEO2
-	#0d ;chicago/color STA
+	#05 ;chicago/color STA
 	( | go )
 	;src/buf <handle-file>
 	assembly/<resolve>
@@ -266,8 +266,7 @@
 
 @err/<emit> ( c -- )
 	DUP #0a EQU ?/<emit-lb>
-	chicago/<draw-char>
-	JMP2r
+	!chicago/<draw-char>
 
 @err/<emit-lb> ( c -- )
 	#0008 .Screen/x DEO2
@@ -322,9 +321,7 @@
 
 @<redraw> ( -- )
 	src/<draw>
-	dst/<draw>
-	asm/<draw>
-	JMP2r
+	dst/<draw> !asm/<draw>
 
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
@@ -365,11 +362,9 @@
 	( | content )
 	.Screen/x DEI2k #00cb SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
-	STHr chicago/<draw-left-color>
-	JMP2r
+	STHr !chicago/<draw-left-color>
 
-@field
-	&edge-icn [
+@field/edge-icn [
 	0000 0000 3f7f 6060 6060 6060 6060 6060
 	6060 6060 6060 6060 6060 7f3f 0000 0000 ]
 	&core-icn [
@@ -380,18 +375,16 @@
 	#00 SWP #60 SFT2 STH2
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-chr STH2kr ADD2 .Screen/addr DEO2
-	[ LIT2 85 -Screen/sprite ] DEO
-	#85f0 ;&core-chr STH2kr ADD2 #35 <draw-times-addr>
+	[ LIT2 81 -Screen/sprite ] DEO
+	#81f0 ;&core-chr STH2kr ADD2 #35 <draw-times-addr>
 	;&edge-chr STH2r ADD2 .Screen/addr DEO2
-	[ LIT2 95 -Screen/sprite ] DEO
+	[ LIT2 91 -Screen/sprite ] DEO
 	( | content )
 	.Screen/x DEI2k #0038 SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
-	#05 chicago/<draw-center-color>
-	JMP2r
+	#05 !chicago/<draw-center-color>
 
-@button
-	&edge-chr [
+@button/edge-chr [
 	0000 0000 030c 0020 0000 0000 0000 0000
 	2040 0040 4040 0040 0000 0000 0000 0000
 	4000 4040 4000 4020 0000 0000 0000 0000
@@ -422,6 +415,9 @@
 	0000 0000 0000 0000 ffff ffff ffff ffff
 	00ff 00ff 0000 0000 ff00 0000 0000 0000 ]
 
+(
+@|misc )
+
 @<phex> ( short* -: )
 	SWP /b
 	&b ( byte -: )
@@ -439,10 +435,8 @@
 
 @dict/drifloon "Drifloon $1
 	&file "File $1
-	&assemble "Assemble $1
-	&ready "Ready. $1
 
-@dotthor-icn [ aa00 0000 0000 0000 ]
+@frilhor-chr [ ffff e7c3 0000 0000 ffe7 c300 0000 0000 ]
 
 ~src/drif.util.tal
 
