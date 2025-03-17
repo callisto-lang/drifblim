@@ -71,7 +71,7 @@
 	( clamp ) NEQk ?{ POP POP2 BRK }
 	INCk ,&ptr STR
 	NIP STZ
-	/<draw>
+	/<validate>
 	BRK
 
 @src/on-pop ( c -> )
@@ -79,7 +79,7 @@
 	( clamp ) NEQk ?{ POP2 BRK }
 	#01 SUB DUP ,&ptr STR
 	NIP STZ
-	/<draw>
+	/<validate>
 	BRK
 
 @src/on-done ( c -> )
@@ -99,6 +99,10 @@
 	;&on-console .Console/vector DEO2
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
+
+@src/<validate> ( -- )
+	asm/<validate>
+	( >> )
 
 @src/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
@@ -137,7 +141,7 @@
 	( clamp ) NEQk ?{ POP POP2 BRK }
 	INCk ,&ptr STR
 	NIP STZ
-	/<draw>
+	/<validate>
 	BRK
 
 @dst/on-pop ( c -> )
@@ -145,7 +149,7 @@
 	( clamp ) NEQk ?{ POP2 BRK }
 	#01 SUB DUP ,&ptr STR
 	NIP STZ
-	/<draw>
+	/<validate>
 	BRK
 
 @dst/on-done ( c -> )
@@ -166,6 +170,10 @@
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
 
+@dst/<validate> ( -- )
+	asm/<validate>
+	( >> )
+
 @dst/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 0050 ] .Screen/y DEO2
@@ -183,14 +191,20 @@
 
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
-	#01 /<set>
+	#02 /<set>
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2 !<redraw>
+
+@asm/<validate> ( -- )
+	( src ) #00 .src/buf LDZ NEQ
+	( dst ) #00 .dst/buf LDZ NEQ AND #03 MUL ,&enabled STR
+	#01 /<set>
+	( >> )
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0010 ] .Screen/x DEO2
 	[ LIT2 &y 0088 ] .Screen/y DEO2
-	;dict/assemble [ LIT &state $1 ] !button/<draw>
+	;dict/assemble [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
 
 @asm/<set> ( state -- )
 	DUP ,&state LDR NEQ ?{ POP JMP2r }
@@ -202,7 +216,7 @@
 @asm/on-mouse ( -> )
 	cursor/<update-trap>
 	.Mouse/state DEI ?on-mouse/check-hit
-	#00 /<set>
+	#01 /<set>
 	cursor/<refocus>
 	BRK
 
@@ -284,14 +298,14 @@
 	( | line )
 	#0000 .Screen/x DEO2
 	#00b8 .Screen/y DEO2
-	#01d0 ;dashhor-icn #01 <draw-times>
+	#01d0 ;dotthor-icn #01 <draw-times>
 	( | warnings )
 	#0010 .Screen/x DEO2
 	#00c8 .Screen/y DEO2
 	;dict/warnings #01 chicago/<draw-left-color>
 	JMP2r
 
-@dashhor-icn [ ee00 0000 0000 0000 ]
+@dotthor-icn [ aa00 0000 0000 0000 ]
 
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
@@ -362,6 +376,10 @@
 
 @button
 	&edge-chr [
+	0000 0000 030c 0020 0000 0000 0000 0000
+	2040 0040 4040 0040 0000 0000 0000 0000
+	4000 4040 4000 4020 0000 0000 0000 0000
+	2000 0c03 0000 0000 0000 0000 0000 0000 ] [
 	0000 0000 030c 1126 0000 0000 0003 0e19
 	2848 5050 5050 5050 1737 2f2f 2f2f 2f2f
 	5050 5050 5050 4828 2f2f 2f2f 2f2f 3717
@@ -371,6 +389,10 @@
 	5050 5050 5050 4828 0f0f 0f0f 0f0f 0707
 	2611 0c03 0000 0000 0100 0000 0000 0000 ]
 	&core-chr [
+	0000 0000 7700 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 0000 0000 0000
+	0000 0077 0000 0000 0000 0000 0000 0000 ] [
 	0000 0000 ff00 ff00 0000 0000 00ff 00ff
 	0000 0000 0000 0000 ffff ffff ffff ffff
 	0000 0000 0000 0000 ffff ffff ffff ffff
