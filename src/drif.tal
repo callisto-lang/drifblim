@@ -196,7 +196,7 @@
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
 	( | Let's go! )
-	<assemble> !<redraw>
+	<redraw> !<assemble>
 
 @asm/<validate> ( -- )
 	( src ) #00 .src/buf LDZ NEQ
@@ -237,8 +237,9 @@
 @|builtins )
 
 @<assemble> ( -- )
-	#0010 .Screen/x DEO2
-	#00c8 .Screen/y DEO2
+	#0008 .Screen/x DEO2
+	#001c .Screen/y DEO2
+	#09 ;chicago/color STA
 	;src/buf <handle-file>
 	assembly/<resolve>
 	#000f DEO
@@ -250,7 +251,7 @@
 	JMP2r
 
 @err/<emit-lb> ( c -- )
-	#0010 .Screen/x DEO2
+	#0008 .Screen/x DEO2
 	.Screen/y DEI2k #0010 ADD2 ROT DEO2
 	POP JMP2r
 
