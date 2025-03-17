@@ -38,6 +38,11 @@
 	.Console/vector DEO2
 	BRK
 
+@on-mouse ( -> )
+	cursor/<update>
+	.Mouse/state DEI ?{ BRK }
+	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit assemble/hit POP2 POP2 BRK
+
 @meta $1
 	( name ) "Drif 0a
 	( desc ) "Uxntal 20 "Assembler 0a
@@ -68,11 +73,10 @@
 	JMP2r
 
 @src/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEO2 !/<draw>
+	;&on-mouse .Mouse/vector DEO2 !<redraw>
 
 @src/on-mouse ( -> )
-	#0001 <phex>
-	#0a18 DEO
+	cursor/<update>
 	BRK
 
 @src/color ( -- color )
@@ -105,11 +109,10 @@
 	JMP2r
 
 @dst/<trap> ( -- )
-	;&on-mouse .Mouse/vector DEO2 !/<draw>
+	;&on-mouse .Mouse/vector DEO2 !<redraw>
 
 @dst/on-mouse ( -> )
-	#0002 <phex>
-	#0a18 DEO
+	cursor/<update>
 	BRK
 
 @dst/color ( -- color )
@@ -121,11 +124,6 @@
 
 @assemble/hit ( x* y* -- x* y* )
 	JMP2r
-
-@on-mouse ( -> )
-	cursor/<update>
-	.Mouse/state DEI ?{ BRK }
-	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit assemble/hit BRK
 
 @lib/inctal INC2
 	( >> )
@@ -193,6 +191,9 @@
 
 @<redraw-all> ( -- )
 	header/<draw>
+	( >> )
+
+@<redraw> ( -- )
 	src/<draw>
 	dst/<draw>
 	#0010 .Screen/x DEO2
