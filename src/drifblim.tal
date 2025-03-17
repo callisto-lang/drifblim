@@ -31,7 +31,7 @@
 @src/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{
 		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
+		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path err/<set> }
 		NIP STZ
 		BRK }
 	( | src -> dst )
@@ -40,7 +40,7 @@
 @dst/on-console ( -> )
 	[ LIT2 02 -Console/type ] DEI LTH ?{
 		.Console/read DEI [ LIT2 -&cap &ptr -&buf ] INCk ,&ptr STR
-		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path <set-error> }
+		NEQk ?{ ;dict/exceeded ;&buf ;dict/Path err/<set> }
 		NIP STZ
 		BRK }
 	( | assemble )
@@ -63,7 +63,7 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/invalid ;src/buf ;dict/File <set-error> }
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/File err/<set> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s

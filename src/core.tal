@@ -2,9 +2,9 @@
 
 @assembly/<resolve> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
-		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !<set-error> }
+		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !err/<set> }
 	;token/mode LDA2 ;asm-macro NEQ2 ?{
-		( open mac ) ;dict/open ;dict/trail ;dict/Macro !<set-error> }
+		( open mac ) ;dict/open ;dict/trail ;dict/Macro !err/<set> }
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
@@ -27,11 +27,11 @@
 	JMP2r
 
 @token/<error> ( adj* -- )
-	;&buf SWP2 !<set-error>
+	;&buf SWP2 !err/<set>
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol <set-error> }
+	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol err/<set> }
 	STZ2
 	JMP2r
 
@@ -354,7 +354,7 @@
 	( | check distance )
 	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
 	NIP
-	( ! ) ;dict/too-far ;token/buf INC2 ;dict/Reference !<set-error>
+	( ! ) ;dict/too-far ;token/buf INC2 ;dict/Reference !err/<set>
 
 @refs/get-rs ( label* -- distance* )
 	.RefType/rs /get-type rom/get-head
@@ -365,7 +365,7 @@
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
-	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !<set-error>
+	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !err/<set>
 
 (
 @|Rom )
@@ -500,6 +500,24 @@
 	POP2r JMP2r
 
 (
+@|Error )
+
+@err/<set> ( adj* keyword* topic* -- )
+	.System/state DEI ?{
+		<pstr>
+		#20 err/<emit>
+		SWP2 <pstr>
+		[ LIT ": ] err/<emit>
+		#20 err/<emit>
+		<pstr>
+		;dict/in <pstr>/
+		;scope/buf <pstr>/
+		#0a err/<emit>
+		[ LIT2 01 -System/state ] DEO
+		JMP2r }
+	POP2 POP2 POP2 JMP2r
+
+(
 @|Assets )
 
 @runes/find ( char -- <addr>* )
@@ -518,21 +536,6 @@
 			INCr #0003 ADD2 LDAk ?&>l
 		POPr [ LITr ff ] }
 	POP2 STHr JMP2r
-
-@<set-error> ( adj* keyword* topic* -- )
-	.System/state DEI ?{
-		<pstr>
-		#20 err/<emit>
-		SWP2 <pstr>
-		[ LIT ": ] err/<emit>
-		#20 err/<emit>
-		<pstr>
-		;dict/in <pstr>/
-		;scope/buf <pstr>/
-		#0a err/<emit>
-		[ LIT2 01 -System/state ] DEO
-		JMP2r }
-	POP2 POP2 POP2 JMP2r
 
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR

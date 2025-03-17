@@ -285,7 +285,7 @@
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
-			ORAk ?{ ;dict/invalid ;src/buf ;dict/file <set-error> }
+			ORAk ?{ ;dict/invalid ;src/buf ;dict/file err/<set> }
 			&end ( i* -- )
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
