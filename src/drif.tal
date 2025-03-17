@@ -27,7 +27,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	#0180 #00e8 window/<set-size>
+	#0100 #00c0 window/<set-size>
 	;dict/reset scope/<set>
 	;src/on-console .Console/vector DEO2
 	<redraw-all>
@@ -196,10 +196,7 @@
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
 	( | Let's go! )
-	#1234 <phex> #0a18 DEO
-	;src/buf <handle-file>
-	assembly/<resolve>
-	#000f DEO !<redraw>
+	<assemble> !<redraw>
 
 @asm/<validate> ( -- )
 	( src ) #00 .src/buf LDZ NEQ
@@ -208,9 +205,11 @@
 	( >> )
 
 @asm/<draw> ( -- )
-	[ LIT2 &x 0010 ] .Screen/x DEO2
-	[ LIT2 &y 0088 ] .Screen/y DEO2
-	;dict/assemble [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
+	[ LIT2 &x 0038 ] .Screen/x DEO2
+	[ LIT2 &y 0090 ] .Screen/y DEO2
+	;&label [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
+
+	&label "Assemble $1
 
 @asm/<set-state> ( state -- )
 	DUP ,&state LDR NEQ ?{ POP JMP2r }
@@ -231,14 +230,29 @@
 
 @asm/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0004 ADD2 SUB2 #0014 GTH2 ?{
-		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #0088 GTH2 ?{ /<trap> } }
 	JMP2r
 
 (
 @|builtins )
 
+@<assemble> ( -- )
+	#0010 .Screen/x DEO2
+	#00c8 .Screen/y DEO2
+	;src/buf <handle-file>
+	assembly/<resolve>
+	#000f DEO
+	JMP2r
+
 @err/<emit> ( c -- )
-	#19 DEO JMP2r
+	DUP #0a EQU ?/<emit-lb>
+	chicago/<draw-char>
+	JMP2r
+
+@err/<emit-lb> ( c -- )
+	#0010 .Screen/x DEO2
+	.Screen/y DEI2k #0010 ADD2 ROT DEO2
+	POP JMP2r
 
 @lib/inctal INC2
 	( >> )
@@ -289,19 +303,11 @@
 @<redraw> ( -- )
 	src/<draw>
 	dst/<draw>
-	asm/<draw>
-	( | labels )
-	#00a8 .Screen/x DEO2
-	#0090 .Screen/y DEO2
-	;dict/space-left #01 chicago/<draw-left-color>
 	( | line )
 	#0000 .Screen/x DEO2
-	#00b8 .Screen/y DEO2
+	#00a0 .Screen/y DEO2
 	#01d0 ;dotthor-icn #01 <draw-times>
-	( | warnings )
-	#0010 .Screen/x DEO2
-	#00c8 .Screen/y DEO2
-	;dict/warnings #01 chicago/<draw-left-color>
+	asm/<draw>
 	JMP2r
 
 @dotthor-icn [ aa00 0000 0000 0000 ]
@@ -339,11 +345,11 @@
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
-	#01e8 ;&core-icn #35 <draw-times-addr>
+	#01e6 ;&core-icn #35 <draw-times-addr>
 	;&edge-icn .Screen/addr DEO2
 	[ LIT2 11 -Screen/sprite ] DEO
 	( | content )
-	.Screen/x DEI2k #00bb SUB2 ROT DEO2
+	.Screen/x DEI2k #00cb SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
 	STHr chicago/<draw-left-color>
 	JMP2r
@@ -413,8 +419,7 @@
 @dict/drifloon "Drifloon $1
 	&file "File $1
 	&assemble "Assemble $1
-	&space-left "49212 20 "bytes 20 "free. $1
-	&warnings "Ready. $1
+	&ready "Ready. $1
 
 ~src/drif.util.tal
 
