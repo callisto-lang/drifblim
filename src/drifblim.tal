@@ -51,7 +51,7 @@
 @err/<pchr> ( c -- )
 	#19 DEO JMP2r
 
-@lib/inctal INC2
+@runes/inctal INC2
 	( >> )
 
 @<handle-file> ( f* -- )
@@ -82,11 +82,11 @@
 	JMP2r
 
 @runes/lut [
-	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal 5b =lib/ignore 5d =lib/ignore ] $1
+	"| =&padabs "$ =&padrel "@ =&toplab "& =&sublab
+	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
+	"} =&lambda "~ =&inctal 5b =&ignore 5d =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 @dict/Path "Path $1

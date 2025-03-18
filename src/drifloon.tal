@@ -41,11 +41,11 @@
 	#19 DEO JMP2r
 
 @runes/lut [
-	"| =lib/padabs "$ =lib/padrel "@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment ", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep "; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi "# =lib/lithex "" =lib/rawstr
-	5b =lib/ignore 5d =lib/ignore "} =lib/lambda ] $1
+	"| =&padabs "$ =&padrel "@ =&toplab "& =&sublab
+	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
+	5b =&ignore 5d =&ignore "} =&lambda ] $1
 
 @meta $1
 	( name ) "Drifloon 0a
