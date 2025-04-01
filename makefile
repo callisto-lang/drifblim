@@ -35,8 +35,10 @@ archive: all bin/hx.rom
 	@ cat src/drifloon.tal src/core.tal > bin/drifloon.tal
 	@ cp bin/drifblim.tal ../oscean/etc/drifblim.tal.txt
 	@ cp bin/drifloon.tal ../oscean/etc/drifloon.tal.txt
-	@ ${EMU} bin/hx.rom bin/drifblim.rom > ../oscean/etc/drifblim.rom.txt
-	@ ${EMU} bin/hx.rom bin/drifloon.rom > ../oscean/etc/drifloon.rom.txt
+	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifblim.rom.txt
+	@ cat bin/drifloon.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifloon.rom.txt
+	@ cp etc/hx.tal ../oscean/etc/hx.tal.txt
+	@ cp etc/xh.tal ../oscean/etc/xh.tal.txt
 install: bin/drifloon.rom bin/drifblim.rom
 	@ cp bin/drifloon.rom ${DIR}
 	@ cp bin/drifblim.rom ${DIR}
@@ -64,4 +66,8 @@ bin/drif.rom: src/drif.tal src/drif.util.tal src/core.tal
 bin/hx.rom: etc/hx.tal
 	@ mkdir -p bin
 	@ ${ASM} etc/hx.tal bin/hx.rom
+
+bin/xh.rom: etc/xh.tal
+	@ mkdir -p bin
+	@ ${ASM} etc/xh.tal bin/xh.rom
 
