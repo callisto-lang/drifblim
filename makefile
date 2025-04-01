@@ -23,16 +23,12 @@ drifloon: bin/drifloon.rom
 	@ ${EMU} bin/loonacid.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
-bootstrap: bin/drifblim.rom bin/hx.rom bin/xh.rom
+bootstrap: bin/drifblim.rom bin/hx.rom bin/xh.rom bin/eq.rom
 	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > bin/a.rom.txt
 	@ cat bin/a.rom.txt | ${EMU} bin/xh.rom > bin/a.rom
 	@ ${EMU} bin/a.rom src/drifblim.tal bin/b.rom
 	@ cat bin/b.rom | ${EMU} bin/hx.rom > bin/b.rom.txt
-	@ wc -c bin/a.rom
-	@ wc -c bin/b.rom
-	@ wc -c bin/a.rom.txt
-	@ wc -c bin/b.rom.txt
-	@ diff bin/a.rom.txt bin/b.rom.txt
+	@ ${EMU} bin/eq.rom bin/a.rom.txt bin/b.rom.txt
 clean:
 	@ rm -fr bin
 lint: all
@@ -40,6 +36,8 @@ lint: all
 	@ ${LIN} src/drifblim.tal
 	@ ${LIN} src/drif.tal
 	@ ${LIN} etc/hx.tal
+	@ ${LIN} etc/xh.tal
+	@ ${LIN} etc/eq.tal
 archive: all bin/hx.rom
 	@ cat src/drifblim.tal src/core.tal | sed 's/~[^[:space:]]\+//' > bin/drifblim.tal
 	@ cat src/drifloon.tal src/core.tal > bin/drifloon.tal
@@ -49,6 +47,7 @@ archive: all bin/hx.rom
 	@ cat bin/drifloon.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifloon.rom.txt
 	@ cp etc/hx.tal ../oscean/etc/hx.tal.txt
 	@ cp etc/xh.tal ../oscean/etc/xh.tal.txt
+	@ cp etc/eq.tal ../oscean/etc/eq.tal.txt
 install: bin/drifloon.rom bin/drifblim.rom
 	@ cp bin/drifloon.rom ${DIR}
 	@ cp bin/drifblim.rom ${DIR}
@@ -80,4 +79,8 @@ bin/hx.rom: etc/hx.tal
 bin/xh.rom: etc/xh.tal
 	@ mkdir -p bin
 	@ ${ASM} etc/xh.tal bin/xh.rom
+
+bin/eq.rom: etc/eq.tal
+	@ mkdir -p bin
+	@ ${ASM} etc/eq.tal bin/eq.rom
 
