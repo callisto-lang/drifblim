@@ -23,6 +23,16 @@ drifloon: bin/drifloon.rom
 	@ ${EMU} bin/loonacid.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
+bootstrap: bin/drifblim.rom bin/hx.rom bin/xh.rom
+	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > bin/a.rom.txt
+	@ cat bin/a.rom.txt | ${EMU} bin/xh.rom > bin/a.rom
+	@ ${EMU} bin/a.rom src/drifblim.tal bin/b.rom
+	@ cat bin/b.rom | ${EMU} bin/hx.rom > bin/b.rom.txt
+	@ wc -c bin/a.rom
+	@ wc -c bin/b.rom
+	@ wc -c bin/a.rom.txt
+	@ wc -c bin/b.rom.txt
+	@ diff bin/a.rom.txt bin/b.rom.txt
 clean:
 	@ rm -fr bin
 lint: all
@@ -46,7 +56,7 @@ uninstall:
 	@ rm -f ${DIR}/drifloon.rom
 	@ rm -f ${DIR}/drifblim.rom
 
-.PHONY: all clean lint test run archive install uninstall drifloon drifblim
+.PHONY: all clean lint test run bootstrap archive install uninstall drifloon drifblim
 
 bin/drifloon.rom: src/drifloon.tal src/core.tal
 	@ mkdir -p bin
