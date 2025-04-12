@@ -288,7 +288,7 @@
 	( >> )
 
 @refs/get-ref ( token* -- addr* )
-	LDA2k [ LIT2 "{ 00 ] NEQ2 ?{ POP2 lambda/make-name }
+	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/make-name }
 	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/make-name }
 	LDAk [ LIT "& ] NEQ ?{ INC2 scope/make-name }
 	( | find symbol or create it )
