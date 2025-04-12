@@ -29,6 +29,7 @@ bootstrap: bin/drifblim.rom bin/hx.rom bin/xh.rom bin/eq.rom
 	@ ${EMU} bin/a.rom src/drifblim.tal bin/b.rom
 	@ cat bin/b.rom | ${EMU} bin/hx.rom > bin/b.rom.txt
 	@ ${EMU} bin/eq.rom bin/a.rom.txt bin/b.rom.txt
+	@ cp bin/b.rom.txt etc/drifblim.rom.txt
 clean:
 	@ rm -fr bin
 lint: all
