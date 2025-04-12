@@ -14,13 +14,13 @@ run: bin/drifblim.rom bin/drifloon.rom
 test: bin/drifblim.rom
 	@ ./tests.sh
 
-bootstrap: bin/drifblim.rom bin/hx.rom bin/xh.rom bin/eq.rom
-	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > bin/a.rom.txt
-	@ cat bin/a.rom.txt | ${EMU} bin/xh.rom > bin/a.rom
-	@ ${EMU} bin/a.rom src/drifblim.tal bin/b.rom
-	@ cat bin/b.rom | ${EMU} bin/hx.rom > bin/b.rom.txt
-	@ ${EMU} bin/eq.rom bin/a.rom.txt bin/b.rom.txt
-	@ cp bin/b.rom.txt etc/drifblim.rom.txt
+bootstrap: bin/drifblim.rom bin/drifloon.rom bin/eq.rom bin/hx.rom
+	@ ${EMU} bin/drifblim.rom src/drifblim.tal bin/drifblim-seed.rom
+	@ ${EMU} bin/eq.rom bin/drifblim.rom bin/drifblim-seed.rom
+	@ cat bin/drifblim-seed.rom | ${EMU} bin/hx.rom > etc/drifblim.rom.txt
+	@ cat src/drifloon.tal src/core.tal | ${EMU} bin/drifloon.rom > bin/drifloon-seed.rom
+	@ ${EMU} bin/eq.rom bin/drifloon.rom bin/drifloon-seed.rom
+	@ cat bin/drifloon-seed.rom | ${EMU} bin/hx.rom > etc/drifloon.rom.txt
 
 clean:
 	@ rm -fr bin
@@ -52,10 +52,9 @@ uninstall:
 	@ rm -f ${DIR}/drifloon.rom
 	@ rm -f ${DIR}/drifblim.rom
 
-.PHONY: all run clean lint test bootstrap archive install uninstall drifloon drifblim
+.PHONY: all run clean lint test bootstrap archive install uninstall
 
 bin/drifblim.rom: src/drifblim.tal src/core.tal
-	@ printf "Assemble drifblim.rom\n"
 	@ mkdir -p bin
 	@ xxd -r -p etc/drifblim.rom.txt bin/drifblim.rom
 
@@ -64,15 +63,15 @@ bin/drifloon.rom: src/drifloon.tal src/core.tal bin/drifblim.rom
 	@ cat src/drifloon.tal src/core.tal > bin/drifloon.tal
 	@ ${ASM} bin/drifloon.tal bin/drifloon.rom
 
-bin/hx.rom: etc/hx.tal
+bin/hx.rom: etc/hx.tal bin/drifblim.rom
 	@ mkdir -p bin
 	@ ${ASM} etc/hx.tal bin/hx.rom
 
-bin/xh.rom: etc/xh.tal
+bin/xh.rom: etc/xh.tal bin/drifblim.rom
 	@ mkdir -p bin
 	@ ${ASM} etc/xh.tal bin/xh.rom
 
-bin/eq.rom: etc/eq.tal
+bin/eq.rom: etc/eq.tal bin/drifblim.rom
 	@ mkdir -p bin
 	@ ${ASM} etc/eq.tal bin/eq.rom
 
