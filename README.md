@@ -7,7 +7,9 @@ This repository also contains various bootstrap utilities for the Uxn ecosystem.
 ## Build
 
 This assembler is written in the language it is assembling, creating a chicken-and-egg problem. 
-You have two choices, download a pre-assembled [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom), or bootstrap from a hex dump.
+You have two choices: 
+- Download a pre-assembled [drifblim.rom](https://rabbits.srht.site/drifblim/drifblim.rom)
+- [Bootstrap](https://wiki.xxiivv.com/site/drifblim#bootstrap) from a hex dump.
 
 ### Bootstrap
 
