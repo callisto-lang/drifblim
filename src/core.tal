@@ -69,7 +69,7 @@
 			#00 macros/<push-byte>
 			POP2 POPr !token/<set-default> } }
 	STHkr #00 EQU ?{ ;token/buf macros/<push-word> }
-	LDA [ LIT "{ ] NEQ ?{ INCr }
+	LDA2 [ LIT2 "{ 00 ] NEQ2 ?{ INCr }
 	[ LITr _&depth ] STRr
 	JMP2r
 
