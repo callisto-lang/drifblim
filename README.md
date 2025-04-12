@@ -30,6 +30,10 @@ uxncli bin/drifblim.rom etc/eq.tal bin/eq.rom
 uxncli bin/eq.rom bin/drifblim-seed.rom bin/drifblim.rom
 ```
 
+- `PASS`, Success.
+- `DATA FAIL`, Content differ.
+- `SIZE FAIL`, Sizes differ.
+
 [![builds.sr.ht status](https://builds.sr.ht/~rabbits/drifblim.svg)](https://builds.sr.ht/~rabbits/drifblim?)
 
 _Drifblim is strong enough to lift Pokemon or people but has no control over its flight. This causes it to drift with the wind and end up anywhere._
