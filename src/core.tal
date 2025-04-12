@@ -62,9 +62,9 @@
 	JMP2r
 
 @asm-macro ( t* -- )
-	[ LITr &depth $1 ] LDAk
+	[ LITr &depth $1 ] LDA2k
 	( | nested lambdas )
-	[ LIT "} ] NEQ ?{
+	[ LIT2 "} 00 ] NEQ2 ?{
 		[ LITr 01 ] SUBr STHkr ?{
 			#00 macros/<push-byte>
 			POP2 POPr !token/<set-default> } }
