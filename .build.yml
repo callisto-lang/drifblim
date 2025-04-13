@@ -1,4 +1,6 @@
 image: debian/stable
+packages:
+- xxd
 oauth: pages.sr.ht/PAGES:RW
 environment:
     SITE: rabbits.srht.site/drifblim
