@@ -123,7 +123,7 @@ BRK
 		AND
 	{ &a "string $1 } STH2r ;&a EQU2
 		AND
-	;{ !{ "string $1 } &b } ;&b EQU2
+	#ffff ;{ !{ "string $1 } &b } NIP2 ;&b EQU2
 		AND
 	;Lut/length LDA INC #05 EQU
 		AND
@@ -137,6 +137,8 @@ BRK
 @coment/<test> ( -- )
 	#01 ( ) #01 EQU
 	#01 #01 ( INC ) EQU
+		AND
+	#01 ( ( INC ) ) #01 EQU
 		AND
 	#01 ( (INC) ) #01 EQU
 		AND ;&name !<validate>
