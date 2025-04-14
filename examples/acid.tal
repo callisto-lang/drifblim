@@ -84,7 +84,10 @@ BRK
 	&name "rawhex 2000
 
 @lithex/<test> ( -- )
-	JMP2r
+	#12 #34 ADD #46 EQU
+	#1234 #1234 ADD2 #2468 EQU2
+		AND ;&name !<validate>
+	&name "lithex 2000
 
 @labtop/<test> ( -- )
 	JMP2r
@@ -116,19 +119,19 @@ BRK
 
 ( forward references )
 
-.forward
-;forward
-,forward
-!forward
+.forward -forward
+;forward =forward
+,forward _forward
+!forward ?forward
 @forward
 
 ( backward references )
 
 @backward
-.backward
-;backward
-,backward
-!backward
+.backward -backward
+;backward =backward
+,backward _backward
+!backward ?backward
 
 (
 @| test label inheritance )
