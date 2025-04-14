@@ -2,16 +2,24 @@
 
 ( padding prelude )
 
-|f @pad-hex1
-|0f @pad-hex2
-|00f @pad-hex3
-|000f @pad-hex4
+|0 @padabs
+|f &p1
+|0f &p2
+|00f &p3
+|000f &p4
+
+|0 @padrel
+$4 &p1
+$4 &p2
+$4 &p3
+$4 &p4
 
 ( start )
 
 |0100 @program
 
-	<test:padabs>
+	padabs/<test>
+	padrel/<test>
 
 
 	#01 ?{ ( skip ) #ffff }
@@ -37,29 +45,35 @@ BRK
 (
 @|Tests )
 
-@<test:padabs> ( -- )
-	;pad-hex1 ;pad-hex2 EQU2
-	;pad-hex3 ;pad-hex4 EQU2
+@padabs/<test> ( -- )
+	.&p1 .&p2 EQU
+	;&p3 ;&p4 EQU2
 		AND
-	.pad-hex1 #0f EQU
-		AND ;&name !<test>
+	.&p1 #0f EQU
+		AND ;&name !<validate>
 	&name "padabs 20 $1
+
+@padrel/<test> ( -- )
+	;&p1 ;&p2 ADD
+	;&p3 ;&p4 ADD
+		#10 EQU
+	.&p1 #04 EQU
+		AND ;&name !<validate>
+	&name "padrel 20 $1
 
 (
 @|Utils )
 
-@<test> ( flag name* -- )
+@<validate> ( flag name* -- )
 	<pstr>
-	?{ ;dict/fail !<pstr> }
-	;dict/pass !<pstr>
+	?{ ;&fail !<pstr> }
+	;&pass !<pstr>
+	&fail "fail 0a $1
+	&pass "pass 0a $1
 
 @<pstr> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#18 DEO INC2 !<pstr>
-
-@dict
-	&fail "fail 0a $1
-	&pass "pass 0a $1
 
 ( forward references )
 
