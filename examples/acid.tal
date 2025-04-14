@@ -3,7 +3,8 @@
 |00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
 |10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
 
-( padding prelude )
+(
+@|Prelude )
 
 |0
 |f @padabs/p1
@@ -33,6 +34,11 @@ $/p2 &p4
 	rawhex/<test>
 	lithex/<test>
 	rawasc/<test>
+	rawabs/<test>
+	litabs/<test>
+	rawzep/<test>
+	litzep/<test>
+
 
 	#010e DEO
 
@@ -99,8 +105,25 @@ BRK
 		AND ;&name !<validate>
 	&name "rawasc 2000
 
-@labtop/<test> ( -- )
-	JMP2r
+@rawabs/<test> ( -- )
+	LIT2 =&target #89ab EQU2
+		;&name !<validate>
+	&name "rawabs 2000
+
+@litabs/<test> ( -- )
+	;&target #89ab EQU2
+		;&name !<validate>
+	&name "litabs 2000
+
+@rawzep/<test> ( -- )
+	LIT -&target #ab EQU
+		;&name !<validate>
+	&name "rawzep 2000
+
+@litzep/<test> ( -- )
+	.&target #ab EQU
+		;&name !<validate>
+	&name "litzep 2000
 
 @labsub/<test> ( -- )
 	JMP2r
@@ -127,24 +150,8 @@ BRK
 		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 		JMP2r
 
-( forward references )
-
-.forward -forward
-;forward =forward
-,forward _forward
-!forward ?forward
-@forward
-
-( backward references )
-
-@backward
-.backward -backward
-;backward =backward
-,backward _backward
-!backward ?backward
-
 (
-@| test label inheritance )
+@|label-inheritance )
 
 @Object &x $1 &y $1
 
@@ -201,4 +208,24 @@ $20 @label2
 
 @hello-word "Hello 20 "World! 0a $1
 
+(
+@|assets )
+
+@backward
+.backward -backward
+;backward =backward
+,backward _backward
+!backward ?backward
+
+.forward -forward
+;forward =forward
+,forward _forward
+!forward ?forward
+@forward
+
+|89ab
+	@litabs/target
+	@rawabs/target
+	@litzep/target
+	@rawzep/target
 
