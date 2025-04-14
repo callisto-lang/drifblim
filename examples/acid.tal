@@ -1,6 +1,18 @@
 ( test file )
 
+( padding prelude )
+
+|f @pad-hex1
+|0f @pad-hex2
+|00f @pad-hex3
+|000f @pad-hex4
+
+( start )
+
 |0100 @program
+
+	<test:padabs>
+
 
 	#01 ?{ ( skip ) #ffff }
 	!{ ( skip ) #ffff }
@@ -21,6 +33,33 @@
 	#800f DEO
 
 BRK
+
+(
+@|Tests )
+
+@<test:padabs> ( -- )
+	;pad-hex1 ;pad-hex2 EQU2
+	;pad-hex3 ;pad-hex4 EQU2
+		AND
+	.pad-hex1 #0f EQU
+		AND ;&name !<test>
+	&name "padabs 20 $1
+
+(
+@|Utils )
+
+@<test> ( flag name* -- )
+	<pstr>
+	?{ ;dict/fail !<pstr> }
+	;dict/pass !<pstr>
+
+@<pstr> ( str* -- )
+	LDAk DUP ?{ POP POP2 JMP2r }
+	#18 DEO INC2 !<pstr>
+
+@dict
+	&fail "fail 0a $1
+	&pass "pass 0a $1
 
 ( forward references )
 
