@@ -1,21 +1,24 @@
 ( test file )
 
+|00 @System/vector $2 &expansion $2 &wst $1 &rst $1 &metadata $2 &r $2 &g $2 &b $2 &debug $1 &state $1
+|10 @Console/vector $2 &read $1 &pad $4 &type $1 &write $1 &error $1
+
 ( padding prelude )
 
-|0 @padabs
-|f &p1
+|0
+|f @padabs/p1
 |0f &p2
 |00f &p3
 |000f &p4
 
-|0 @padrel
-$4 &p1
+|0
+$4 @padrel/p1
 $4 &p2
 $4 &p3
 $4 &p4
 
-|0 @padlab
-|padrel/p1 &p1
+|0
+|padrel/p1 @padlab/p1
 $padrel/p1 &p2
 |/p1 &p3
 $/p2 &p4
@@ -29,6 +32,7 @@ $/p2 &p4
 	padlab/<test>
 	rawhex/<test>
 	lithex/<test>
+	rawasc/<test>
 
 	#010e DEO
 
@@ -89,6 +93,12 @@ BRK
 		AND ;&name !<validate>
 	&name "lithex 2000
 
+@rawasc/<test> ( -- )
+	LIT "0 #30 EQU
+	LIT2 "12 #3132 EQU2
+		AND ;&name !<validate>
+	&name "rawasc 2000
+
 @labtop/<test> ( -- )
 	JMP2r
 
@@ -107,7 +117,7 @@ BRK
 
 @<pstr> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
-	#18 DEO INC2 !<pstr>
+	.Console/write DEO INC2 !<pstr>
 
 @<phex> ( short* -: )
 	SWP /b
