@@ -14,12 +14,19 @@ $4 &p2
 $4 &p3
 $4 &p4
 
+|0 @padlab
+|padrel/p1 &p1
+$padrel/p1 &p2
+|/p1 &p3
+$/p2 &p4
+
 ( start )
 
 |0100 @program
 
 	padabs/<test>
 	padrel/<test>
+	padlab/<test>
 
 
 	#01 ?{ ( skip ) #ffff }
@@ -61,6 +68,12 @@ BRK
 		AND ;&name !<validate>
 	&name "padrel 20 $1
 
+@padlab/<test> ( -- )
+	.&p1 .&p3 EQU
+	;&p4 ;&p2 SUB2 ;&p1 EQU2
+		AND ;&name !<validate>
+	&name "padrel 20 $1
+
 (
 @|Utils )
 
@@ -74,6 +87,14 @@ BRK
 @<pstr> ( str* -- )
 	LDAk DUP ?{ POP POP2 JMP2r }
 	#18 DEO INC2 !<pstr>
+
+@<phex> ( short* -: )
+	SWP /b
+	&b ( byte -: )
+		DUP #04 SFT /c
+	&c ( byte -: )
+		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
+		JMP2r
 
 ( forward references )
 
