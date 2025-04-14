@@ -28,38 +28,18 @@ $/p2 &p4
 
 |0100 @program
 
-	padabs/<test>
-	padrel/<test>
-	padlab/<test>
-	rawhex/<test>
-	lithex/<test>
+	( | Core tests )
+	padabs/<test> padrel/<test> padlab/<test>
+	rawhex/<test> lithex/<test>
 	rawasc/<test>
-	rawabs/<test>
-	litabs/<test>
-	rawzep/<test>
-	litzep/<test>
+	rawabs/<test> litabs/<test>
+	rawzep/<test> litzep/<test>
 	labels/<test>
-
-
+	lambda/<test>
 	#010e DEO
 
-	#01 ?{ ( skip ) #ffff }
-	!{ ( skip ) #ffff }
-	{ ( skip ) #ffff } POP2r
-
-	( nested lambda )
-	{ { "hello 0a $1 } STH2r !print-str } STH2r JSR2
-
-	( function application )
-	{ 01 02 03 04 05 } STH2r { LIT "0 ADD #18 DEO #2018 DEO JMP2r } STH2r foreach
-
-	( get lambda length )
-	{ "Dindeldums $1 } STH2r get-lambda-length <print-dec> #2018 DEO
-
-	( allocated string )
-	;hello-word print-str
-
-	#800f DEO
+	( | Check stacks are empty )
+	.System/wst DEI2 #0000 EQU2 { "finish 2000 } STH2r <validate>
 
 BRK
 
@@ -130,14 +110,28 @@ BRK
 	#3412 SWPk Object/<set-pos>
 	Object/get-y Object/get-x EQU2
 		;&name !<validate>
-	&name "litzep 2000
+	&name "labels 2000
+
+@lambda/<test> ( -- )
+	#0100 #00 ?{ ( eval ) INC } EQU
+	#0000 #01 ?{ ( skip ) INC } EQU
+		AND
+	#0000 !{ ( skip ) INC } EQU
+	#0100 { ( skip ) INC JMP2r } STH2r JSR2 EQU
+		AND
+	{ &a "string $1 } STH2r ;&a EQU2
+		AND
+	;Lut5/length LDA INC #05 EQU
+		AND
+		AND ;&name !<validate>
+	&name "lambda 2000
 
 (
 @|Utils )
 
 @<validate> ( flag name* -- )
 	<pstr>
-	?{ ;&fail !<pstr> }
+	?{ ;&fail <pstr> #010f DEO BRK }
 	;&pass !<pstr>
 	&fail "fail 0a $1
 	&pass "pass 0a $1
@@ -153,8 +147,6 @@ BRK
 	&c ( byte -: )
 		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 		JMP2r
-
-
 
 ( raw lambda length )
 _{ 01 02 03 }
@@ -205,6 +197,12 @@ $20 @label2
 	&<set-pos> ( x y -- ) ,&y STR ,&x STR JMP2r
 @Object/get-y ( -- y ) ,&y LDR JMP2r
 @Object/get-pos ( -- x y ) /get-x !/get-y
+
+(
+@|LUT )
+
+@Lut5
+	&length _{ 01 02 03 04 05 }
 
 (
 @|References )
