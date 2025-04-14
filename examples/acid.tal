@@ -121,6 +121,8 @@ BRK
 		AND
 	{ &a "string $1 } STH2r ;&a EQU2
 		AND
+	;{ !{ "string $1 } &b } ;&b EQU2
+		AND
 	;Lut/length LDA INC #05 EQU
 		AND
 	#00 ;Lut2/a LDA INC2 INC2 ;Lut2/a ADD2 ;Lut2/d EQU2
