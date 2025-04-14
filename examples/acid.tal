@@ -121,7 +121,11 @@ BRK
 		AND
 	{ &a "string $1 } STH2r ;&a EQU2
 		AND
-	;Lut5/length LDA INC #05 EQU
+	;Lut/length LDA INC #05 EQU
+		AND
+	#00 ;Lut2/a LDA INC2 INC2 ;Lut2/a ADD2 ;Lut2/d EQU2
+		AND
+	#00 ;Lut2/b LDA INC2 INC2 ;Lut2/b ADD2 ;Lut2/c EQU2
 		AND
 		AND ;&name !<validate>
 	&name "lambda 2000
@@ -199,10 +203,13 @@ $20 @label2
 @Object/get-pos ( -- x y ) /get-x !/get-y
 
 (
-@|LUT )
+@|LUTs )
 
-@Lut5
+@Lut
 	&length _{ 01 02 03 04 05 }
+
+@Lut2
+	&a _{ "a "b &b _{ "c "d } &c "e "f } &d
 
 (
 @|References )
