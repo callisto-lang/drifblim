@@ -38,6 +38,7 @@ $/p2 &p4
 	litabs/<test>
 	rawzep/<test>
 	litzep/<test>
+	labels/<test>
 
 
 	#010e DEO
@@ -125,8 +126,11 @@ BRK
 		;&name !<validate>
 	&name "litzep 2000
 
-@labsub/<test> ( -- )
-	JMP2r
+@labels/<test> ( -- )
+	#3412 SWPk Object/<set-pos>
+	Object/get-y Object/get-x EQU2
+		;&name !<validate>
+	&name "litzep 2000
 
 (
 @|Utils )
@@ -150,22 +154,7 @@ BRK
 		#0f AND DUP #09 GTH #27 MUL ADD [ LIT "0 ] ADD #18 DEO
 		JMP2r
 
-(
-@|label-inheritance )
 
-@Object &x $1 &y $1
-
-&get-x ( -- x )
-	,&x LDR
-	JMP2r
-
-@Object/get-y ( -- y )
-	,&y LDR
-	JMP2r
-
-@Object/get-both ( -- x y )
-	/get-x /get-y
-	JMP2r
 
 ( raw lambda length )
 _{ 01 02 03 }
@@ -209,7 +198,16 @@ $20 @label2
 @hello-word "Hello 20 "World! 0a $1
 
 (
-@|assets )
+@|Object )
+
+@Object/y $1
+	&get-x ( -- x ) [ LIT &x $1 ] JMP2r
+	&<set-pos> ( x y -- ) ,&y STR ,&x STR JMP2r
+@Object/get-y ( -- y ) ,&y LDR JMP2r
+@Object/get-pos ( -- x y ) /get-x !/get-y
+
+(
+@|References )
 
 @backward
 .backward -backward
