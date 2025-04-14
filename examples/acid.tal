@@ -27,7 +27,10 @@ $/p2 &p4
 	padabs/<test>
 	padrel/<test>
 	padlab/<test>
+	rawhex/<test>
+	lithex/<test>
 
+	#010e DEO
 
 	#01 ?{ ( skip ) #ffff }
 	!{ ( skip ) #ffff }
@@ -58,21 +61,36 @@ BRK
 		AND
 	.&p1 #0f EQU
 		AND ;&name !<validate>
-	&name "padabs 20 $1
+	&name "padabs 2000
 
 @padrel/<test> ( -- )
-	;&p1 ;&p2 ADD
-	;&p3 ;&p4 ADD
-		#10 EQU
+	.&p1 .&p2 ADD #0c EQU
+	;&p3 ;&p4 ADD2 #001c EQU2
+		AND
 	.&p1 #04 EQU
 		AND ;&name !<validate>
-	&name "padrel 20 $1
+	&name "padrel 2000
 
 @padlab/<test> ( -- )
 	.&p1 .&p3 EQU
 	;&p4 ;&p2 SUB2 ;&p1 EQU2
 		AND ;&name !<validate>
-	&name "padrel 20 $1
+	&name "padrel 2000
+
+@rawhex/<test> ( -- )
+	LIT 12 LIT 34 ADD LIT 46 EQU
+	LIT2 1234 LIT2 1234 ADD2 LIT2 2468 EQU2
+		AND ;&name !<validate>
+	&name "rawhex 2000
+
+@lithex/<test> ( -- )
+	JMP2r
+
+@labtop/<test> ( -- )
+	JMP2r
+
+@labsub/<test> ( -- )
+	JMP2r
 
 (
 @|Utils )
