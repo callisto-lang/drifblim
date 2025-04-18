@@ -57,6 +57,9 @@ echo "" && echo "Comment --------------------------------------------"
 echo "" && echo "@scope ( BRK @end" | $as > bin/res.tal
 echo "Comment open: .. in scope"
 
+echo "" && echo "@scope #01 (BRK ) @end" | $as > bin/res.tal
+echo "Comment invalid: (BRK in scope"
+
 echo "" && echo "Writing --------------------------------------------"
 
 echo "" && echo "@scope |80 #1234 @end" | $as > bin/res.tal

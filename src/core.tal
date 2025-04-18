@@ -34,6 +34,7 @@
 	JMP2r
 
 @token/<set-comment> ( -- )
+	LDA2 [ LIT2 "( 00 ] EQU2 ?{ ;dict/invalid ;&buf ;dict/Comment !err/<set> }
 	;asm-comment ;token/mode STA2
 	[ LIT2 01 _asm-comment/depth ] STR
 	JMP2r
@@ -125,7 +126,7 @@
 	&lithex /req-name !rom/<write-lithex>
 	&rawstr /req-name !rom/<write-str>
 	&lambda POP2 !lambda/pop
-	&coment POP2 !token/<set-comment>
+	&coment !token/<set-comment>
 	&macros /req-name !macros/<new>
 
 @runes/req-name ( str* -- str1* )
