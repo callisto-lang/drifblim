@@ -56,7 +56,8 @@ uninstall:
 
 bin/drifblim.rom: src/drifblim.tal src/core.tal
 	@ mkdir -p bin
-	@ xxd -r -p etc/drifblim.rom.txt bin/drifblim.rom
+	@ xxd -r -p etc/drifblim.rom.txt bin/drifblim-seed.rom
+	@ ${EMU} bin/drifblim-seed.rom src/drifblim.tal bin/drifblim.rom
 
 bin/drifloon.rom: src/drifloon.tal src/core.tal bin/drifblim.rom
 	@ mkdir -p bin
