@@ -96,9 +96,9 @@
 		&>l ( -- )
 			#0002 .File/length DEO2
 			DUP2 .File/write DEO2
-			INC2 INC2 DUP2 scap/ SWP2k SUB2 .File/length DEO2
+			#0003 ADD2 DUP2 scap/ SWP2k SUB2 .File/length DEO2
 			SWP2 .File/write DEO2
-			INC2 GTH2k ?&>l
+			GTH2k ?&>l
 		POP2 POP2 }
 	JMP2r
 
