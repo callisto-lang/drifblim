@@ -115,6 +115,12 @@ echo "Macro open: .. in scope"
 echo "" && echo "@scope %test { BRK @end" | $as > bin/res.tal
 echo "Macro open: .. in scope"
 
+echo "" && echo "@scope %macro {BRK } #1234" | $as > bin/res.tal
+echo "Macro open: .. in scope"
+
+echo "" && echo "@scope %macro { BRK} #1234" | $as > bin/res.tal
+echo "Macro open: .. in scope"
+
 echo "" && echo "References -----------------------------------------"
 
 echo "" && echo "@scope LIT2 =label @end" | $as > bin/res.tal
