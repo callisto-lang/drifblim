@@ -27,7 +27,7 @@
 @on-reset ( -> )
 	;meta #06 DEO2
 	theme/<load>
-	#0100 #00c0 window/<set-size>
+	#0100 #0100 window/<set-size>
 	;dict/reset scope/<set>
 	;src/on-console .Console/vector DEO2
 	<redraw-all>
@@ -105,7 +105,7 @@
 	( >> )
 
 @src/<draw> ( -- )
-	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &x 0008 ] .Screen/x DEO2
 	[ LIT2 &y 001c ] .Screen/y DEO2
 	/inactive ?{
 		;&buf ;&label #01 field/<draw-color>
@@ -114,7 +114,7 @@
 	;&placeholder ;&label #02 !field/<draw-color>
 
 	&placeholder "source.tal $1
-	&label "Read 20 "source 20 "file: $1
+	&label "Tal 20 "Source 20 "File: $1
 
 (
 @|dst )
@@ -175,7 +175,7 @@
 	( >> )
 
 @dst/<draw> ( -- )
-	[ LIT2 &x 0010 ] .Screen/x DEO2
+	[ LIT2 &x 0008 ] .Screen/x DEO2
 	[ LIT2 &y 0052 ] .Screen/y DEO2
 	/inactive ?{
 		;&buf ;&label #01 field/<draw-color>
@@ -184,7 +184,7 @@
 	;&placeholder ;&label #02 !field/<draw-color>
 
 	&placeholder "result.rom $1
-	&label "Write 20 "output 20 "file: $1
+	&label "Rom 20 "Output 20 "File: $1
 
 (
 @|assemble )
@@ -206,7 +206,7 @@
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0038 ] .Screen/x DEO2
-	[ LIT2 &y 0096 ] .Screen/y DEO2
+	[ LIT2 &y 0088 ] .Screen/y DEO2
 	;&label [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
 
 	&label "Assemble $1
@@ -232,6 +232,17 @@
 	DUP2 ,&y LDR2 #0004 ADD2 SUB2 #0014 GTH2 ?{
 		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #0088 GTH2 ?{ /<trap> } }
 	JMP2r
+
+(
+@|res )
+
+@res/<draw> ( -- )
+	#0000 .Screen/x DEO2
+	#00b0 .Screen/y DEO2
+	#01d0 ;&frilhor-icn #01 <draw-times>
+	JMP2r
+
+	&frilhor-icn [ 0000 8344 3800 0000 ]
 
 (
 @|builtins )
@@ -273,7 +284,7 @@
 	.Screen/y DEI2k #0010 ADD2 ROT DEO2
 	POP JMP2r
 
-@lib/inctal INC2
+@runes/inctal INC2
 	( >> )
 
 @<handle-file> ( f* -- )
@@ -304,16 +315,16 @@
 	JMP2r
 
 @runes/lut [
-	"| =lib/padabs "$ =lib/padrel
-	"@ =lib/toplab "& =lib/sublab
-	"% =lib/macros "( =lib/coment
-	", =lib/litrel "_ =lib/rawrel
-	". =lib/litzep "- =lib/rawzep
-	"; =lib/litabs "= =lib/rawabs
-	"? =lib/litjci "! =lib/litjmi
-	"# =lib/lithex "" =lib/rawstr
-	"} =lib/lambda "~ =lib/inctal
-	5b =lib/ignore 5d =lib/ignore ] $1
+	"| =&padabs "$ =&padrel
+	"@ =&toplab "& =&sublab
+	"% =&macros "( =&coment
+	", =&litrel "_ =&rawrel
+	". =&litzep "- =&rawzep
+	"; =&litabs "= =&rawabs
+	"? =&litjci "! =&litjmi
+	"# =&lithex "" =&rawstr
+	"} =&lambda "~ =&inctal
+	5b =&ignore 5d =&ignore ] $1
 
 @<redraw-all> ( -- )
 	header/<draw>
@@ -321,7 +332,8 @@
 
 @<redraw> ( -- )
 	src/<draw>
-	dst/<draw> !asm/<draw>
+	dst/<draw>
+	asm/<draw> !res/<draw>
 
 @next-glyph ( addr* -- addr* )
 	INC2 LDAk
@@ -333,9 +345,9 @@
 	#0001 .Screen/y DEO2
 	#09 ;chicago/color STA
 	[ LIT2 15 -Screen/auto ] DEO
-	.Screen/x DEI2 ;dict/drifloon chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
+	.Screen/x DEI2 ;dict/uxnasm chicago/get-str-width #01 SFT2 SUB2 .Screen/x DEO2
 	#20 chicago/<draw-char>
-	;dict/drifloon chicago/<draw-left>
+	;dict/uxnasm chicago/<draw-left>
 	#20 chicago/<draw-char>
 	( | clip )
 	.Screen/y DEI2k #0001 SUB2 ROT DEO2
@@ -356,20 +368,20 @@
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-icn .Screen/addr DEO2
 	[ LIT2 01 -Screen/sprite ] DEO
-	#01e6 ;&core-icn #35 <draw-times-addr>
+	#01e4 ;&core-icn #35 <draw-times-addr>
 	;&edge-icn .Screen/addr DEO2
 	[ LIT2 11 -Screen/sprite ] DEO
 	( | content )
-	.Screen/x DEI2k #00cb SUB2 ROT DEO2
+	.Screen/x DEI2k #00db SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
 	STHr !chicago/<draw-left-color>
 
 @field/edge-icn [
-	0000 0000 3f7f 6060 6060 6060 6060 6060
-	6060 6060 6060 6060 6060 7f3f 0000 0000 ]
+	0000 0000 7f40 4040 4040 4040 4040 4040
+	4040 4040 4040 4040 4040 407f 0000 0000 ]
 	&core-icn [
-	0000 0000 ffff 0000 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 ffff 0000 0000 ]
+	0000 0000 ff00 0000 0000 0000 0000 0000
+	0000 0000 0000 0000 0000 00ff 0000 0000 ]
 
 @button/<draw> ( name* state -- )
 	#00 SWP #60 SFT2 STH2
@@ -433,7 +445,7 @@
 	JMP2r
 	&mmu 00 &length $2 0000 &addr $2 00
 
-@dict/drifloon "Drifloon $1
+@dict/uxnasm "Uxntal 20 "Assembler $1
 	&file "File $1
 
 @frilhor-chr [ ffff e7c3 0000 0000 ffe7 c300 0000 0000 ]

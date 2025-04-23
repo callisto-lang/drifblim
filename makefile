@@ -22,6 +22,9 @@ bootstrap: bin/drifblim.rom bin/drifloon.rom bin/eq.rom bin/hx.rom
 	@ ${EMU} bin/eq.rom bin/drifloon.rom bin/drifloon-seed.rom
 	@ cat bin/drifloon-seed.rom | ${EMU} bin/hx.rom > etc/drifloon.rom.txt
 
+gui: bin/drif.rom
+	@ uxn11 bin/drif.rom
+
 clean:
 	@ rm -fr bin
 
