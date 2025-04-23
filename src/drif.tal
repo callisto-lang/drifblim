@@ -255,10 +255,31 @@
 
 @res/<draw> ( -- )
 	#0000 .Screen/x DEO2
+	#00b8 .Screen/y DEO2
+	[ LIT2 83 -Screen/pixel ] DEO
 	#00b0 .Screen/y DEO2
-	#01d0 ;&frilhor-icn #01 !<draw-times>
+	#81d0 ;&frilhor-chr #01 <draw-times>
+	( | draw )
+	#0008 .Screen/x DEO2
+	#00bc .Screen/y DEO2
+	[ LIT2 15 -Screen/auto ] DEO
+	;&buf
+	&>w ( -- )
+		LDAk DUP ?{ POP POP2 JMP2r }
+		DUP #0a NEQ ?{
+			POP #0008 .Screen/x DEO2
+			.Screen/y DEI2k #0010 ADD2 ROT DEO2
+			INC2 !&>w }
+	chicago/<draw-char>
+	INC2 !&>w
 
-	&frilhor-icn [ 0000 8344 3800 0000 ]
+@res/<push> ( c -- )
+	#00 [ LIT2 &ptr =&buf ] INC2k ,&ptr STR2
+	STA2
+	JMP2r
+
+	&frilhor-chr [ 0000 83c7 ffff ffff 0000 0083 c7ff ffff ]
+	&buf "Ready. $100
 
 (
 @|builtins )
@@ -272,24 +293,14 @@
 	;syms/mem ;syms/ptr STA2
 	#0100 ;rom/head STA2
 	( | text )
-	[ LIT2 15 -Screen/auto ] DEO
-	#0008 .Screen/x DEO2
-	#00bc .Screen/y DEO2
-	#05 ;chicago/color STA
+	;res/buf ;res/ptr STA2
 	( | go )
 	;src/buf <handle-file>
 	assembly/<resolve>
-	#000f DEO
-	JMP2r
+	#000f DEO !<redraw>
 
 @err/<pchr> ( c -- )
-	DUP #0a EQU ?/<emit-lb>
-	!chicago/<draw-char>
-
-@err/<emit-lb> ( c -- )
-	#0008 .Screen/x DEO2
-	.Screen/y DEI2k #0010 ADD2 ROT DEO2
-	POP JMP2r
+	!res/<push>
 
 @runes/inctal INC2
 	( >> )
@@ -440,8 +451,6 @@
 
 @dict/uxnasm "Uxntal 20 "Assembler $1
 	&file "File $1
-
-@frilhor-chr [ ffff e7c3 0000 0000 ffe7 c300 0000 0000 ]
 
 ~src/drif.util.tal
 
