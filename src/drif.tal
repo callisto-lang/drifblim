@@ -68,7 +68,7 @@
 
 @src/on-push ( c -> )
 	DUP #08 EQU ?/on-pop
-	DUP #09 EQU ?/on-done
+	DUP #09 EQU ?/on-tab
 	DUP #0d EQU ?/on-done
 	DUP #1f GTH ?{ POP BRK }
 	[ LIT2 -&cap &ptr -&buf ]
@@ -77,6 +77,9 @@
 	NIP STZ
 	/<validate>
 	BRK
+
+@src/on-tab ( c -> )
+	( >> )
 
 @src/on-done ( c -> )
 	POP dst/<trap>
@@ -140,12 +143,17 @@
 @dst/on-push ( c -> )
 	DUP #0d EQU ?/on-done
 	DUP #08 EQU ?/on-pop
+	DUP #09 EQU ?/on-tab
 	DUP #1f GTH ?{ POP BRK }
 	[ LIT2 -&cap &ptr -&buf ]
 	( clamp ) NEQk ?{ POP POP2 BRK }
 	INCk ,&ptr STR
 	NIP STZ
 	/<validate>
+	BRK
+
+@dst/on-tab ( c -> )
+	POP src/<trap>
 	BRK
 
 @dst/on-done ( c -> )
