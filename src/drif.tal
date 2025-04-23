@@ -195,8 +195,7 @@
 
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
-	,&enabled LDR ?{ JMP2r }
-	#00 /<set-state>
+	;&state LDA #02 AND ?{ JMP2r }
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
 	( | Let's go! )
@@ -204,20 +203,20 @@
 
 @asm/<validate> ( -- )
 	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
-	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #10 SFT ,&enabled STR
-	#00 /<set-state>
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #10 SFT
+	( >> )
+
+@asm/<set-state> ( state -- )
+	DUP ,&state LDR NEQ ?{ POP JMP2r }
+	,&state STR
 	( >> )
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0038 ] .Screen/x DEO2
 	[ LIT2 &y 0088 ] .Screen/y DEO2
-	;&label [ LIT2 &state $1 &enabled $1 ] ORA !button/<draw>
+	;&label [ LIT &state $1 ] !button/<draw>
 
 	&label "Assemble $1
-
-@asm/<set-state> ( state -- )
-	DUP ,&state LDR NEQ ?{ POP JMP2r }
-	,&state STR !/<draw>
 
 @asm/inactive ( -- f )
 	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
@@ -240,11 +239,11 @@
 	POP2 BRK
 
 	&on-down ( states* -> )
-	POP2 #01 /<set-state>
+	POP2 ;&state LDA #02 AND #01 ORA /<set-state>
 	BRK
 
 	&on-up ( states* -> )
-	POP2 #00 /<set-state>
+	POP2 ;&state LDA #02 AND /<set-state>
 	BRK
 
 	&on-hover ( states* -> )
@@ -257,8 +256,7 @@
 @res/<draw> ( -- )
 	#0000 .Screen/x DEO2
 	#00b0 .Screen/y DEO2
-	#01d0 ;&frilhor-icn #01 <draw-times>
-	JMP2r
+	#01d0 ;&frilhor-icn #01 !<draw-times>
 
 	&frilhor-icn [ 0000 8344 3800 0000 ]
 
@@ -393,54 +391,34 @@
 	0000 0000 0000 0000 0000 00ff 0000 0000 ]
 
 @button/<draw> ( name* state -- )
-	STHk #00 SWP #60 SFT2 STH2
+	STHk #01 AND #00 SWP #50 SFT2 STH2
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-chr STH2kr ADD2 .Screen/addr DEO2
-	[ LIT2 81 -Screen/sprite ] DEO
-	#81f0 ;&core-chr STH2kr ADD2 #35 <draw-times-addr>
+	[ LIT2 01 -Screen/sprite ] DEO
+	#01f0 ;&core-chr STH2kr ADD2 #35 <draw-times-addr>
 	;&edge-chr STH2r ADD2 .Screen/addr DEO2
-	[ LIT2 91 -Screen/sprite ] DEO
+	[ LIT2 11 -Screen/sprite ] DEO
 	( | content )
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
 	.Screen/x DEI2 #0038 SUB2 DUP2 .Screen/x DEO2
 	SWP2 #05 chicago/<draw-center-color>
 	( | hash )
 	#0040 SUB2 .Screen/x DEO2
-	STHr ?{ #00f0 ;&hash-icn #11 <draw-times-addr> }
+	STHr #02 AND ?{ #00f0 ;&hash-icn #11 <draw-times-addr> }
 	JMP2r
 
 	&hash-icn [ aa55 aa55 aa55 aa55 ]
 
 @button/edge-chr [
-	0000 0000 030c 1020 0000 0000 0000 0000
-	2040 4040 4040 4040 0000 0000 0000 0000
-	4040 4040 4040 4020 0000 0000 0000 0000
-	2010 0c03 0000 0000 0000 0000 0000 0000
-	( active ) [ 0000 0000 030c 1126
-	0000 0000 0003 0e19 2848 5050 5050 5050
-	1737 2f2f 2f2f 2f2f 5050 5050 5050 4828
-	2f2f 2f2f 2f2f 3717 2611 0c03 0000 0000
-	190e 0300 0000 0000 ]
-	( down ) [
-	0000 0000 030c 1126 0000 0000 0000 0001
-	2848 5050 5050 5050 0707 0f0f 0f0f 0f0f
-	5050 5050 5050 4828 0f0f 0f0f 0f0f 0707
-	2611 0c03 0000 0000 0100 0000 0000 0000 ]
+	0000 0000 030c 1126 2848 5050 5050 5050
+	5050 5050 5050 4828 2611 0c03 0000 0000
+	0000 0000 030c 1020 2040 4040 4040 4040
+	4040 4040 4040 4020 2010 0c03 0000 0000 ]
 	&core-chr [
+	0000 0000 ff00 ff00 0000 0000 0000 0000
+	0000 0000 0000 0000 00ff 00ff 0000 0000
 	0000 0000 ff00 0000 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 00ff 0000 0000 0000 0000 0000 0000
-	( active ) [ 0000 0000 ff00 ff00
-	0000 0000 00ff 00ff 0000 0000 0000 0000
-	ffff ffff ffff ffff 0000 0000 0000 0000
-	ffff ffff ffff ffff 00ff 00ff 0000 0000
-	ff00 ff00 0000 0000 ]
-	( down ) [
-	0000 0000 ff00 ff00 0000 0000 0000 00ff
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	00ff 00ff 0000 0000 ff00 0000 0000 0000 ]
+	0000 0000 0000 0000 0000 00ff 0000 0000 ]
 
 (
 @|misc )
