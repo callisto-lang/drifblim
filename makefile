@@ -50,6 +50,7 @@ archive: all bin/hx.rom
 install: bin/drifloon.rom bin/drifblim.rom
 	@ cp bin/drifloon.rom ${DIR}
 	@ cp bin/drifblim.rom ${DIR}
+	@ cp bin/drif.rom ${DIR}
 
 uninstall:
 	@ rm -f ${DIR}/drifloon.rom
