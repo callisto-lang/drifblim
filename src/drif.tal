@@ -38,7 +38,10 @@
 	cursor/<update>
 	.Mouse/state DEI ?{ BRK }
 	&check-hit ( -> )
-	.Mouse/x DEI2 .Mouse/y DEI2 src/hit dst/hit asm/hit POP2 POP2 BRK
+	.Mouse/x DEI2 .Mouse/y DEI2
+	( ) src/hit
+	( ) dst/hit
+	( ) asm/hit POP2 POP2 BRK
 
 @meta $1
 	( name ) "Drif 0a
@@ -65,8 +68,9 @@
 
 @src/on-push ( c -> )
 	DUP ?{ POP BRK }
-	DUP #0d EQU ?/on-done
 	DUP #08 EQU ?/on-pop
+	DUP #09 EQU ?/on-done
+	DUP #0d EQU ?/on-done
 	[ LIT2 -&cap &ptr -&buf ]
 	( clamp ) NEQk ?{ POP POP2 BRK }
 	INCk ,&ptr STR
@@ -91,7 +95,7 @@
 
 @src/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
-		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00e4 GTH2 ?{ /<trap> } }
 	JMP2r
 
 @src/<trap> ( -- )
@@ -161,7 +165,7 @@
 
 @dst/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0014 ADD2 SUB2 #0014 GTH2 ?{
-		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00c8 GTH2 ?{ /<trap> } }
+		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #00e4 GTH2 ?{ /<trap> } }
 	JMP2r
 
 @dst/<trap> ( -- )
@@ -192,7 +196,7 @@
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
 	,&enabled LDR ?{ JMP2r }
-	#02 /<set-state>
+	#00 /<set-state>
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
 	( | Let's go! )
@@ -200,14 +204,14 @@
 
 @asm/<validate> ( -- )
 	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
-	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #03 MUL ,&enabled STR
-	#01 /<set-state>
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND ,&enabled STR
+	#00 /<set-state>
 	( >> )
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0038 ] .Screen/x DEO2
 	[ LIT2 &y 0088 ] .Screen/y DEO2
-	;&label [ LIT2 &state $1 &enabled $1 ] AND !button/<draw>
+	;&label [ LIT2 &state $1 &enabled $1 ] !button/<draw>
 
 	&label "Assemble $1
 
@@ -255,19 +259,10 @@
 	;macros/mem ;macros/ptr STA2
 	;syms/mem ;syms/ptr STA2
 	#0100 ;rom/head STA2
-	( | bg )
-	#0000 .Screen/x DEO2
-	#0012 .Screen/y DEO2
-	#03e0 ;fill-icn #e1 <draw-times>
-	( | line )
-	#0000 .Screen/x DEO2
-	#008a .Screen/y DEO2
-	#81d0 ;frilhor-chr #01 <draw-times>
-	asm/<draw>
 	( | text )
 	[ LIT2 15 -Screen/auto ] DEO
-	#0004 .Screen/x DEO2
-	#001c .Screen/y DEO2
+	#0008 .Screen/x DEO2
+	#00bc .Screen/y DEO2
 	#05 ;chicago/color STA
 	( | go )
 	;src/buf <handle-file>
@@ -383,7 +378,10 @@
 	0000 0000 ff00 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 00ff 0000 0000 ]
 
-@button/<draw> ( name* state -- )
+@button/<draw> ( name* state enabled -- )
+	STH
+	DUP <phex>/b
+	#0a18 DEO
 	#00 SWP #60 SFT2 STH2
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-chr STH2kr ADD2 .Screen/addr DEO2
@@ -392,35 +390,41 @@
 	;&edge-chr STH2r ADD2 .Screen/addr DEO2
 	[ LIT2 91 -Screen/sprite ] DEO
 	( | content )
-	.Screen/x DEI2k #0038 SUB2 ROT DEO2
 	.Screen/y DEI2k #0008 ADD2 ROT DEO2
-	#05 !chicago/<draw-center-color>
+	.Screen/x DEI2 #0038 SUB2 DUP2 .Screen/x DEO2
+	SWP2 #05 chicago/<draw-center-color>
+	( | hash )
+	#0040 SUB2 .Screen/x DEO2
+	STHr ?{ #00f0 ;&hash-icn #11 <draw-times-addr> }
+	JMP2r
+
+	&hash-icn [ aa55 aa55 aa55 aa55 ]
 
 @button/edge-chr [
-	0000 0000 030c 0020 0000 0000 0000 0000
-	2040 0040 4040 0040 0000 0000 0000 0000
-	4000 4040 4000 4020 0000 0000 0000 0000
-	2000 0c03 0000 0000 0000 0000 0000 0000 ]
-	( active ) [
-	0000 0000 030c 1126 0000 0000 0003 0e19
-	2848 5050 5050 5050 1737 2f2f 2f2f 2f2f
-	5050 5050 5050 4828 2f2f 2f2f 2f2f 3717
-	2611 0c03 0000 0000 190e 0300 0000 0000 ]
+	0000 0000 030c 1020 0000 0000 0000 0000
+	2040 4040 4040 4040 0000 0000 0000 0000
+	4040 4040 4040 4020 0000 0000 0000 0000
+	2010 0c03 0000 0000 0000 0000 0000 0000
+	( active ) [ 0000 0000 030c 1126
+	0000 0000 0003 0e19 2848 5050 5050 5050
+	1737 2f2f 2f2f 2f2f 5050 5050 5050 4828
+	2f2f 2f2f 2f2f 3717 2611 0c03 0000 0000
+	190e 0300 0000 0000 ]
 	( down ) [
 	0000 0000 030c 1126 0000 0000 0000 0001
 	2848 5050 5050 5050 0707 0f0f 0f0f 0f0f
 	5050 5050 5050 4828 0f0f 0f0f 0f0f 0707
 	2611 0c03 0000 0000 0100 0000 0000 0000 ]
 	&core-chr [
-	0000 0000 7700 0000 0000 0000 0000 0000
+	0000 0000 ff00 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 0000 0000 0000
-	0000 0077 0000 0000 0000 0000 0000 0000 ]
-	( active ) [
-	0000 0000 ff00 ff00 0000 0000 00ff 00ff
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	0000 0000 0000 0000 ffff ffff ffff ffff
-	00ff 00ff 0000 0000 ff00 ff00 0000 0000 ]
+	0000 00ff 0000 0000 0000 0000 0000 0000
+	( active ) [ 0000 0000 ff00 ff00
+	0000 0000 00ff 00ff 0000 0000 0000 0000
+	ffff ffff ffff ffff 0000 0000 0000 0000
+	ffff ffff ffff ffff 00ff 00ff 0000 0000
+	ff00 ff00 0000 0000 ]
 	( down ) [
 	0000 0000 ff00 ff00 0000 0000 0000 00ff
 	0000 0000 0000 0000 ffff ffff ffff ffff
