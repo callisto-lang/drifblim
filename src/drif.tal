@@ -204,14 +204,14 @@
 
 @asm/<validate> ( -- )
 	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
-	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND ,&enabled STR
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #10 SFT ,&enabled STR
 	#00 /<set-state>
 	( >> )
 
 @asm/<draw> ( -- )
 	[ LIT2 &x 0038 ] .Screen/x DEO2
 	[ LIT2 &y 0088 ] .Screen/y DEO2
-	;&label [ LIT2 &state $1 &enabled $1 ] !button/<draw>
+	;&label [ LIT2 &state $1 &enabled $1 ] ORA !button/<draw>
 
 	&label "Assemble $1
 
@@ -222,13 +222,6 @@
 @asm/inactive ( -- f )
 	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
 
-@asm/on-mouse ( -> )
-	cursor/<update-trap>
-	.Mouse/state DEI ?on-mouse/check-hit
-	#01 /<set-state>
-	cursor/<refocus>
-	BRK
-
 @asm/on-button ( -> )
 	BRK
 
@@ -236,6 +229,27 @@
 	DUP2 ,&y LDR2 #0004 ADD2 SUB2 #0014 GTH2 ?{
 		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #0088 GTH2 ?{ /<trap> } }
 	JMP2r
+
+@asm/on-mouse ( -> )
+	cursor/<update-trap>
+	[ LIT2 &last $1 -Mouse/state ] DEI DUP ,&last STR
+	( | handlers )
+	DUP2 #0001 EQU2 ?&on-down
+	DUP2 #0100 EQU2 ?&on-up
+	DUP2 #0000 EQU2 ?&on-hover
+	POP2 BRK
+
+	&on-down ( states* -> )
+	POP2 #01 /<set-state>
+	BRK
+
+	&on-up ( states* -> )
+	POP2 #00 /<set-state>
+	BRK
+
+	&on-hover ( states* -> )
+	POP2 cursor/<refocus>
+	BRK
 
 (
 @|res )
@@ -378,11 +392,8 @@
 	0000 0000 ff00 0000 0000 0000 0000 0000
 	0000 0000 0000 0000 0000 00ff 0000 0000 ]
 
-@button/<draw> ( name* state enabled -- )
-	STH
-	DUP <phex>/b
-	#0a18 DEO
-	#00 SWP #60 SFT2 STH2
+@button/<draw> ( name* state -- )
+	STHk #00 SWP #60 SFT2 STH2
 	[ LIT2 35 -Screen/auto ] DEO
 	;&edge-chr STH2kr ADD2 .Screen/addr DEO2
 	[ LIT2 81 -Screen/sprite ] DEO
