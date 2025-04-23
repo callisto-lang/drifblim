@@ -67,10 +67,10 @@
 	( >> )
 
 @src/on-push ( c -> )
-	DUP ?{ POP BRK }
 	DUP #08 EQU ?/on-pop
 	DUP #09 EQU ?/on-done
 	DUP #0d EQU ?/on-done
+	DUP #1f GTH ?{ POP BRK }
 	[ LIT2 -&cap &ptr -&buf ]
 	( clamp ) NEQk ?{ POP POP2 BRK }
 	INCk ,&ptr STR
@@ -138,9 +138,9 @@
 	( >> )
 
 @dst/on-push ( c -> )
-	DUP ?{ POP BRK }
 	DUP #0d EQU ?/on-done
 	DUP #08 EQU ?/on-pop
+	DUP #1f GTH ?{ POP BRK }
 	[ LIT2 -&cap &ptr -&buf ]
 	( clamp ) NEQk ?{ POP POP2 BRK }
 	INCk ,&ptr STR
@@ -222,6 +222,7 @@
 	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
 
 @asm/on-button ( -> )
+	[ LIT2 0d -Controller/key ] DEI NEQ ?{ <assemble> }
 	BRK
 
 @asm/hit ( x* y* -- x* y* )
@@ -279,7 +280,7 @@
 	JMP2r
 
 	&frilhor-chr [ 0000 83c7 ffff ffff 0000 0083 c7ff ffff ]
-	&buf "Ready. $100
+	&buf "Ready. $100 &cap $1
 
 (
 @|builtins )
