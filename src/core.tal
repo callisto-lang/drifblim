@@ -2,9 +2,9 @@
 
 @assembly/<resolve> ( -- )
 	;token/mode LDA2 ;asm-comment NEQ2 ?{
-		( open cmt ) ;dict/open ;dict/trail ;dict/Comment !err/<set> }
+		( ! ) ;dict/open ;dict/trail ;dict/Comment !err/<set> }
 	;token/mode LDA2 ;asm-macro NEQ2 ?{
-		( open mac ) ;dict/open ;dict/trail ;dict/Macro !err/<set> }
+		( ! ) ;dict/open ;dict/trail ;dict/Macro !err/<set> }
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
@@ -22,7 +22,10 @@
 		[ LIT2 &mode =asm-default ] JSR2 !/<new> }
 	( | append )
 	[ LIT2 00 &ptr -&buf ]
-	( overflow ) DUP .&cap EQU ?{ INCk ,&ptr STR }
+	( overflow ) DUP .&cap LTH ?{
+		POP2 POP2
+		( ! ) ;dict/exceeded ;&buf ;dict/Symbol !err/<set> }
+	INCk ,&ptr STR
 	STZ2
 	JMP2r
 
@@ -34,7 +37,8 @@
 	JMP2r
 
 @token/<set-comment> ( -- )
-	LDA2 [ LIT2 "( 00 ] EQU2 ?{ ;dict/invalid ;&buf ;dict/Comment !err/<set> }
+	LDA2 [ LIT2 "( 00 ] EQU2 ?{
+		( ! ) ;dict/invalid ;&buf ;dict/Comment !err/<set> }
 	;asm-comment ;token/mode STA2
 	[ LIT2 01 _asm-comment/depth ] STR
 	JMP2r
@@ -79,7 +83,8 @@
 
 @scope/<push-byte> ( c -- )
 	[ LIT2 00 &ptr -&buf ] INCk ,&ptr STR
-	( overflow ) DUP .&cap LTH ?{ ;dict/exceeded ;&buf ;dict/Symbol err/<set> }
+	( overflow ) DUP .&cap LTH ?{
+		( ! ) ;dict/exceeded ;&buf ;dict/Symbol err/<set> }
 	STZ2
 	JMP2r
 

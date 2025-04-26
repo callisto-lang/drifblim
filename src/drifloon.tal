@@ -19,8 +19,8 @@
 	BRK
 
 @on-console ( -> )
-	.Console/read DEI token/<push-byte>
-	[ LIT2 04 -Console/type ] DEI EQU ?{ BRK }
+	[ LIT2 04 -Console/type ] DEI EQU ?{
+		.Console/read DEI token/<push-byte> BRK }
 	assembly/<resolve>
 	BRK
 

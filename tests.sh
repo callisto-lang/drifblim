@@ -11,7 +11,7 @@ $asm
 echo "usage: drifblim.rom in.tal out.rom"
 $asm examples/hello.tal
 
-echo "" && echo "@Scope" | $as > bin/res.tal
+echo "" && echo "@scope" | $as > bin/res.tal
 echo "Assembled in 0 bytes."
 
 echo "" && echo "Token ----------------------------------------------"
@@ -81,6 +81,12 @@ echo "Symbol duplicate: @label"
 
 echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
 echo "Symbol duplicate: foo in scope"
+
+echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
+echo "Symbol exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
+
+echo "" && echo "@AAAAAAAAAAAAAAAAAAAAAAAAA &BBBBBBBBBBBBBBBBBBBBBBB @end" | $as > bin/res.tal
+echo "Symbol exceeded: AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB"
 
 echo "" && echo "Opcode ---------------------------------------------"
 
