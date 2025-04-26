@@ -52,6 +52,9 @@ echo "Token invalid: ? in scope"
 echo "" && echo "@scope # @end" | $as > bin/res.tal
 echo "Token invalid: # in scope"
 
+echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
+echo "Token exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
+
 echo "" && echo "Comment --------------------------------------------"
 
 echo "" && echo "@scope ( BRK @end" | $as > bin/res.tal
@@ -68,25 +71,22 @@ echo "Writing in zero-page: #1234 in scope"
 echo "" && echo "Symbol ---------------------------------------------"
 
 echo "" && echo "@scope @foo @foo @end" | $as > bin/res.tal
-echo "Symbol duplicate: foo"
+echo "Symbol duplicate: @foo in foo"
 
 echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
-echo "Symbol invalid: 1234"
+echo "Symbol invalid: @1234 in 1234"
 
 echo "" && echo "@scope @LDA @end" | $as > bin/res.tal
-echo "Symbol invalid: LDA"
+echo "Symbol invalid: @LDA in LDA"
 
 echo "" && echo "%label { SUB } @label" | $as > bin/res.tal
-echo "Symbol duplicate: @label"
+echo "Symbol duplicate: @label in label"
 
 echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
-echo "Symbol duplicate: foo in scope"
-
-echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
-echo "Symbol exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
+echo "Symbol duplicate: &foo in scope/foo"
 
 echo "" && echo "@AAAAAAAAAAAAAAAAAAAAAAAAA &BBBBBBBBBBBBBBBBBBBBBBB @end" | $as > bin/res.tal
-echo "Symbol exceeded: AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB"
+echo "Symbol exceeded: &BBBBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB"
 
 echo "" && echo "Opcode ---------------------------------------------"
 
@@ -148,5 +148,5 @@ echo "" && echo "@scope ,next \$81 @next @end" | $as > bin/res.tal
 echo "Reference too far: next in scope"
 
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
-echo "Reference too far: back in scope"
+echo "Reference too far: ,back in scope"
 
