@@ -53,7 +53,7 @@ echo "" && echo "@scope # @end" | $as > bin/res.tal
 echo "Token invalid: # in scope"
 
 echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
-echo "Token exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
+echo "Token exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
 
 echo "" && echo "Comment --------------------------------------------"
 
@@ -86,7 +86,7 @@ echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
 echo "Symbol duplicate: &foo in scope/foo"
 
 echo "" && echo "@AAAAAAAAAAAAAAAAAAAAAAAAA &BBBBBBBBBBBBBBBBBBBBBBB @end" | $as > bin/res.tal
-echo "Symbol exceeded: &BBBBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB"
+echo "Symbol exceeded: &BBBBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBB"
 
 echo "" && echo "Opcode ---------------------------------------------"
 
