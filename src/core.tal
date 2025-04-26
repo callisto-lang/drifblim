@@ -135,6 +135,9 @@
 	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Token !err/<token> }
 	JMP2r
 
+(
+@|Opcodes )
+
 @opcodes/find ( str* -- str* <opc> )
 	[ LITr 00 ] ;&lut
 	&>l ( -- )
@@ -148,7 +151,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ] $1
+	"BRK ]
 
 (
 @|Lambda )
@@ -391,7 +394,7 @@
 	( >> )
 
 @refs/get-distance ( addr* -- distance* )
-	( ) INC2 INC2 SUB2 JMP2r
+	INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
@@ -462,7 +465,7 @@
 	;&mem ADD2 STA
 	( not zero ) ?{ JMP2r }
 	/get-head
-	( ) OVR ?{
+	OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	;&length STA2
 	JMP2r
@@ -519,7 +522,8 @@
 @|Error )
 
 @err/<token> ( adj* topic* -- )
-	;token/buf SWP2 ( >> )
+	;token/buf SWP2
+	( >> )
 
 @err/<generic> ( adj* keyword* topic* -- )
 	.System/state DEI ?{
