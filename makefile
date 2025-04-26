@@ -47,7 +47,7 @@ archive: all bin/hx.rom
 	@ cp etc/xh.tal ../oscean/etc/xh.tal.txt
 	@ cp etc/eq.tal ../oscean/etc/eq.tal.txt
 
-install: bin/drifloon.rom bin/drifblim.rom
+install: bin/drifloon.rom bin/drifblim.rom bin/drif.rom
 	@ cp bin/drifloon.rom ${DIR}
 	@ cp bin/drifblim.rom ${DIR}
 	@ cp bin/drif.rom ${DIR}
