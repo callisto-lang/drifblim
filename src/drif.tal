@@ -47,7 +47,7 @@
 	( name ) "Drif 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "23 20 "Apr 20 "2025 $2
+	( date ) "25 20 "Apr 20 "2025 $2
 
 (
 @|src )
@@ -350,8 +350,7 @@
 	"; =&litabs "= =&rawabs
 	"? =&litjci "! =&litjmi
 	"# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal
-	5b =&ignore 5d =&ignore ] $1
+	"} =&lambda "~ =&inctal ] $1
 
 @<resize> ( -- )
 	#0110 #00c4 ;res/buf scln #40 SFT2 ADD2 window/<set-size>

@@ -45,11 +45,11 @@
 	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
 	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
 	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
-	"} =&lambda 5b =&ignore 5d =&ignore "~ =&ignore ] $1
+	"} =&lambda "~ =&ignore ] $1
 
 @meta $1
 	( name ) "Drifloon 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "18 20 "Apr 20 "2025 $2
+	( date ) "25 20 "Apr 20 "2025 $2
 
