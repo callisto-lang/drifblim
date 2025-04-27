@@ -422,12 +422,12 @@
 	JMP2r
 
 @rom/<write-macro> ( t* macro* -- )
-	token/<new>
+	NIP2 token/<new>
 	scap/
-	&>body ( body* -- cap* )
-		LDAk token/<push-byte>
-		INC2 LDAk ?&>body
-	NIP2 LDA !token/<push-byte>
+	&>lm ( body* -- cap* )
+		LDAk DUP ?{ !token/<push-byte> }
+		token/<push-byte>
+		INC2 !&>lm
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
