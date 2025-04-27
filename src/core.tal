@@ -178,7 +178,7 @@
 (
 @|Macros )
 
-@macros/<new> ( name* -- name* )
+@macros/<new> ( name* -- )
 	DUP2 /find-name INC2 ORA ?{
 		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word>
 			#00 /<push-byte> !token/<set-macro> } }
@@ -187,15 +187,15 @@
 @macros/find-name ( name* -- <addr>* )
 	STH2
 	,&ptr LDR2 ;&mem
-	&>l ( -- )
+	&>lf ( -- )
 		DUP2 STH2kr scmp ?{
-			scap/ scap/ GTH2k ?&>l
+			scap/ scap/ GTH2k ?&>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	&l LDAk /<push-byte>
-	INC2 LDAk ?&l
+	&>lp LDAk /<push-byte>
+		INC2 LDAk ?&>lp
 	POP2 JMP2r
 
 @macros/<push-byte> ( byte -- )
@@ -486,7 +486,7 @@
 
 @shex ( str* -- value* )
 	[ LIT2r 0000 ]
-	&>w ( `i* -- )
+	&>w ( i* -- )
 		( acc ) [ LITr 40 ] SFT2r
 		( res ) chex [ LITr 00 ] STH
 		ADD2r INC2 LDAk ?&>w
@@ -513,14 +513,15 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&>l ( a* `b* -- f )
+	&>l ( a* b* -- f )
 		LDAk #00 EQU ?{
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	LDA LDAr STHr #0000 EQU2 JMP2r
 
 @scmp3 ( a* b* -- f )
-	LDA2k ROT2 LDA2k ROT2 EQU2 STH
-	INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+	LDAk STH
+	SWP2 LDAk STH
+	EQUr INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
 
 (
 @|Error )
