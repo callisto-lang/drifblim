@@ -350,7 +350,8 @@
 	"; =&litabs "= =&rawabs
 	"? =&litjci "! =&litjmi
 	"# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal ] $1
+	"} =&lambda "~ =&inctal
+	"[ =&ignore "] =&ignore ] $1
 
 @<resize> ( -- )
 	#0110 #00c4 ;res/buf scln #40 SFT2 ADD2 window/<set-size>

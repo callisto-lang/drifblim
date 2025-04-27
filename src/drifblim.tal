@@ -111,7 +111,8 @@
 	"; =&litabs "= =&rawabs
 	"? =&litjci "! =&litjmi
 	"# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal ] $1
+	"} =&lambda "~ =&inctal
+	"[ =&ignore "] =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&Path "Path $1

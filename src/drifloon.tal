@@ -45,7 +45,7 @@
 	"% =&macros "( =&coment ", =&litrel "_ =&rawrel
 	". =&litzep "- =&rawzep "; =&litabs "= =&rawabs
 	"? =&litjci "! =&litjmi "# =&lithex "" =&rawstr
-	"} =&lambda "~ =&ignore ] $1
+	"} =&lambda "[ =&ignore "] =&ignore "~ =&ignore ] $1
 
 @meta $1
 	( name ) "Drifloon 0a

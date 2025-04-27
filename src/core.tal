@@ -198,7 +198,7 @@
 	( >> )
 
 @macros/<push-byte> ( byte -- )
-	[ LIT2 &ptr =&mem-post ] INC2k
+	[ LIT2 &ptr =&mem ] INC2k
 	( | check overflow )
 	DUP2 ;&memend LTH2 ?{
 		( ! ) ;dict/exceeded ;dict/Macros err/<token> }
@@ -586,9 +586,7 @@
 @|Buffers )
 
 @macros/mem ( name..20, value..00 )
-	( ) "[ 20 "$0 00
-	( ) "] 20 "$0 00
-	( ) &mem-post $1000 &memend
+	$1000 &memend
 
 @lambda/mem $100
 
