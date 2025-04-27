@@ -513,15 +513,15 @@
 
 @scmp ( a* b* -- f )
 	STH2
-	&>l ( a* b* -- f )
-		LDAk #00 EQU ?{
-			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
-	LDA LDAr STHr #0000 EQU2 JMP2r
+	&>l ( -- )
+		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
+		LDAk LDAkr STHr NEQ ?&d
+		INC2 INC2r !&>l
 
 @scmp3 ( a* b* -- f )
-	LDAk STH
-	SWP2 LDAk STH
-	EQUr INC2 LDA2 SWP2 INC2 LDA2 EQU2 STHr AND JMP2r
+	STH2
+	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
+	LDA2r LDA2 STH2r EQU2 JMP2r
 
 (
 @|Error )
