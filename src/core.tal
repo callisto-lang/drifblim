@@ -188,14 +188,14 @@
 	STH2
 	,&ptr LDR2 ;&mem
 	&>l ( -- )
-		DUP2 STH2kr wcmp ?{
+		DUP2 STH2kr scmp ?{
 			scap/ scap/ GTH2k ?&>l
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	LDAk /<push-byte>
-	INC2 LDAk ?&<push-word>
+	&l LDAk /<push-byte>
+	INC2 LDAk ?&l
 	POP2 JMP2r
 
 @macros/<push-byte> ( byte -- )
@@ -213,7 +213,7 @@
 @syms/<new> ( name* -- )
 	DUP2 macros/find-name INC2 ORA ?&duplicate
 	DUP2 /find-name INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared rom/get-head !/<push> }
+		( alloc ) POP2 .SymType/declared rom/get-head !/<push-sym> }
 	( | name* sym* -- )
 	INC2k INC2 LDA .SymType/declared AND ?{
 		( addr* ) rom/get-head OVR2 STA2
@@ -228,7 +228,7 @@
 	STH2
 	;&ptr LDA2 ;&mem
 	&>lfn ( -- )
-		DUP2 #0003 ADD2 STH2kr wcmp ?{
+		DUP2 #0003 ADD2 STH2kr scmp ?{
 			#0003 ADD2 scap/ GTH2k ?&>lfn
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -244,10 +244,10 @@
 @syms/find-alloc ( name* -- <addr>* )
 	DUP2 /find-name INC2k ORA ?{
 		( null* -> ptr* ) POP2 ,&ptr LDR2
-		( alloc ) OVR2 .SymType/used #ffff /<push> }
+		( alloc ) OVR2 .SymType/used #ffff /<push-sym> }
 	NIP2 JMP2r
 
-@syms/<push> ( name* type addr* -- )
+@syms/<push-sym> ( name* type addr* -- )
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
@@ -511,12 +511,12 @@
 	INC2 & LDAk ?scap
 	INC2 JMP2r
 
-@wcmp ( a* b* -- f )
+@scmp ( a* b* -- f )
 	STH2
 	&>l ( a* `b* -- f )
-		LDAk #21 LTH ?{
+		LDAk #00 EQU ?{
 			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
-	LDA #21 LTH LDAr STHr #21 LTH AND JMP2r
+	LDA LDAr STHr #0000 EQU2 JMP2r
 
 @scmp3 ( a* b* -- f )
 	LDA2k ROT2 LDA2k ROT2 EQU2 STH
