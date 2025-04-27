@@ -424,10 +424,10 @@
 @rom/<write-macro> ( t* macro* -- )
 	NIP2 token/<new>
 	scap/
-	&>lm ( body* -- cap* )
-		LDAk DUP ?{ !token/<push-byte> }
-		token/<push-byte>
-		INC2 !&>lm
+	&>lm ( body* -- )
+		LDAk STHk token/<push-byte>
+		INC2 STHr ?&>lm
+	POP2 JMP2r
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
