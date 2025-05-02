@@ -93,7 +93,7 @@
 	[ LIT2 80 -System/state ] DEI NEQ ?{
 		;dst/buf .File/name DEO2
 		;syms/ptr LDA2 ;syms/mem
-		&>l ( -- )
+		&>l
 			#0002 .File/length DEO2
 			DUP2 .File/write DEO2
 			#0003 ADD2 DUP2 scap/ SWP2k SUB2 .File/length DEO2
