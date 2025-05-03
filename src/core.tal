@@ -194,7 +194,6 @@
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-
 	&>lp
 		LDAk /<push-byte>
 		INC2 LDAk ?&>lp
@@ -547,7 +546,6 @@
 	POP2 POP2 POP2 JMP2r
 
 @err/<pstr> ( str* -- )
-
 	&>l
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<pchr>
