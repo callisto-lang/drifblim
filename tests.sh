@@ -95,19 +95,28 @@ echo "Opcode invalid: ADD2q in scope"
 
 echo "" && echo "Number ---------------------------------------------"
 
-echo "" && echo "@scope 2 @end" | $as > bin/res.tal
+echo "" && echo "2" | $as > bin/res.tal
 echo "Number invalid: 2 in scope"
 
-echo "" && echo "@scope 123 @end" | $as > bin/res.tal
+echo "" && echo "123" | $as > bin/res.tal
 echo "Number invalid: 123 in scope"
 
-echo "" && echo "@scope 12345 @end" | $as > bin/res.tal
+echo "" && echo "12345" | $as > bin/res.tal
 echo "Number invalid: 12345 in scope"
 
-echo "" && echo "@scope #1g @end" | $as > bin/res.tal
+echo "" && echo "#2" | $as > bin/res.tal
+echo "Number invalid: #2 in scope"
+
+echo "" && echo "#123" | $as > bin/res.tal
+echo "Number invalid: #123 in scope"
+
+echo "" && echo "#12345" | $as > bin/res.tal
+echo "Number invalid: #12345 in scope"
+
+echo "" && echo "@scope #1g" | $as > bin/res.tal
 echo "Number invalid: #1g in scope"
 
-echo "" && echo "@scope #123g @end" | $as > bin/res.tal
+echo "" && echo "@scope #123g" | $as > bin/res.tal
 echo "Number invalid: #123g in scope"
 
 echo "" && echo "Macros ---------------------------------------------"
@@ -149,4 +158,3 @@ echo "Reference too far: next in scope"
 
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
 echo "Reference too far: ,back in scope"
-
