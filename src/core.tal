@@ -601,5 +601,12 @@
 	$4800 &memend
 
 @rom/mem ( zeropage )
-	$100 &output
+	$100
+	&output
+
+(
+@|Enums )
+
+|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
+|00 @SymType $40 &used $40 &declared
 

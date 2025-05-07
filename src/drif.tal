@@ -11,8 +11,6 @@
 (
 @|enums )
 
-|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
-|00 @SymType $40 &used $40 &declared
 |0012 @header/height
 
 |000
@@ -47,7 +45,7 @@
 	( name ) "Drif 0a
 	( desc ) "Uxntal 20 "Assembler 0a
 	( auth ) "By 20 "Devine 20 "Lu 20 "Linvega 0a
-	( date ) "3 20 "May 20 "2025 $2
+	( date ) "7 20 "May 20 "2025 $2
 
 (
 @|src )
