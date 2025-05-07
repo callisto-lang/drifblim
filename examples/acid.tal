@@ -47,15 +47,15 @@ BRK
 (
 @|Tests )
 
-
-	
-
 @padabs/<test> ( -- )
 	.&p1 .&p2 EQU
 	;&p3 ;&p4 EQU2
 		AND
 	.&p1 #0f EQU
-		AND ;&name !<validate>
+		AND
+	.&p5 #88 EQU
+		AND
+	;&name !<validate>
 	&name "padabs 2000
 
 @padrel/<test> ( -- )
@@ -191,6 +191,8 @@ BRK
 
 @Lut2
 	&a _{ "a "b &b _{ "c "d } &c "e "f } &d
+
+@padabs/marker |88 @padabs/p5 |&marker
 
 (
 @|References )
