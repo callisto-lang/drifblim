@@ -88,7 +88,7 @@ BRK
 	( normal ) #1234 #0001 ADD2 #1235 EQU2
 	( suffixes ) LITr 12 INCkkrr ADDr LITr 25 EQUrrkk STHr POP2r
 		AND ;&name !<validate>
-	&name "lithex 2000
+	&name "opcode 2000
 
 @rawasc/<test> ( -- )
 	LIT "0 #30 EQU
