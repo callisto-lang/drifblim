@@ -205,7 +205,7 @@
 	;&on-mouse .Mouse/vector DEO2
 	;&on-button .Controller/vector DEO2
 	( | Let's go! )
-	<redraw> !<assemble>
+	<redraw> !/<press>
 
 @asm/<validate> ( -- )
 	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
@@ -228,13 +228,26 @@
 	;&on-mouse .Mouse/vector DEI2 NEQ2 JMP2r
 
 @asm/on-button ( -> )
-	[ LIT2 0d -Controller/key ] DEI NEQ ?{ <assemble> }
+	[ LIT2 0d -Controller/key ] DEI NEQ ?{ /<press> }
 	BRK
 
 @asm/hit ( x* y* -- x* y* )
 	DUP2 ,&y LDR2 #0004 ADD2 SUB2 #0014 GTH2 ?{
 		OVR2 ,&x LDR2 #0006 ADD2 SUB2 #0088 GTH2 ?{ /<trap> } }
 	JMP2r
+
+@asm/<press> ( -- )
+	( src ) [ LIT2 00 -src/buf ] LDZ NEQ
+	( dst ) [ LIT2 00 -dst/buf ] LDZ NEQ AND #10 SFT ?{ JMP2r }
+	#03 /<set-state>
+	[ LIT2 f0 _&f ] STR
+	;&on-frame .Screen/vector DEO2 !<assemble>
+
+@asm/on-frame ( -> )
+	LIT &f f0 INCk ,&f STR
+	?{ #0000 .Screen/vector DEO2
+		/<validate> }
+	BRK
 
 @asm/on-mouse ( -> )
 	cursor/<update-trap>
@@ -271,7 +284,7 @@
 	#00bc .Screen/y DEO2
 	[ LIT2 15 -Screen/auto ] DEO
 	;&buf
-	&>w ( -- )
+	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		DUP #0a NEQ ?{
 			POP #0008 .Screen/x DEO2
@@ -317,7 +330,7 @@
 	#0001 .File/length DEO2
 	token/<new>
 	#0000
-	&>s ( len* -- )
+	&>s
 		.System/state DEI ?&end
 		;&c .File/read DEO2
 		.File/success-lb DEI ?{
@@ -450,7 +463,7 @@
 
 @scln ( str* -- lines* )
 	[ LIT2r 0000 ]
-	&>l ( -- )
+	&>l
 		LDAk DUP ?{ POP POP2 STH2r JMP2r }
 		#0a NEQ ?{ INC2r }
 		INC2 !&>l
