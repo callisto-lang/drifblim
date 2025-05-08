@@ -34,21 +34,12 @@
 		INC2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
+@runes/concat ( t* -- )
+	POP2 JMP2r
+
 @err/<pchr> ( c -- )
 	#19 DEO
 	JMP2r
-
-@runes/lut [
-	"| =&padabs "$ =&padrel
-	"@ =&toplab "& =&sublab
-	"% =&macros "( =&coment
-	", =&litrel "_ =&rawrel
-	". =&litzep "- =&rawzep
-	"; =&litabs "= =&rawabs
-	"? =&litjci "! =&litjmi
-	"# =&lithex "" =&rawstr
-	"} =&lambda "[ =&ignore
-	"] =&ignore "~ =&ignore ] $1
 
 @meta $1
 	( name ) "Drifloon 0a

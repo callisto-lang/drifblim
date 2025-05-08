@@ -58,7 +58,7 @@
 	#19 DEO
 	JMP2r
 
-@runes/inctal INC2
+@runes/concat INC2
 	( >> )
 
 @<handle-file> ( f* -- )
@@ -99,18 +99,6 @@
 			GTH2k ?&>l
 		POP2 POP2 }
 	JMP2r
-
-@runes/lut [
-	"| =&padabs "$ =&padrel
-	"@ =&toplab "& =&sublab
-	"% =&macros "( =&coment
-	", =&litrel "_ =&rawrel
-	". =&litzep "- =&rawzep
-	"; =&litabs "= =&rawabs
-	"? =&litjci "! =&litjmi
-	"# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal
-	"[ =&ignore "] =&ignore ] $1
 
 @dict/usage "usage: 20 "drifblim.rom 20 "in.tal 20 "out.rom 0a $1
 	&Path "Path $1
