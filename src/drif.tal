@@ -309,7 +309,7 @@
 @err/<pchr> ( c -- )
 	!res/<push>
 
-@runes/inctal INC2
+@runes/concat INC2
 	( >> )
 
 @<handle-file> ( f* -- )
@@ -338,18 +338,6 @@
 	#0100 SUB2 .File/length DEO2
 	;&output .File/write DEO2
 	JMP2r
-
-@runes/lut [
-	"| =&padabs "$ =&padrel
-	"@ =&toplab "& =&sublab
-	"% =&macros "( =&coment
-	", =&litrel "_ =&rawrel
-	". =&litzep "- =&rawzep
-	"; =&litabs "= =&rawabs
-	"? =&litjci "! =&litjmi
-	"# =&lithex "" =&rawstr
-	"} =&lambda "~ =&inctal
-	"[ =&ignore "] =&ignore ] $1
 
 @<resize> ( -- )
 	#0110 #00c4 ;res/buf scln #40 SFT2 ADD2 window/<set-size>
