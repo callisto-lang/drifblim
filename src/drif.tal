@@ -68,6 +68,7 @@
 	DUP #08 EQU ?/on-pop
 	DUP #09 EQU ?/on-tab
 	DUP #0d EQU ?/on-done
+	DUP #1b EQU ?/on-esc
 	DUP #1f GTH ?{ POP BRK }
 	[ LIT2 -&cap &ptr -&buf ]
 	( clamp ) NEQk ?{ POP POP2 BRK }
@@ -81,6 +82,11 @@
 
 @src/on-done ( c -> )
 	POP dst/<trap>
+	BRK
+
+@src/on-esc ( c -> )
+	POP asm/<focus>
+	/<draw>
 	BRK
 
 @src/on-pop ( c -> )
@@ -142,6 +148,7 @@
 	DUP #0d EQU ?/on-done
 	DUP #08 EQU ?/on-pop
 	DUP #09 EQU ?/on-tab
+	DUP #1b EQU ?/on-esc
 	DUP #1f GTH ?{ POP BRK }
 	[ LIT2 -&cap &ptr -&buf ]
 	( clamp ) NEQk ?{ POP POP2 BRK }
@@ -156,6 +163,11 @@
 
 @dst/on-done ( c -> )
 	POP asm/<trap>
+	BRK
+
+@dst/on-esc ( c -> )
+	POP asm/<focus>
+	/<draw>
 	BRK
 
 @dst/on-pop ( c -> )
@@ -199,11 +211,15 @@
 (
 @|assemble )
 
+@asm/<focus> ( -- )
+	;&on-mouse .Mouse/vector DEO2
+	;&on-button .Controller/vector DEO2
+	JMP2r
+
 @asm/<trap> ( -- )
 	/inactive ?{ JMP2r }
 	;&state LDA #02 AND ?{ JMP2r }
-	;&on-mouse .Mouse/vector DEO2
-	;&on-button .Controller/vector DEO2
+	/<focus>
 	( | Let's go! )
 	<redraw> !/<press>
 
