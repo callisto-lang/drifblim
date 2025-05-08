@@ -38,7 +38,7 @@ lint: all
 
 archive: all bin/hx.rom
 	@ cat src/drifblim.tal src/core.tal | sed 's/~[^[:space:]]\+//' > bin/drifblim.tal
-	@ cat src/drifloon.tal src/core.tal > bin/drifloon.tal
+	@ cat src/drifloon.tal src/core.tal | sed 's/~[^[:space:]]\+//' > bin/drifloon.tal
 	@ cp bin/drifblim.tal ../oscean/etc/drifblim.tal.txt
 	@ cp bin/drifloon.tal ../oscean/etc/drifloon.tal.txt
 	@ cat bin/drifblim.rom | ${EMU} bin/hx.rom > ../oscean/etc/drifblim.rom.txt
