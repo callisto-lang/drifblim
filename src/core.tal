@@ -192,10 +192,11 @@
 @|Macros )
 
 @macros/<new> ( name* -- )
-	DUP2 /find-name INC2 ORA ?{
-		DUP2 syms/find-name INC2 ORA ?{ macros/<push-word>
-			#00 /<push-byte> !token/<set-macro> } }
-	POP2 ;dict/duplicate ;dict/Macro !err/<token>
+	validate-name ?&err-invalid
+	DUP2 /find-name INC2 ORA ?&err-duplicate
+	DUP2 syms/find-name INC2 ORA ?&err-duplicate
+	macros/<push-word>
+	#00 /<push-byte> !token/<set-macro>
 
 @macros/find-name ( name* -- <addr>* )
 	STH2
@@ -221,6 +222,14 @@
 	STA
 	JMP2r
 
+@macros/err-invalid ( name* -- )
+	POP2
+	( ! ) ;dict/invalid ;dict/Macro !err/<token>
+
+@macros/err-duplicate ( name* -- )
+	POP2
+	( ! ) ;dict/duplicate ;dict/Macro !err/<token>
+
 (
 @|Syms )
 
@@ -235,9 +244,13 @@
 	POP2
 	( >> )
 
-@syms/duplicate ( name* -- )
+@syms/err-duplicate ( name* -- )
 	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !err/<token>
+
+@syms/err-invalid ( name* -- )
+	/<push-string>
+	( ! ) ;dict/invalid ;dict/Symbol !err/<token>
 
 @syms/find-name ( name* -- <sym>* )
 	STH2
@@ -266,10 +279,8 @@
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
-	( not hex ) is-hex ?&invalid
-	( not runic ) LDAk runes/find INC2 ORA ?&invalid
-	( not opcode ) opcodes/find INC ?&invalid
-	( not macro ) DUP2 macros/find-name INC2 ORA ?&duplicate
+	validate-name ?&err-invalid
+	DUP2 macros/find-name INC2 ORA ?&err-duplicate
 	( >> )
 
 @syms/<push-string> ( word* -- )
@@ -287,9 +298,7 @@
 	STA
 	JMP2r
 
-@syms/invalid ( name* -- )
-	/<push-string>
-	( ! ) ;dict/invalid ;dict/Symbol !err/<token>
+
 
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem EQU2k ?{
@@ -489,6 +498,12 @@
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	;&length STA2
 	JMP2r
+
+@validate-name ( name* -- name* fail )
+	( not hex ) is-hex ?{
+		( not runic ) LDAk runes/find INC2 ORA ?{
+			( not opcode ) opcodes/find INC ?{ #00 JMP2r } } }
+	#01 JMP2r
 
 (
 @|Stdlib )

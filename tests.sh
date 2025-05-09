@@ -127,6 +127,15 @@ echo "" && echo "Macros ---------------------------------------------"
 echo "" && echo "@scope %label { ADD } %label { SUB }" | $as > bin/res.tal
 echo "Macro duplicate: %label in scope"
 
+echo "" && echo "@scope %add2 { ADD } #1234" | $as > bin/res.tal
+echo "Macro invalid: %add2 in scope"
+
+echo "" && echo "@scope %-test { ADD } #1234" | $as > bin/res.tal
+echo "Macro invalid: %-test in scope"
+
+echo "" && echo "@scope %JCN2 { ADD } #1234" | $as > bin/res.tal
+echo "Macro invalid: %JCN2 in scope"
+
 echo "" && echo "@scope %label #1234" | $as > bin/res.tal
 echo "Macro open: .. in scope"
 
