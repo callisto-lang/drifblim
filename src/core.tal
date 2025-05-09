@@ -158,19 +158,16 @@
 	DUP2 /parse STH
 	DUP2 ;&brk scmp3 STHr ORA JMP2r
 
-@opcodes/find ( str* -- str* <opc> )
+@opcodes/parse ( str* -- byte )
 	[ LITr 00 ] ;&lut
 	&>l
 		SWP2k scmp3 ?{
 			INCr #0003 ADD2 LDAk ?&>l
-		POPr [ LITr ff ] }
-	POP2 STHr JMP2r
-
-@opcodes/parse ( str* -- byte )
-	/find DUP #ff NEQ ?{ POP POP2 #00 JMP2r }
-	( wrap ) #1f AND STH
+		POPr POP2 POP2 #00 JMP2r }
+	POP2
+	( wrap ) [ LITr 1f ] ANDr
 	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
-	( mode ) #0003 ADD2
+	( move ) #0003 ADD2
 	&>w
 		LDAk #21 LTH ?{
 			( | parse modes )
