@@ -162,6 +162,21 @@
 		POPr [ LITr ff ] }
 	POP2 STHr JMP2r
 
+@opcodes/parse ( str* -- str* byte )
+	/find DUP #ff NEQ ?{ POP #00 JMP2r }
+	( wrap ) #1f AND STH
+	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
+	( mode ) DUP2 #0003 ADD2
+	&>w
+		LDAk #21 LTH ?{
+			( | parse modes )
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			POP2 POPr #00 JMP2r
+			&r INC2 !&>w }
+	POP2 STHr JMP2r
+
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
@@ -459,16 +474,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* opc -- )
-	#1f AND STH
-	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
-	ORAr #0003 ADD2
-	&>w
-		LDAk #21 LTH ?{
-			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			( ! ) ;dict/invalid ;dict/Opcode err/<token> &r INC2 !&>w }
-	POP2 STHr !/<write-byte>
+	POP opcodes/parse NIP NIP !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
 	slen #02 NEQ #50 SFT #80 ORA /<write-byte>
