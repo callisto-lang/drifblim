@@ -50,7 +50,7 @@
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/is-opcode ?rom/<write-opcode>
+		( opc ) POP2 DUP2 opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
@@ -154,9 +154,9 @@
 (
 @|Opcodes )
 
-@opcodes/is-opcode ( str* -- str* t )
+@opcodes/is-opcode ( str* -- t )
 	DUP2 ;&brk scmp3 STH
-	DUP2 /parse STHr ORA JMP2r
+	/parse STHr ORA JMP2r
 
 @opcodes/find ( str* -- str* <opc> )
 	[ LITr 00 ] ;&lut
@@ -213,7 +213,7 @@
 @name/<validate> ( name* -- name* )
 	( not hex ) is-hex ?{
 		( not runic ) LDAk runes/find INC2 ORA ?{
-			( not opcode ) opcodes/find INC ?{ JMP2r } } }
+			( not opcode ) opcodes/is-opcode ?{ JMP2r } } }
 	;dict/invalid ;dict/Name !err/<token>
 
 (
