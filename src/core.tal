@@ -162,11 +162,11 @@
 		POPr [ LITr ff ] }
 	POP2 STHr JMP2r
 
-@opcodes/parse ( str* -- str* byte )
+@opcodes/parse ( str* -- byte )
 	/find DUP #ff NEQ ?{ POP #00 JMP2r }
 	( wrap ) #1f AND STH
 	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
-	( mode ) DUP2 #0003 ADD2
+	( mode ) #0003 ADD2
 	&>w
 		LDAk #21 LTH ?{
 			( | parse modes )
@@ -474,7 +474,7 @@
 	POP2 JMP2r
 
 @rom/<write-opcode> ( str* opc -- )
-	POP opcodes/parse NIP NIP !/<write-byte>
+	POP opcodes/parse !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
 	slen #02 NEQ #50 SFT #80 ORA /<write-byte>
