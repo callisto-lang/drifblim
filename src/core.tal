@@ -50,7 +50,7 @@
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
+		( opc ) POP2 opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
@@ -154,6 +154,10 @@
 (
 @|Opcodes )
 
+@opcodes/is-opcode ( str* -- str* t )
+	DUP2 ;&brk scmp3 STH
+	DUP2 /parse STHr ORA JMP2r
+
 @opcodes/find ( str* -- str* <opc> )
 	[ LITr 00 ] ;&lut
 	&>l
@@ -182,7 +186,7 @@
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ]
+	&brk "BRK ]
 
 (
 @|Lambda )
