@@ -50,8 +50,8 @@
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/find INCk ?rom/<write-opcode>
-		( imm ) POP !runes/litjsi }
+		( opc ) POP2 opcodes/find INC ?rom/<write-opcode>
+		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
 @asm-comment ( t* -- )
@@ -473,8 +473,8 @@
 	INC2 LDAk ?&<write-str>
 	POP2 JMP2r
 
-@rom/<write-opcode> ( str* opc -- )
-	POP opcodes/parse !/<write-byte>
+@rom/<write-opcode> ( str* -- )
+	opcodes/parse !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
 	slen #02 NEQ #50 SFT #80 ORA /<write-byte>
