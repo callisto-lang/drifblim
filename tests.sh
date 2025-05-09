@@ -14,46 +14,46 @@ $asm examples/hello.tal
 echo "" && echo "@scope" | $as > bin/res.tal
 echo "Assembled in 0 bytes."
 
-echo "" && echo "Token ----------------------------------------------"
+echo "" && echo "Name ----------------------------------------------"
 
 echo "" && echo "@scope ; @end" | $as > bin/res.tal
-echo "Token invalid: ; in scope"
+echo "Name invalid: ; in scope"
 
 echo "" && echo "@scope . @end" | $as > bin/res.tal
-echo "Token invalid: . in scope"
+echo "Name invalid: . in scope"
 
 echo "" && echo "@scope , @end" | $as > bin/res.tal
-echo "Token invalid: , in scope"
+echo "Name invalid: , in scope"
 
 echo "" && echo "@scope LIT2 = @end" | $as > bin/res.tal
-echo "Token invalid: = in scope"
+echo "Name invalid: = in scope"
 
 echo "" && echo "@scope LIT - @end" | $as > bin/res.tal
-echo "Token invalid: - in scope"
+echo "Name invalid: - in scope"
 
 echo "" && echo "@scope LIT _ @end" | $as > bin/res.tal
-echo "Token invalid: _ in scope"
+echo "Name invalid: _ in scope"
 
 echo "" && echo "@scope | @end" | $as > bin/res.tal
-echo "Token invalid: | in scope"
+echo "Name invalid: | in scope"
 
 echo "" && echo "@scope $ @end" | $as > bin/res.tal
-echo "Token invalid: $ in scope"
+echo "Name invalid: $ in scope"
 
 echo "" && echo "@scope \" @end" | $as > bin/res.tal
-echo "Token invalid: \" in scope"
+echo "Name invalid: \" in scope"
 
 echo "" && echo "@scope ! @end" | $as > bin/res.tal
-echo "Token invalid: ! in scope"
+echo "Name invalid: ! in scope"
 
 echo "" && echo "@scope ? @end" | $as > bin/res.tal
-echo "Token invalid: ? in scope"
+echo "Name invalid: ? in scope"
 
 echo "" && echo "@scope # @end" | $as > bin/res.tal
-echo "Token invalid: # in scope"
+echo "Name invalid: # in scope"
 
 echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
-echo "Token exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
+echo "Name exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
 
 echo "" && echo "Comment --------------------------------------------"
 
@@ -73,15 +73,6 @@ echo "" && echo "Symbol ---------------------------------------------"
 echo "" && echo "@scope @foo @foo @end" | $as > bin/res.tal
 echo "Symbol duplicate: @foo in foo"
 
-echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
-echo "Symbol invalid: @1234 in 1234"
-
-echo "" && echo "@scope @-1234 @end" | $as > bin/res.tal
-echo "Symbol invalid: @-1234 in -1234"
-
-echo "" && echo "@scope @LDA @end" | $as > bin/res.tal
-echo "Symbol invalid: @LDA in LDA"
-
 echo "" && echo "%label { SUB } @label" | $as > bin/res.tal
 echo "Symbol duplicate: @label in label"
 
@@ -90,6 +81,15 @@ echo "Symbol duplicate: &foo in scope/foo"
 
 echo "" && echo "@AAAAAAAAAAAAAAAAAAAAAAAAA &BBBBBBBBBBBBBBBBBBBBBBB @end" | $as > bin/res.tal
 echo "Symbol exceeded: &BBBBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBB"
+
+echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
+echo "Name invalid: @1234 in 1234"
+
+echo "" && echo "@scope @-1234 @end" | $as > bin/res.tal
+echo "Name invalid: @-1234 in -1234"
+
+echo "" && echo "@scope @LDA @end" | $as > bin/res.tal
+echo "Name invalid: @LDA in LDA"
 
 echo "" && echo "Opcode ---------------------------------------------"
 
@@ -127,15 +127,6 @@ echo "" && echo "Macros ---------------------------------------------"
 echo "" && echo "@scope %label { ADD } %label { SUB }" | $as > bin/res.tal
 echo "Macro duplicate: %label in scope"
 
-echo "" && echo "@scope %add2 { ADD } #1234" | $as > bin/res.tal
-echo "Macro invalid: %add2 in scope"
-
-echo "" && echo "@scope %-test { ADD } #1234" | $as > bin/res.tal
-echo "Macro invalid: %-test in scope"
-
-echo "" && echo "@scope %JCN2 { ADD } #1234" | $as > bin/res.tal
-echo "Macro invalid: %JCN2 in scope"
-
 echo "" && echo "@scope %label #1234" | $as > bin/res.tal
 echo "Macro open: .. in scope"
 
@@ -147,6 +138,15 @@ echo "Macro open: .. in scope"
 
 echo "" && echo "@scope %macro { BRK} #1234" | $as > bin/res.tal
 echo "Macro open: .. in scope"
+
+echo "" && echo "@scope %add2 { ADD } #1234" | $as > bin/res.tal
+echo "Name invalid: %add2 in scope"
+
+echo "" && echo "@scope %-test { ADD } #1234" | $as > bin/res.tal
+echo "Name invalid: %-test in scope"
+
+echo "" && echo "@scope %JCN2 { ADD } #1234" | $as > bin/res.tal
+echo "Name invalid: %JCN2 in scope"
 
 echo "" && echo "References -----------------------------------------"
 
