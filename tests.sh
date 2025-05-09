@@ -76,6 +76,9 @@ echo "Symbol duplicate: @foo in foo"
 echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
 echo "Symbol invalid: @1234 in 1234"
 
+echo "" && echo "@scope @-1234 @end" | $as > bin/res.tal
+echo "Symbol invalid: @-1234 in -1234"
+
 echo "" && echo "@scope @LDA @end" | $as > bin/res.tal
 echo "Symbol invalid: @LDA in LDA"
 
@@ -95,22 +98,22 @@ echo "Opcode invalid: ADD2q in scope"
 
 echo "" && echo "Number ---------------------------------------------"
 
-echo "" && echo "2" | $as > bin/res.tal
+echo "" && echo "@scope 2" | $as > bin/res.tal
 echo "Number invalid: 2 in scope"
 
-echo "" && echo "123" | $as > bin/res.tal
+echo "" && echo "@scope 123" | $as > bin/res.tal
 echo "Number invalid: 123 in scope"
 
-echo "" && echo "12345" | $as > bin/res.tal
+echo "" && echo "@scope 12345" | $as > bin/res.tal
 echo "Number invalid: 12345 in scope"
 
-echo "" && echo "#2" | $as > bin/res.tal
+echo "" && echo "@scope #2" | $as > bin/res.tal
 echo "Number invalid: #2 in scope"
 
-echo "" && echo "#123" | $as > bin/res.tal
+echo "" && echo "@scope #123" | $as > bin/res.tal
 echo "Number invalid: #123 in scope"
 
-echo "" && echo "#12345" | $as > bin/res.tal
+echo "" && echo "@scope #12345" | $as > bin/res.tal
 echo "Number invalid: #12345 in scope"
 
 echo "" && echo "@scope #1g" | $as > bin/res.tal

@@ -117,7 +117,8 @@
 		POP2 #ffff }
 	POPr JMP2r
 
-@runes/ignore ( t* -- ) POP2 JMP2r
+@runes/ignore ( t* -- )
+	POP2 JMP2r
 	&padabs /req-name refs/get-any !rom/<set-head>
 	&padrel /req-name refs/get-any !rom/<set-head-rel>
 	&toplab /req-name DUP2 scope/<set> !syms/<new>
@@ -224,7 +225,6 @@
 @|Syms )
 
 @syms/<new> ( name* -- )
-	DUP2 macros/find-name INC2 ORA ?&duplicate
 	DUP2 /find-name INC2k ORA ?{
 		( alloc ) POP2 .SymType/declared rom/get-head !/<push-sym> }
 	( | name* sym* -- )
@@ -233,7 +233,9 @@
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
 	POP2
-	&duplicate ( name* -- )
+	( >> )
+
+@syms/duplicate ( name* -- )
 	POP2
 	( ! ) ;dict/duplicate ;dict/Symbol !err/<token>
 
@@ -264,9 +266,10 @@
 	( hb ) SWP /<push-byte>
 	( lb ) /<push-byte>
 	( type ) /<push-byte>
-	is-hex ?&invalid
-	( is runic ) LDAk runes/find INC2 ORA ?&invalid
-	( is opcode ) opcodes/find INC ?&invalid
+	( not hex ) is-hex ?&invalid
+	( not runic ) LDAk runes/find INC2 ORA ?&invalid
+	( not opcode ) opcodes/find INC ?&invalid
+	( not macro ) DUP2 macros/find-name INC2 ORA ?&duplicate
 	( >> )
 
 @syms/<push-string> ( word* -- )
@@ -615,9 +618,9 @@
 @rom/mem ( zeropage )
 	$100
 	&output
-
 (
 @|Enums )
+
 
 |00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
