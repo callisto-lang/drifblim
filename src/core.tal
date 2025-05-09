@@ -50,8 +50,8 @@
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/find INCk ?rom/<write-opcode>
-		( imm ) POP !runes/litjsi }
+		( opc ) POP2 opcodes/is-opcode ?rom/<write-opcode>
+		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
 @asm-comment ( t* -- )
@@ -154,6 +154,10 @@
 (
 @|Opcodes )
 
+@opcodes/is-opcode ( str* -- str* opc )
+	DUP2 /parse STH
+	DUP2 ;&brk scmp3 STHr ORA JMP2r
+
 @opcodes/find ( str* -- str* <opc> )
 	[ LITr 00 ] ;&lut
 	&>l
@@ -162,12 +166,27 @@
 		POPr [ LITr ff ] }
 	POP2 STHr JMP2r
 
+@opcodes/parse ( str* -- byte )
+	/find DUP #ff NEQ ?{ POP POP2 #00 JMP2r }
+	( wrap ) #1f AND STH
+	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
+	( mode ) #0003 ADD2
+	&>w
+		LDAk #21 LTH ?{
+			( | parse modes )
+			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
+			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
+			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+			POP2 POPr #00 JMP2r
+			&r INC2 !&>w }
+	POP2 STHr JMP2r
+
 @opcodes/lut [
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
 	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT
-	"BRK ]
+	&brk "BRK ]
 
 (
 @|Lambda )
@@ -194,7 +213,7 @@
 @name/<validate> ( name* -- name* )
 	( not hex ) is-hex ?{
 		( not runic ) LDAk runes/find INC2 ORA ?{
-			( not opcode ) opcodes/find INC ?{ JMP2r } } }
+			( not opcode ) opcodes/is-opcode ?{ JMP2r } } }
 	;dict/invalid ;dict/Name !err/<token>
 
 (
@@ -458,17 +477,8 @@
 	INC2 LDAk ?&<write-str>
 	POP2 JMP2r
 
-@rom/<write-opcode> ( str* opc -- )
-	#1f AND STH
-	LDA2k [ LIT2 "LI ] EQU2 #70 SFT STH
-	ORAr #0003 ADD2
-	&>w
-		LDAk #21 LTH ?{
-			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
-			LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
-			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
-			( ! ) ;dict/invalid ;dict/Opcode err/<token> &r INC2 !&>w }
-	POP2 STHr !/<write-byte>
+@rom/<write-opcode> ( str* -- )
+	opcodes/parse !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
 	slen #02 NEQ #50 SFT #80 ORA /<write-byte>
@@ -632,5 +642,4 @@
 
 |00 @RefType &ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType $40 &used $40 &declared
-
 
