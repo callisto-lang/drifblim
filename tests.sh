@@ -94,7 +94,10 @@ echo "Name invalid: @LDA in LDA"
 echo "" && echo "Opcode ---------------------------------------------"
 
 echo "" && echo "@scope ADD2q @end" | $as > bin/res.tal
-echo "Opcode invalid: ADD2q in scope"
+echo "Reference invalid: ADD2q in scope"
+
+echo "" && echo "@scope BRKk @end" | $as > bin/res.tal
+echo "Reference invalid: BRKk in scope"
 
 echo "" && echo "Number ---------------------------------------------"
 
