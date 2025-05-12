@@ -166,9 +166,8 @@
 		&>l
 			SWP2k scmp3 ?{
 				INCr #0003 ADD2 LDAk ?&>l
-			POPr POP2 POP2 #00 JMP2r }
+			POP2 !&fail }
 		POP2
-		( wrap ) [ LITr 1f ] ANDr
 		( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
 		( move ) #0003 ADD2
 		&>w
@@ -177,6 +176,7 @@
 				LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
 				LDAk [ LIT "r ] NEQ ?{ LITr 40 ORAr !&r }
 				LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
+				&fail ( str* -- byte )
 				POP2 POPr #00 JMP2r
 				&r INC2 !&>w } }
 	POP2 STHr JMP2r
@@ -185,7 +185,7 @@
 	"LIT "INC "POP "NIP "SWP "ROT "DUP "OVR
 	"EQU "NEQ "GTH "LTH "JMP "JCN "JSR "STH
 	"LDZ "STZ "LDR "STR "LDA "STA "DEI "DEO
-	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT ]
+	"ADD "SUB "MUL "DIV "AND "ORA "EOR "SFT ] $1
 	&brk "BRK $1
 
 (
