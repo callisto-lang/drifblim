@@ -358,7 +358,7 @@
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
 
-@refs/<push-short> ( -- )
+@refs/<push-short> ( value* -- )
 	SWP /<push-byte>
 	( >> )
 
