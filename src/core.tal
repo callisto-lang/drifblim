@@ -33,7 +33,7 @@
 	;asm-default ;token/mode STA2
 	JMP2r
 
-@token/<set-comment> ( -- )
+@token/<set-comment> ( token* -- )
 	LDA2 [ LIT2 "( 00 ] EQU2 ?{
 		( ! ) ;dict/invalid ;dict/Comment !err/<token> }
 	;asm-comment ;token/mode STA2
