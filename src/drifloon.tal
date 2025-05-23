@@ -22,7 +22,7 @@
 	assembly/<resolve>
 	BRK
 
-@rom/<emit> ( length* -- )
+@rom/<emit> ( -- )
 	;dict/assembled err/<pstr>
 	;dict/in err/<pstr>
 	[ LIT2 &length 0100 ] DUP2 #0100 SUB2 err/<pdec>
