@@ -444,7 +444,7 @@
 	.RefType/rs /get-type rom/get-head
 	( >> )
 
-@refs/get-distance ( addr* -- distance* )
+@refs/get-distance ( a* b* -- distance* )
 	INC2 INC2 SUB2 JMP2r
 
 @refs/<error> ( adj* -- )
