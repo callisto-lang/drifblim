@@ -75,7 +75,7 @@
 			POP2 JMP2r }
 		INC2 [ LIT &c $1 ] token/<push-byte> !&>s
 
-@rom/<emit> ( length* -- )
+@rom/<emit> ( -- )
 	;dict/assembled err/<pstr>
 	#20 err/<pchr>
 	;dst/buf err/<pstr>

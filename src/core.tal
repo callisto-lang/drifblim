@@ -45,7 +45,7 @@
 	[ LIT2 00 _asm-macro/depth ] STR
 	JMP2r
 
-@asm-default ( t* -- )
+@asm-default ( t* :: )
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
