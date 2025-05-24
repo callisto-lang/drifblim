@@ -1,5 +1,6 @@
 DIR=~/roms
 EMU=uxncli
+BAL=uxnbal
 LIN=${EMU} ${DIR}/uxnlin.rom
 ASM=${EMU} bin/drifblim.rom
 
@@ -27,6 +28,10 @@ gui: bin/drif.rom
 
 clean:
 	@ rm -fr bin
+
+bal:
+	@ ${BAL} src/drifloon.tal
+	@ ${BAL} src/drifblim.tal
 
 lint: all
 	@ ${LIN} src/drifloon.tal
@@ -56,7 +61,7 @@ uninstall:
 	@ rm -f ${DIR}/drifloon.rom
 	@ rm -f ${DIR}/drifblim.rom
 
-.PHONY: all run clean lint test bootstrap archive install uninstall
+.PHONY: all run clean bal lint test bootstrap archive install uninstall
 
 bin/drifblim.rom: src/drifblim.tal src/core.tal
 	@ mkdir -p bin
