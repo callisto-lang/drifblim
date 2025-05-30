@@ -195,6 +195,14 @@ BRK
 @padabs/marker |88 @padabs/p5 |&marker
 
 (
+@|Comments )
+
+( a comment )
+( a ( nested ) comment )
+( non-nested 2+3*(5-2) )
+(doc named comment )
+
+(
 @|References )
 
 @backward
