@@ -2,16 +2,17 @@
 
 @assembly/<resolve> ( -- )
 	,&mode LDR2 ;asm-comment NEQ2 ?{
-		( ! ) ;dict/open ;dict/trail ;dict/Comment !err/<generic> }
+		( ! ) ;dict/open ;dict/trail ;dict/Comment err/<generic> }
 	,&mode LDR2 ;asm-macro NEQ2 ?{
-		( ! ) ;dict/open ;dict/trail ;dict/Macro !err/<generic> }
+		( ! ) ;dict/open ;dict/trail ;dict/Macro err/<generic> }
 	.System/state DEI ?{
 		refs/<resolve-all>
 		.System/state DEI ?{
 			[ LIT2 80 -System/state ] DEO !syms/<emit> } }
 	JMP2r
 
-@assembly/apply ( -- )
+@assembly/apply ( t* -- )
+	LDZk ?{ POP2 JMP2r }
 	[ LIT2 &mode =asm-default ] JMP2
 
 @assembly/<set-default> ( -- )
@@ -28,7 +29,7 @@
 	[ LIT2 00 _asm-macro/depth ] STR
 	JMP2r
 
-@asm-default ( t* :: )
+@asm-default ( t* -- )
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
@@ -68,12 +69,9 @@
 	JMP2r
 
 @token/<push-byte> ( c -- )
-	DUP #20 GTH ?{
-		POP ;&buf LDZk ?{ POP2 JMP2r }
-		assembly/apply !/<new> }
-	( | append )
+	DUP #20 GTH ?{ POP ;&buf assembly/apply !/<new> }
 	[ LIT2 00 &ptr -&buf ] INCk
-	( |check overflow )
+	( | check overflow )
 	DUP .&cap LTH ?{
 		( ! ) ;dict/exceeded ;dict/Name err/<token> }
 	,&ptr STR
@@ -84,8 +82,8 @@
 	NIP2 /<new>
 	scap/
 	&>wm
-		LDAk STHk /<push-byte>
-		INC2 STHr ?&>wm
+		LDAk /<push-byte>
+		INC2 LDAk ?&>wm
 	POP2 JMP2r
 
 (
