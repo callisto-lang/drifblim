@@ -422,9 +422,7 @@
 		( undefined ) POP2 #00 JMP2r }
 	rom/get-head /get-distance
 	( | check distance )
-	DUP2 #0080 ADD2 POP ?{ NIP JMP2r }
-	NIP
-	( ! ) ;dict/too-far ;dict/Reference !err/<token>
+	DUP2 /byte-distance NIP JMP2r
 
 @refs/get-rs ( label* -- distance* )
 	.RefType/rs /get-type rom/get-head
@@ -482,12 +480,13 @@
 	JMP2r
 
 @refs/resolve-rb ( ref* type -- )
-	POP /resolve-rel
-	( | validate distance )
-	OVR2 #0080 ADD2 POP #00 EQU ?{
-		( ! ) ;dict/too-far /<error> }
-	STA
+	POP /resolve-rel OVR2 /byte-distance STA
 	POP JMP2r
+
+@refs/byte-distance ( addr* -- )
+	#0080 ADD2 POP ?{ JMP2r }
+	( ! ) ;dict/too-far
+	( >> )
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
