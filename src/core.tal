@@ -33,10 +33,6 @@
 	;asm-default ;token/mode STA2
 	JMP2r
 
-@runes/coment ( token* -- )
-	POP2
-	( >> )
-
 @token/<set-comment> ( -- )
 	;asm-comment ;token/mode STA2
 	[ LIT2 01 _asm-comment/depth ] STR
@@ -113,9 +109,9 @@
 @runes/find ( char -- <addr>* )
 	STH
 	;&lut
-	&>l
+	&>w
 		LDAk STHkr EQU ?{
-			#0003 ADD2 LDAk ?&>l
+			#0003 ADD2 LDAk ?&>w
 		POP2 #ffff }
 	POPr JMP2r
 
@@ -125,8 +121,8 @@
 	&lambda ( t* -- )
 	POP2 !lambda/pop
 
-	&comment ( t* -- )
-	POP2 !runes/coment
+	&coment ( t* -- )
+	POP2 !token/<set-comment>
 
 	&padabs ( t* -- )
 	/req-name refs/get-any !rom/<set-head>
@@ -192,15 +188,15 @@
 
 @opcodes/parse ( str* -- byte )
 	[ LITr 00 ] ;&lut
-	&>l
+	&>w1
 		SWP2k scmp3 ?{
-			INCr #0003 ADD2 LDAk ?&>l
-		POP2 !&fail }
+			INCr #0003 ADD2 LDAk ?&>w1
+		POP2 POP2 POPr #00 JMP2r }
 	POP2
 	( mask ) [ LITr 1f ] ANDr
 	( litk ) LDA2k [ LIT2 "LI ] EQU2 #70 SFT [ STH ORAr ]
 	( move ) #0003 ADD2
-	&>w
+	&>w2
 		LDAk #21 LTH ?{
 			( | parse modes )
 			LDAk [ LIT "2 ] NEQ ?{ LITr 20 ORAr !&r }
@@ -208,7 +204,7 @@
 			LDAk [ LIT "k ] NEQ ?{ LITr 80 ORAr !&r }
 			&fail ( str* . a -- byte )
 			POP2 POPr #00 JMP2r
-			&r INC2 !&>w }
+			&r INC2 !&>w2 }
 	POP2 STHr JMP2r
 
 @opcodes/lut [
@@ -269,9 +265,9 @@
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
-	&>lp
+	&>wp
 		LDAk /<push-byte>
-		INC2 LDAk ?&>lp
+		INC2 LDAk ?&>wp
 	POP2 JMP2r
 
 @macros/<push-byte> ( byte -- )
@@ -615,10 +611,10 @@
 	POP2 POP2 POP2 JMP2r
 
 @err/<pstr> ( str* -- )
-	&>l
+	&>w
 		LDAk DUP ?{ POP POP2 JMP2r }
 		/<pchr>
-		INC2 !&>l
+		INC2 !&>w
 
 @err/<pdec> ( short* -- )
 	[ LIT2r ff00 ]
