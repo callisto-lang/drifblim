@@ -421,7 +421,9 @@
 @refs/<resolve> ( addr* -- addr* )
 	DUP2 ;&err STA2
 	( | handlers )
-	DUP2k #0004 ADD2 LDA DUP .RefType/ab EQU ?/<set-ab>
+	DUP2k #0004 ADD2 LDA
+	( | handlers )
+	DUP .RefType/ab EQU ?/<set-ab>
 	DUP .RefType/as EQU ?/<set-as>
 	DUP .RefType/rb EQU ?/<set-rb>
 	DUP .RefType/rs EQU ?/<set-rs>
