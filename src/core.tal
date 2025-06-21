@@ -668,6 +668,6 @@
 @|Enums )
 
 
-|00 @RefType &ab $1 &as $1 &rb $1 &rs $1
-|00 @SymType $40 &used $40 &declared
+|00 @RefType/ab $1 &as $1 &rb $1 &rs $1
+|00 @SymType/empty $1 &used $1 &declared
 
