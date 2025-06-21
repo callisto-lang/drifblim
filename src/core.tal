@@ -33,7 +33,7 @@
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( mac ) DUP2 macros/find-name [ INC2k ORA ?token/<put-macro> POP2 ]
+		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
 		( opc ) opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
@@ -77,14 +77,6 @@
 	,&ptr STR
 	STZ2
 	JMP2r
-
-@token/<put-macro> ( t* macro* -- )
-	NIP2 /<new>
-	scap/
-	&>wm
-		LDAk /<push-byte>
-		INC2 LDAk ?&>wm
-	POP2 JMP2r
 
 (
 @|Scope )
@@ -289,6 +281,14 @@
 	,&ptr STR2
 	STA
 	JMP2r
+
+@macros/<write> ( t* macro* -- )
+	token/<new>
+	scap/
+	&>wm
+		LDAk token/<push-byte>
+		INC2 LDAk ?&>wm
+	POP2 POP2 JMP2r
 
 @macros/err-duplicate ( name* -- )
 	POP2
