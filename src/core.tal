@@ -100,7 +100,7 @@
 	JMP2r
 
 @scope/make-name ( name* -- scope/label* )
-	[ LIT2 &anchor $1 _&ptr ] STR
+	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl
 		LDAk /<push-byte>
@@ -121,20 +121,51 @@
 
 @runes/ignore ( t* -- )
 	POP2 JMP2r
-	&padabs /req-name refs/get-any !rom/<set-head>
-	&padrel /req-name refs/get-any !rom/<set-head-rel>
-	&toplab /req-name DUP2 scope/<set> !syms/<new>
-	&sublab INC2 scope/make-name !syms/<new>
-	&litrel #80 rom/<write-byte> &rawrel /req-name refs/get-rb !rom/<write-byte>
-	&litzep #80 rom/<write-byte> &rawzep /req-name refs/get-ab !rom/<write-byte>
-	&litabs #a0 rom/<write-byte> &rawabs /req-name refs/get-as !rom/<write-short>
-	&litjci /req-name #20 !rom/<write-call>
-	&litjmi /req-name #40 !rom/<write-call>
-	&litjsi #60 !rom/<write-call>
-	&lithex /req-name !rom/<write-lithex>
-	&rawstr /req-name !rom/<write-str>
-	&lambda POP2 !lambda/pop
-	&macros /req-name !macros/<new>
+
+	&lambda ( t* -- )
+	POP2 !lambda/pop
+
+	&comment ( t* -- )
+	POP2 !runes/coment
+
+	&padabs ( t* -- )
+	/req-name refs/get-any !rom/<set-head>
+
+	&padrel ( t* -- )
+	/req-name refs/get-any !rom/<set-head-rel>
+
+	&toplab ( t* -- )
+	/req-name DUP2 scope/<set> !syms/<new>
+
+	&sublab ( t* -- )
+	scope/make-name !syms/<new>
+
+	&litrel ( t* -- )
+	#80 rom/<write-byte> &rawrel /req-name refs/get-rb !rom/<write-byte>
+
+	&litzep ( t* -- )
+	#80 rom/<write-byte> &rawzep /req-name refs/get-ab !rom/<write-byte>
+
+	&litabs ( t* -- )
+	#a0 rom/<write-byte> &rawabs /req-name refs/get-as !rom/<write-short>
+
+	&litjci ( t* -- )
+	/req-name #20 !rom/<write-call>
+
+	&litjmi ( t* -- )
+	/req-name #40 !rom/<write-call>
+
+	&litjsi ( t* -- )
+	#60 !rom/<write-call>
+
+	&lithex ( t* -- )
+	/req-name !rom/<write-lithex>
+
+	&rawstr ( t* -- )
+	/req-name !rom/<write-str>
+
+	&macros ( t* -- )
+	/req-name !macros/<new>
 
 @runes/req-name ( str* -- str1* )
 	INC2 LDAk #20 GTH ?{ ;dict/invalid ;dict/Name !err/<token> }
@@ -346,8 +377,8 @@
 
 @refs/get-ref ( token* -- addr* )
 	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/make-name }
-	LDAk [ LIT "/ ] NEQ ?{ INC2 scope/make-name }
-	LDAk [ LIT "& ] NEQ ?{ INC2 scope/make-name }
+	LDAk [ LIT "/ ] NEQ ?{ scope/make-name }
+	LDAk [ LIT "& ] NEQ ?{ scope/make-name }
 	( | find symbol or create it )
 	syms/find-alloc
 	( | check if declared )
