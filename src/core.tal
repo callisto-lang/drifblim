@@ -43,12 +43,20 @@
 	[ LIT2 00 _asm-macro/depth ] STR
 	JMP2r
 
+@token/<put-macro> ( t* macro* -- )
+	NIP2 /<new>
+	scap/
+	&>wm
+		LDAk STHk /<push-byte>
+		INC2 STHr ?&>wm
+	POP2 JMP2r
+
 @asm-default ( t* :: )
 	LDZk runes/find INC2k ORA ?{
 		POP2
 		( hex ) is-hex ?rom/<write-rawhex>
-		( mac ) DUP2 macros/find-name INC2k ORA ?rom/<write-macro>
-		( opc ) POP2 opcodes/is-opcode ?rom/<write-opcode>
+		( mac ) DUP2 macros/find-name [ INC2k ORA ?token/<put-macro> POP2 ]
+		( opc ) opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
@@ -493,14 +501,6 @@
 @rom/<set-head> ( addr* -- )
 	,&head STR2
 	JMP2r
-
-@rom/<write-macro> ( t* macro* -- )
-	NIP2 token/<new>
-	scap/
-	&>lm
-		LDAk STHk token/<push-byte>
-		INC2 STHr ?&>lm
-	POP2 JMP2r
 
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
