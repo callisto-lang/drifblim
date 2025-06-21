@@ -411,62 +411,6 @@
 	STA
 	JMP2r
 
-@refs/<resolve-all> ( -- )
-	,&ptr LDR2 ;&mem
-	&>l
-		/<resolve>
-		#0005 ADD2 GTH2k ?&>l
-	POP2 POP2 JMP2r
-
-@refs/<resolve> ( addr* -- addr* )
-	DUP2 ;&err STA2
-	( | handlers )
-	DUP2k #0004 ADD2 LDA
-	( | handlers )
-	DUP .RefType/ab EQU ?/<set-ab>
-	DUP .RefType/as EQU ?/<set-as>
-	DUP .RefType/rb EQU ?/<set-rb>
-	DUP .RefType/rs EQU ?/<set-rs>
-	( | TODO: Handle unknown type )
-	POP POP2 JMP2r
-
-@refs/<set-ab> ( ref* type -- )
-	POP /resolve-abs STA
-	POP JMP2r
-
-@refs/<set-as> ( ref* type -- )
-	POP /resolve-abs STA2
-	JMP2r
-
-@refs/<set-rs> ( ref* type -- )
-	POP /resolve-rel STA2
-	JMP2r
-
-@refs/<set-rb> ( ref* type -- )
-	POP /resolve-rel
-	( | validate distance )
-	OVR2 #0080 ADD2 POP #00 EQU ?{
-		( ! ) ;dict/too-far /<error> }
-	STA
-	POP JMP2r
-
-@refs/resolve-sym ( ref* -- ref* addr* )
-	( sym* ) INC2k INC2 LDA2
-	( sym/addr* ) LDA2k INC2k ORA ?{
-		( ! ) ;dict/invalid /<error> }
-	( | sym* addr* )
-	NIP2 JMP2r
-
-@refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym !/resolve
-
-@refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 /get-distance
-	( >> )
-
-@refs/resolve ( addr* ref* -- value* addr* )
-	SWP2 LDA2 ;rom/mem ADD2 JMP2r
-
 @refs/get-ab ( label* -- addr )
 	.RefType/ab /get-type NIP JMP2r
 
@@ -488,6 +432,62 @@
 
 @refs/get-distance ( a* b* -- distance* )
 	INC2 INC2 SUB2 JMP2r
+
+@refs/<resolve-all> ( -- )
+	,&ptr LDR2 ;&mem
+	&>l
+		/<resolve>
+		#0005 ADD2 GTH2k ?&>l
+	POP2 POP2 JMP2r
+
+@refs/<resolve> ( addr* -- addr* )
+	DUP2 ;&err STA2
+	( | handlers )
+	DUP2k #0004 ADD2 LDA
+	( | handlers )
+	DUP .RefType/ab EQU ?/resolve-ab
+	DUP .RefType/as EQU ?/resolve-as
+	DUP .RefType/rb EQU ?/resolve-rb
+	DUP .RefType/rs EQU ?/resolve-rs
+	( | TODO: Handle unknown type )
+	POP POP2 JMP2r
+
+@refs/resolve-sym ( ref* -- ref* addr* )
+	( sym* ) INC2k INC2 LDA2
+	( sym/addr* ) LDA2k INC2k ORA ?{
+		( ! ) ;dict/invalid /<error> }
+	( | sym* addr* )
+	NIP2 JMP2r
+
+@refs/resolve-abs ( ref* -- value* addr* )
+	( value* ) /resolve-sym !/resolve
+
+@refs/resolve-rel ( ref* -- value* addr* )
+	( value* ) /resolve-sym OVR2 LDA2 /get-distance
+	( >> )
+
+@refs/resolve ( addr* ref* -- value* addr* )
+	SWP2 LDA2 ;rom/mem ADD2 JMP2r
+
+@refs/resolve-ab ( ref* type -- )
+	POP /resolve-abs STA
+	POP JMP2r
+
+@refs/resolve-as ( ref* type -- )
+	POP /resolve-abs STA2
+	JMP2r
+
+@refs/resolve-rs ( ref* type -- )
+	POP /resolve-rel STA2
+	JMP2r
+
+@refs/resolve-rb ( ref* type -- )
+	POP /resolve-rel
+	( | validate distance )
+	OVR2 #0080 ADD2 POP #00 EQU ?{
+		( ! ) ;dict/too-far /<error> }
+	STA
+	POP JMP2r
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
