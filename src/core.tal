@@ -188,12 +188,12 @@
 
 @opcodes/is-opcode ( str* -- str* bool )
 	DUP2 /parse #00 NEQ STH
-	DUP2 ;&brk scmp STHr ORA JMP2r
+	DUP2 ;&brk str/cmp STHr ORA JMP2r
 
 @opcodes/parse ( str* -- byte )
 	[ LIT2r 1f00 ] ;&lut
 	&>w1
-		SWP2k scmp3 ?{
+		SWP2k #0003 SWP2 mem/cmp ?{
 			INCr #0003 ADD2 LDAk ?&>w1
 		POP2 POP2 POP2r #00 JMP2r }
 	POP2
@@ -263,7 +263,7 @@
 	STH2
 	,&ptr LDR2 ;&mem
 	&>lf
-		DUP2 STH2kr scmp ?{
+		DUP2 STH2kr str/cmp ?{
 			scap/ scap/ GTH2k ?&>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -317,7 +317,7 @@
 	STH2
 	;&ptr LDA2 ;&mem
 	&>lfn
-		DUP2 #0003 ADD2 STH2kr scmp ?{
+		DUP2 #0003 ADD2 STH2kr str/cmp ?{
 			#0003 ADD2 scap/ GTH2k ?&>lfn
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
@@ -573,17 +573,16 @@
 @slen ( str* -- str* length )
 	DUP2k scap/ SWP2 INC2 SUB2 NIP JMP2r
 
-@scmp ( a* b* -- bool )
-	STH2
-	&>l
-		LDAk ?{ &d LDA LDAr STHr EQU JMP2r }
-		LDAk LDAkr STHr NEQ ?&d
-		INC2 INC2r !&>l
+@str/cmp ( a* b* -- bool )
+	DUP2k scap/ SWP2 SUB2 SWP2
+	( >> )
 
-@scmp3 ( a* b* -- bool )
+@mem/cmp ( a* length* b* -- t )
 	STH2
-	LDAkr LDAk STHr NEQ ?{ INC2r INC2 }
-	LDA2r LDA2 STH2r EQU2 JMP2r
+	OVR2 ADD2 SWP2
+	&>l
+		LDAk LDAkr STHr NEQ ?{ INC2 INC2r GTH2k ?&>l }
+	POP2r EQU2 JMP2r
 
 (
 @|Error )
