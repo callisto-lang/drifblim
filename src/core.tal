@@ -318,7 +318,7 @@
 	;&ptr LDA2 ;&mem
 	&>lfn
 		DUP2 #0003 ADD2 STH2kr str/cmp ?{
-			#0003 ADD2 str/cap GTH2k ?&>lfn
+			/next GTH2k ?&>lfn
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -326,8 +326,7 @@
 	LDA2 STH2
 	;&ptr LDA2 ;&mem
 	&>lfa
-		DUP2 #0003 ADD2 str/cap LDA2 STH2kr SWP2 LTH2 ?{
-			#0003 ADD2 str/cap GTH2k ?&>lfa }
+		DUP2 /next LDA2 STH2kr SWP2 LTH2 ?{ /next GTH2k ?&>lfa }
 	NIP2 POP2r JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
@@ -369,8 +368,11 @@
 						DUP2 err/<pstr>
 						#0a err/<pchr> }
 					POP2 } }
-			#0003 ADD2 str/cap GTH2k ?&>ls }
+			/next GTH2k ?&>ls }
 	POP2 POP2 !rom/<emit>
+
+@syms/next ( sym* -- next* )
+	#0003 ADD2 !str/cap
 
 @syms/byte-distance ( addr* -- )
 	#0080 ADD2 POP ?{ JMP2r }
