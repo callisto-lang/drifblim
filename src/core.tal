@@ -129,10 +129,10 @@
 	POP2 !assembly/<set-comment>
 
 	&padabs ( t* -- )
-	/req-name refs/get-any !rom/<set-head>
+	/req-name refs/get-any !head/<set>
 
 	&padrel ( t* -- )
-	/req-name refs/get-any !rom/<set-head-rel>
+	/req-name refs/get-any !head/<set-rel>
 
 	&toplab ( t* -- )
 	/req-name DUP2 scope/<set> !syms/<new>
@@ -234,7 +234,8 @@
 	,&ptr LDR2 #0001 SUB2 LDAk /name syms/<new>
 	,&ptr STR2
 	JMP2r
-	&sym cebb &id 0000 $1
+	&sym cebb
+	&id ".. $1
 
 (
 @|Name )
@@ -299,10 +300,10 @@
 
 @syms/<new> ( name* -- )
 	DUP2 /find-name INC2k ORA ?{
-		( alloc ) POP2 .SymType/declared rom/get-head !/<push-sym> }
+		( alloc ) POP2 .SymType/declared head/get !/<push-sym> }
 	( | name* sym* -- )
 	INC2k INC2 LDA .SymType/declared AND ?{
-		( addr* ) rom/get-head OVR2 STA2
+		( addr* ) head/get OVR2 STA2
 		( type ) INC2 INC2 LDAk .SymType/declared ORA ROT ROT STA
 		( name* ) POP2 JMP2r }
 	POP2
@@ -394,7 +395,7 @@
 	syms/find-alloc
 	( | check if declared )
 	INC2k INC2 STH2k LDA .SymType/declared AND ?{
-		STH2k [ LIT &type $1 ] STH2r rom/get-head
+		STH2k [ LIT &type $1 ] STH2r head/get
 		( addr* ) refs/<push-short>
 		( value* ) refs/<push-short>
 		( type ) refs/<push-byte> }
@@ -424,10 +425,10 @@
 @refs/get-rb ( label* -- distance )
 	.RefType/rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head /get-distance DUP2 syms/byte-distance NIP JMP2r
+	head/get /get-distance DUP2 syms/byte-distance NIP JMP2r
 
 @refs/get-rs ( label* -- distance* )
-	.RefType/rs /get-type rom/get-head
+	.RefType/rs /get-type head/get
 	( >> )
 
 @refs/get-distance ( a* b* -- distance* )
@@ -460,13 +461,13 @@
 	/resolve-abs STA2
 	JMP2r
 
-@refs/resolve-rs ( ref* type -- )
-	/resolve-rel STA2
-	JMP2r
-
 @refs/resolve-rb ( ref* type -- )
 	/resolve-rel OVR2 /byte-distance STA
 	POP JMP2r
+
+@refs/resolve-rs ( ref* type -- )
+	/resolve-rel STA2
+	JMP2r
 
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( ref* sym* ) INC2k INC2 LDA2
@@ -498,15 +499,15 @@
 (
 @|Rom )
 
-@rom/get-head ( -- addr* )
-	[ LIT2 &head 0100 ] JMP2r
+@head/get ( -- addr* )
+	[ LIT2 &addr 0100 ] JMP2r
 
-@rom/<set-head-rel> ( addr* -- )
-	rom/get-head ADD2
+@head/<set-rel> ( addr* -- )
+	/get ADD2
 	( >> )
 
-@rom/<set-head> ( addr* -- )
-	,&head STR2
+@head/<set> ( addr* -- )
+	,&addr STR2
 	JMP2r
 
 @rom/<write-str> ( str* -- )
@@ -537,10 +538,10 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	DUP /get-head INC2k /<set-head>
+	DUP head/get INC2k head/<set>
 	;&mem ADD2 STA
 	( not zero ) ?{ JMP2r }
-	/get-head OVR ?{
+	head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	;&length STA2
 	JMP2r
