@@ -383,8 +383,8 @@
 	is-hex ?shex
 	!/get-ref
 
-@refs/get-type ( token* type -- addr* )
-	,&type STR
+@refs/get-type ( token* type* -- addr* )
+	,&type STR2
 	( >> )
 
 @refs/get-ref ( token* -- addr* )
@@ -398,7 +398,7 @@
 		DUP2 head/get
 		( addr* ) refs/<push-short>
 		( value* ) refs/<push-short>
-		( type ) [ LIT &type $1 ] refs/<push-byte> }
+		( type ) [ LIT2 &type $2 ] refs/<push-short> }
 	( | mark as used )
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
@@ -417,18 +417,18 @@
 	JMP2r
 
 @refs/get-ab ( label* -- addr )
-	.RefType/ab /get-type NIP JMP2r
+	;&resolve-ab /get-type NIP JMP2r
 
 @refs/get-as ( label* -- addr* )
-	.RefType/as !/get-type
+	;&resolve-as !/get-type
 
 @refs/get-rb ( label* -- distance )
-	.RefType/rb /get-type INC2k ORA ?{
+	;&resolve-rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
 	head/get /get-distance DUP2 syms/byte-distance NIP JMP2r
 
 @refs/get-rs ( label* -- distance* )
-	.RefType/rs /get-type head/get
+	;&resolve-rs /get-type head/get
 	( >> )
 
 @refs/get-distance ( a* b* -- distance* )
@@ -437,35 +437,24 @@
 @refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l
-		/<resolve>
-		#0005 ADD2 GTH2k ?&>l
+		DUP2 ;&err STA2
+		DUP2k #0004 ADD2 LDA2 JSR2
+		( ) #0006 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@refs/<resolve> ( addr* -- addr* )
-	DUP2 ;&err STA2
-	( | handlers )
-	DUP2k #0004 ADD2 LDA
-	( | handlers )
-	DUP .RefType/ab EQU ?/resolve-ab
-	DUP .RefType/as EQU ?/resolve-as
-	DUP .RefType/rb EQU ?/resolve-rb
-	DUP .RefType/rs EQU ?/resolve-rs
-	( | TODO: Handle unknown type )
-	POP POP2 JMP2r
-
-@refs/resolve-ab ( ref* type -- )
+@refs/resolve-ab ( ref* -- )
 	/resolve-abs STA
 	POP JMP2r
 
-@refs/resolve-as ( ref* type -- )
+@refs/resolve-as ( ref* -- )
 	/resolve-abs STA2
 	JMP2r
 
-@refs/resolve-rb ( ref* type -- )
+@refs/resolve-rb ( ref* -- )
 	/resolve-rel OVR2 /byte-distance STA
 	POP JMP2r
 
-@refs/resolve-rs ( ref* type -- )
+@refs/resolve-rs ( ref* -- )
 	/resolve-rel STA2
 	JMP2r
 
@@ -475,12 +464,10 @@
 		( ! ) ;dict/invalid /<error> }
 	( ref* sym* addr* ) NIP2 JMP2r
 
-@refs/resolve-abs ( ref* type -- value* addr* )
-	POP
+@refs/resolve-abs ( ref* -- value* addr* )
 	( value* ) /resolve-sym !/resolve
 
 @refs/resolve-rel ( ref* -- value* addr* )
-	POP
 	( value* ) /resolve-sym OVR2 LDA2 /get-distance
 	( >> )
 
@@ -665,7 +652,7 @@
 
 @lambda/mem $100
 
-@refs/mem ( addr*, symbol*, RefType )
+@refs/mem ( addr*, symbol*, type-fn* )
 	$1800 &memend
 
 @syms/mem ( addr*, SymType, body..00 )
@@ -678,6 +665,5 @@
 @|Enums )
 
 
-|00 @RefType/ab $1 &as $1 &rb $1 &rs $1
 |00 @SymType/empty $1 &used $1 &declared
 

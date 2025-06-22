@@ -327,7 +327,7 @@
 	;refs/mem ;refs/ptr STA2
 	;macros/mem ;macros/ptr STA2
 	;syms/mem ;syms/ptr STA2
-	#0100 ;rom/head STA2
+	#0100 head/<set>
 	( | text )
 	;res/buf ;res/ptr STA2
 	( | go )
