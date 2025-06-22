@@ -626,15 +626,15 @@
 	&unused "-- 20 "Unused
 	&spacer ": 20 $1
 	&References "References $1
-	&Symbols "Symbols $1
-	&Macros "Macros $1
-	&Name "Name $1
 	&Reference "Reference $1
+	&Symbols "Symbols $1
 	&Symbol "Symbol $1
+	&Macros "Macros $1
 	&Macro "Macro $1
-	&Writing "Writing $1
-	&Comment "Comment $1
+	&Name "Name $1
 	&Number "Number $1
+	&Comment "Comment $1
+	&Writing "Writing $1
 	&exceeded "exceeded $1
 	&invalid "invalid $1
 	&zero-page "in 20 "zero-page $1
