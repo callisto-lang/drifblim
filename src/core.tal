@@ -32,7 +32,7 @@
 @asm-default ( t* -- )
 	LDZk runes/find INC2k ORA ?{
 		POP2
-		( hex ) str/is-hex ?rom/<write-rawhex>
+		( hex ) str/not-hex #00 EQU ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
 		( opc ) opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
@@ -244,7 +244,7 @@
 	[ JMP JMP2r ] }
 
 @name/<validate> ( name* -- name* )
-	( not hex ) str/is-hex ?{
+	( not hex ) str/not-hex #00 EQU ?{
 		( not runic ) LDAk runes/find INC2 ORA ?{
 			( not opcode ) opcodes/is-opcode else-return } }
 	;dict/invalid ;dict/Name !err/<token>
@@ -382,8 +382,8 @@
 @|References )
 
 @refs/get-any ( str* -- value* )
-	str/is-hex ?str/hex
-	!/get-ref
+	str/not-hex ?/get-ref
+	!str/hex
 
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
@@ -501,7 +501,7 @@
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	str/is-hex #00 EQU ?{
+	str/not-hex ?{
 		str/len DUP #02 NEQ ?{ POP str/hex NIP !/<write-byte> }
 		#04 NEQ ?{ str/hex !/<write-short> } }
 	POP2 ;dict/invalid ;dict/Number !err/<token>
@@ -560,12 +560,11 @@
 @str/len ( str* -- str* length )
 	DUP2k /cap SWP2 INC2 SUB2 NIP JMP2r
 
-@str/is-hex ( str* -- str* f )
+@str/not-hex ( str* -- str* f )
 	DUP2
 	&>wih
-		chex INC ?{ POP2 #00 JMP2r }
-		INC2 LDAk ?&>wih
-	POP2 #01 JMP2r
+		chex INC ?{ LDA JMP2r }
+		INC2 !&>wih
 
 @str/cap ( str* -- end* )
 	LDAk ?{ INC2 JMP2r }
