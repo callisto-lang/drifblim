@@ -141,13 +141,13 @@
 	scope/make-name !syms/<new>
 
 	&litrel ( t* -- )
-	#80 rom/<write-byte> &rawrel /req-name refs/get-rb !rom/<write-byte>
+	#80 rom/<write-byte> &rawrel /req-name refs/get-rel !rom/<write-byte>
 
 	&litzep ( t* -- )
-	#80 rom/<write-byte> &rawzep /req-name refs/get-ab !rom/<write-byte>
+	#80 rom/<write-byte> &rawzep /req-name refs/get-abs !rom/<write-byte>
 
 	&litabs ( t* -- )
-	#a0 rom/<write-byte> &rawabs /req-name refs/get-as !rom/<write-short>
+	#a0 rom/<write-byte> &rawabs /req-name refs/get-abs2 !rom/<write-short>
 
 	&litjci ( t* -- )
 	/req-name #20 !rom/<write-call>
@@ -416,19 +416,19 @@
 	STA
 	JMP2r
 
-@refs/get-ab ( label* -- addr )
-	;&resolve-ab /get-type NIP JMP2r
+@refs/get-abs ( label* -- addr )
+	;&handle-abs /get-type NIP JMP2r
 
-@refs/get-as ( label* -- addr* )
-	;&resolve-as !/get-type
+@refs/get-abs2 ( label* -- addr* )
+	;&handle-abs2 !/get-type
 
-@refs/get-rb ( label* -- distance )
-	;&resolve-rb /get-type INC2k ORA ?{
+@refs/get-rel ( label* -- distance )
+	;&handle-rel /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
 	head/get /get-distance DUP2 syms/byte-distance NIP JMP2r
 
-@refs/get-rs ( label* -- distance* )
-	;&resolve-rs /get-type head/get
+@refs/get-rel2 ( label* -- distance* )
+	;&handle-rel2 /get-type head/get
 	( >> )
 
 @refs/get-distance ( a* b* -- distance* )
@@ -442,19 +442,19 @@
 		( ) #0006 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@refs/resolve-ab ( ref* -- )
+@refs/handle-abs ( ref* -- )
 	/resolve-abs STA
 	POP JMP2r
 
-@refs/resolve-as ( ref* -- )
+@refs/handle-abs2 ( ref* -- )
 	/resolve-abs STA2
 	JMP2r
 
-@refs/resolve-rb ( ref* -- )
+@refs/handle-rel ( ref* -- )
 	/resolve-rel OVR2 /byte-distance STA
 	POP JMP2r
 
-@refs/resolve-rs ( ref* -- )
+@refs/handle-rel2 ( ref* -- )
 	/resolve-rel STA2
 	JMP2r
 
@@ -517,7 +517,7 @@
 
 @rom/<write-call> ( str* opc -- )
 	/<write-byte>
-	refs/get-rs
+	refs/get-rel2
 	( >> )
 
 @rom/<write-short> ( short* -- )
