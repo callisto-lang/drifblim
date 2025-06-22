@@ -32,7 +32,7 @@
 @asm-default ( t* -- )
 	LDZk runes/find INC2k ORA ?{
 		POP2
-		( hex ) is-hex ?rom/<write-rawhex>
+		( hex ) str/is-hex ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
 		( opc ) opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
@@ -227,7 +227,7 @@
 	( >> )
 
 @lambda/name ( id -- str* )
-	hexs ,&id STR2
+	DUP #04 SFT hexc SWP ,&id STR2
 	;&sym JMP2r
 
 @lambda/pop ( -- )
@@ -244,7 +244,7 @@
 	[ JMP JMP2r ] }
 
 @name/<validate> ( name* -- name* )
-	( not hex ) is-hex ?{
+	( not hex ) str/is-hex ?{
 		( not runic ) LDAk runes/find INC2 ORA ?{
 			( not opcode ) opcodes/is-opcode else-return } }
 	;dict/invalid ;dict/Name !err/<token>
@@ -264,7 +264,7 @@
 	,&ptr LDR2 ;&mem
 	&>lf
 		DUP2 STH2kr str/cmp ?{
-			scap/ scap/ GTH2k ?&>lf
+			str/cap str/cap GTH2k ?&>lf
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -285,7 +285,7 @@
 
 @macros/<write> ( t* macro* -- )
 	token/<new>
-	scap/
+	str/cap
 	&>wm
 		LDAk token/<push-byte>
 		INC2 LDAk ?&>wm
@@ -318,7 +318,7 @@
 	;&ptr LDA2 ;&mem
 	&>lfn
 		DUP2 #0003 ADD2 STH2kr str/cmp ?{
-			#0003 ADD2 scap/ GTH2k ?&>lfn
+			#0003 ADD2 str/cap GTH2k ?&>lfn
 		POP2 #ffff }
 	NIP2 POP2r JMP2r
 
@@ -326,8 +326,8 @@
 	LDA2 STH2
 	;&ptr LDA2 ;&mem
 	&>lfa
-		DUP2 #0003 ADD2 scap/ LDA2 STH2kr SWP2 LTH2 ?{
-			#0003 ADD2 scap/ GTH2k ?&>lfa }
+		DUP2 #0003 ADD2 str/cap LDA2 STH2kr SWP2 LTH2 ?{
+			#0003 ADD2 str/cap GTH2k ?&>lfa }
 	NIP2 POP2r JMP2r
 
 @syms/find-alloc ( name* -- <addr>* )
@@ -369,7 +369,7 @@
 						DUP2 err/<pstr>
 						#0a err/<pchr> }
 					POP2 } }
-			#0003 ADD2 scap/ GTH2k ?&>ls }
+			#0003 ADD2 str/cap GTH2k ?&>ls }
 	POP2 POP2 !rom/<emit>
 
 @syms/byte-distance ( addr* -- )
@@ -380,7 +380,7 @@
 @|References )
 
 @refs/get-any ( str* -- value* )
-	is-hex ?shex
+	str/is-hex ?str/hex
 	!/get-ref
 
 @refs/get-type ( token* type* -- addr* )
@@ -486,17 +486,6 @@
 (
 @|Rom )
 
-@head/get ( -- addr* )
-	[ LIT2 &addr 0100 ] JMP2r
-
-@head/<set-rel> ( addr* -- )
-	/get ADD2
-	( >> )
-
-@head/<set> ( addr* -- )
-	,&addr STR2
-	JMP2r
-
 @rom/<write-str> ( str* -- )
 	LDAk /<write-byte>
 	INC2 LDAk ?&<write-str>
@@ -506,13 +495,13 @@
 	opcodes/parse !/<write-byte>
 
 @rom/<write-lithex> ( str* -- )
-	slen #02 NEQ #50 SFT #80 ORA /<write-byte>
+	str/len #02 NEQ #50 SFT #80 ORA /<write-byte>
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	is-hex #00 EQU ?{
-		slen DUP #02 NEQ ?{ POP shex NIP !/<write-byte> }
-		#04 NEQ ?{ shex !/<write-short> } }
+	str/is-hex #00 EQU ?{
+		str/len DUP #02 NEQ ?{ POP str/hex NIP !/<write-byte> }
+		#04 NEQ ?{ str/hex !/<write-short> } }
 	POP2 ;dict/invalid ;dict/Number !err/<token>
 
 @rom/<write-call> ( str* opc -- )
@@ -534,26 +523,19 @@
 	;&length STA2
 	JMP2r
 
+@head/get ( -- addr* )
+	[ LIT2 &addr 0100 ] JMP2r
+
+@head/<set-rel> ( addr* -- )
+	/get ADD2
+	( >> )
+
+@head/<set> ( addr* -- )
+	,&addr STR2
+	JMP2r
+
 (
 @|Stdlib )
-
-@is-hex ( str* -- str* f )
-	DUP2
-	&>w
-		chex INC ?{ POP2 #00 JMP2r }
-		INC2 LDAk ?&>w
-	POP2 #01 JMP2r
-
-@shex ( str* -- value* )
-	[ LIT2r 0000 ]
-	&>w
-		[ LITr 40 ] SFT2r chex [ LITr 00 ] STH
-		ADD2r INC2 LDAk ?&>w
-	POP2 STH2r JMP2r
-
-@hexs ( hex -- char char )
-	DUP #04 SFT hexc SWP
-	( >> )
 
 @hexc ( hex -- char )
 	#0f AND #0a LTHk ?{
@@ -566,15 +548,29 @@
 	( hex ) #27 SUB DUP #0a SUB #05 GTH else-return
 	( nil ) POP #ff JMP2r
 
-@scap ( str* -- end* )
-	INC2 & LDAk ?scap
-	INC2 JMP2r
+@str/hex ( str* -- value* )
+	[ LIT2r 0000 ]
+	&>wh
+		[ LITr 40 ] SFT2r chex [ LITr 00 ] STH
+		ADD2r INC2 LDAk ?&>wh
+	POP2 STH2r JMP2r
 
-@slen ( str* -- str* length )
-	DUP2k scap/ SWP2 INC2 SUB2 NIP JMP2r
+@str/len ( str* -- str* length )
+	DUP2k /cap SWP2 INC2 SUB2 NIP JMP2r
+
+@str/is-hex ( str* -- str* f )
+	DUP2
+	&>wih
+		chex INC ?{ POP2 #00 JMP2r }
+		INC2 LDAk ?&>wih
+	POP2 #01 JMP2r
+
+@str/cap ( str* -- end* )
+	LDAk ?{ INC2 JMP2r }
+	INC2 !/cap
 
 @str/cmp ( a* b* -- bool )
-	DUP2k scap/ SWP2 SUB2 SWP2
+	DUP2k /cap SWP2 SUB2 SWP2
 	( >> )
 
 @mem/cmp ( a* length* b* -- t )
