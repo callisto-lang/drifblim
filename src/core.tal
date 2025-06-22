@@ -442,22 +442,6 @@
 		( ) #0006 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@refs/handle-abs ( ref* -- )
-	/resolve-abs STA
-	POP JMP2r
-
-@refs/handle-abs2 ( ref* -- )
-	/resolve-abs STA2
-	JMP2r
-
-@refs/handle-rel ( ref* -- )
-	/resolve-rel OVR2 /byte-distance STA
-	POP JMP2r
-
-@refs/handle-rel2 ( ref* -- )
-	/resolve-rel STA2
-	JMP2r
-
 @refs/resolve-sym ( ref* -- ref* addr* )
 	( ref* sym* ) INC2k INC2 LDA2
 	( ref* sym/addr* ) LDA2k INC2k ORA ?{
@@ -473,6 +457,22 @@
 
 @refs/resolve ( addr* ref* -- value* addr* )
 	SWP2 LDA2 ;rom/mem ADD2 JMP2r
+
+@refs/handle-abs ( ref* -- )
+	/resolve-abs STA
+	POP JMP2r
+
+@refs/handle-abs2 ( ref* -- )
+	/resolve-abs STA2
+	JMP2r
+
+@refs/handle-rel ( ref* -- )
+	/resolve-rel OVR2 /byte-distance STA
+	POP JMP2r
+
+@refs/handle-rel2 ( ref* -- )
+	/resolve-rel STA2
+	JMP2r
 
 @refs/byte-distance ( addr* -- )
 	#0080 ADD2 POP ?{ JMP2r }
