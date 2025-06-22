@@ -373,7 +373,7 @@
 
 @syms/byte-distance ( addr* -- )
 	#0080 ADD2 POP ?{ JMP2r }
-	( ! ) ;dict/too-far ;dict/Distance !err/<token>
+	( ! ) ;dict/too-far ;dict/Symbol !err/<token>
 
 (
 @|References )
@@ -492,7 +492,7 @@
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
-	INC2 INC2 LDA2 #0003 ADD2 ;dict/Distance !err/<generic>
+	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !err/<generic>
 
 (
 @|Rom )
@@ -641,7 +641,6 @@
 	&Name "Name $1
 	&Reference "Reference $1
 	&Symbol "Symbol $1
-	&Distance "Distance $1
 	&Macro "Macro $1
 	&Writing "Writing $1
 	&Comment "Comment $1
