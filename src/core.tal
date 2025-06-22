@@ -395,10 +395,10 @@
 	syms/find-alloc
 	( | check if declared )
 	INC2k INC2 STH2k LDA .SymType/declared AND ?{
-		STH2k [ LIT &type $1 ] STH2r head/get
+		DUP2 head/get
 		( addr* ) refs/<push-short>
 		( value* ) refs/<push-short>
-		( type ) refs/<push-byte> }
+		( type ) [ LIT &type $1 ] refs/<push-byte> }
 	( | mark as used )
 	LDAkr STHr .SymType/used ORA STH2r STA
 	LDA2 JMP2r
@@ -538,8 +538,9 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	DUP head/get INC2k head/<set>
-	;&mem ADD2 STA
+	DUP head/get
+	( inc ) INC2k head/<set>
+	( set ) ;&mem ADD2 STA
 	( not zero ) ?{ JMP2r }
 	head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
