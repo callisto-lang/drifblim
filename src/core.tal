@@ -371,6 +371,10 @@
 			#0003 ADD2 scap/ GTH2k ?&>ls }
 	POP2 POP2 !rom/<emit>
 
+@syms/byte-distance ( addr* -- )
+	#0080 ADD2 POP ?{ JMP2r }
+	( ! ) ;dict/too-far ;dict/Distance !err/<token>
+
 (
 @|References )
 
@@ -420,9 +424,7 @@
 @refs/get-rb ( label* -- distance )
 	.RefType/rb /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	rom/get-head /get-distance
-	( | check distance )
-	DUP2 /byte-distance NIP JMP2r
+	rom/get-head /get-distance DUP2 syms/byte-distance NIP JMP2r
 
 @refs/get-rs ( label* -- distance* )
 	.RefType/rs /get-type rom/get-head
@@ -490,7 +492,7 @@
 
 @refs/<error> ( adj* -- )
 	[ LIT2 &err $2 ] DUP2 syms/find-addr #0003 ADD2 scope/<set>
-	INC2 INC2 LDA2 #0003 ADD2 ;dict/Reference !err/<generic>
+	INC2 INC2 LDA2 #0003 ADD2 ;dict/Distance !err/<generic>
 
 (
 @|Rom )
@@ -639,6 +641,7 @@
 	&Name "Name $1
 	&Reference "Reference $1
 	&Symbol "Symbol $1
+	&Distance "Distance $1
 	&Macro "Macro $1
 	&Writing "Writing $1
 	&Comment "Comment $1

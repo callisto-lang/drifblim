@@ -165,8 +165,10 @@ echo "Reference invalid: label in scope"
 echo "" && echo "@scope LIT _label @end" | $as > bin/res.tal
 echo "Reference invalid: label in scope"
 
+echo "" && echo "Distance -------------------------------------------"
+
 echo "" && echo "@scope ,next \$81 @next @end" | $as > bin/res.tal
-echo "Reference too far: next in scope"
+echo "Distance too far: next in scope"
 
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
-echo "Reference too far: ,back in scope"
+echo "Distance too far: ,back in scope"
