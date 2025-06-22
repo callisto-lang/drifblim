@@ -30,11 +30,11 @@
 	JMP2r
 
 @asm-default ( t* -- )
+	( hex ) str/not-hex ?{ !rom/<write-rawhex> }
+	( opc ) opcodes/is-opcode ?rom/<write-opcode>
 	LDZk runes/find INC2k ORA ?{
 		POP2
-		( hex ) str/not-hex #00 EQU ?rom/<write-rawhex>
 		( mac ) DUP2 macros/find-name [ INC2k ORA ?macros/<write> POP2 ]
-		( opc ) opcodes/is-opcode ?rom/<write-opcode>
 		( imm ) !runes/litjsi }
 	INC2 LDA2 JMP2
 
@@ -244,9 +244,9 @@
 	[ JMP JMP2r ] }
 
 @name/<validate> ( name* -- name* )
-	( not hex ) str/not-hex #00 EQU ?{
-		( not runic ) LDAk runes/find INC2 ORA ?{
-			( not opcode ) opcodes/is-opcode else-return } }
+	( not hex ) str/not-hex ?{ JMP2r }
+	( not runic ) LDAk runes/find INC2 ORA ?{
+		( not opcode ) opcodes/is-opcode else-return }
 	;dict/invalid ;dict/Name !err/<token>
 
 (
