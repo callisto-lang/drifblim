@@ -450,27 +450,19 @@
 		( ! ) ;dict/invalid /<error> }
 	( ref* sym* addr* ) NIP2 JMP2r
 
-@refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym SWP2 LDA2 ;rom/mem ADD2 JMP2r
-
-@refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 /get-distance SWP2 LDA2 ;rom/mem ADD2 JMP2r
-
 @refs/handle-abs ( ref* -- )
-	/resolve-abs STA
+	/resolve-sym SWP2 LDA2 rom/<write-byte-at>
 	POP JMP2r
 
 @refs/handle-abs2 ( ref* -- )
-	/resolve-abs STA2
-	JMP2r
+	/resolve-sym SWP2 LDA2 !rom/<write-short-at>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-rel OVR2 /byte-distance STA
+	/resolve-sym OVR2 LDA2 /get-distance SWP2 LDA2 OVR2 /byte-distance rom/<write-byte-at>
 	POP JMP2r
 
 @refs/handle-rel2 ( ref* -- )
-	/resolve-rel STA2
-	JMP2r
+	/resolve-sym OVR2 LDA2 /get-distance SWP2 LDA2 !rom/<write-short-at>
 
 @refs/byte-distance ( addr* -- )
 	#0080 ADD2 POP ?{ JMP2r }
@@ -519,6 +511,14 @@
 	head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	;&length STA2
+	JMP2r
+
+@rom/<write-byte-at> ( byte addr* -- )
+	;&mem ADD2 STA
+	JMP2r
+
+@rom/<write-short-at> ( short* addr* -- )
+	;&mem ADD2 STA2
 	JMP2r
 
 @head/get ( -- addr* )
