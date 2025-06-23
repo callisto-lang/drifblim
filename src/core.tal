@@ -513,11 +513,11 @@
 	;&length STA2
 	JMP2r
 
-@rom/<write-lowbyte-at> ( short* addr* -- )
+@rom/<write-lowbyte-at> ( short* -- )
 	head/get ;&mem ADD2 STA
 	POP JMP2r
 
-@rom/<write-short-at> ( short* addr* -- )
+@rom/<write-short-at> ( short* -- )
 	head/get ;&mem ADD2 STA2
 	JMP2r
 
