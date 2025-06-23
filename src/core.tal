@@ -458,10 +458,10 @@
 	/resolve-sym NIP2 !rom/<write-short-at>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-sym OVR2 LDA2 /get-distance NIP2 DUP2 /byte-distance !rom/<write-lowbyte-at>
+	/resolve-sym SWP2 LDA2 /get-distance DUP2 /byte-distance !rom/<write-lowbyte-at>
 
 @refs/handle-rel2 ( ref* -- )
-	/resolve-sym OVR2 LDA2 /get-distance NIP2 !rom/<write-short-at>
+	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short-at>
 
 @refs/byte-distance ( addr* -- )
 	#0080 ADD2 POP ?{ JMP2r }
