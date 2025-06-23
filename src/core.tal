@@ -451,12 +451,12 @@
 		( ! ) ;dict/invalid /<error> }
 	( ref* sym* value* ) NIP2 JMP2r
 
-@refs/resolve-sym-new ( ref* -- ref* value* )
+@refs/resolve-sym-new ( ref* -- sym/addr* )
 	LDA2k head/<set>
-	( ref* sym* ) INC2k INC2 LDA2
-	( ref* sym/addr* ) LDA2k INC2k ORA ?{
+	( sym* ) INC2 INC2 LDA2
+	( sym/addr* ) LDA2 INC2k ORA ?{
 		( ! ) ;dict/invalid /<error> }
-	( ref* sym* value* ) NIP2 NIP2 JMP2r
+	( sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
 	/resolve-sym-new rom/<write-byte-at>
