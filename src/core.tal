@@ -456,13 +456,13 @@
 	/resolve-sym NIP2 !rom/<write-lowbyte-at>
 
 @refs/handle-abs2 ( ref* -- )
-	/resolve-sym NIP2 !rom/<write-short-at>
+	/resolve-sym NIP2 !rom/<write-short>
 
 @refs/handle-rel ( ref* -- )
 	/resolve-sym SWP2 LDA2 /get-distance /byte-distance !rom/<write-lowbyte-at>
 
 @refs/handle-rel2 ( ref* -- )
-	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short-at>
+	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short>
 
 @refs/byte-distance ( addr* -- addr* )
 	DUP2 #0080 ADD2 POP ?{ JMP2r }
@@ -508,16 +508,12 @@
 	( not zero ) ?{ JMP2r }
 	( test zep ) head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
+	DUP2 ;&length LDA2 GTH2 ?{ POP2 JMP2r }
 	;&length STA2
 	JMP2r
 
 @rom/<write-lowbyte-at> ( short* -- )
-	head/get ;&mem ADD2 STA
-	POP JMP2r
-
-@rom/<write-short-at> ( short* -- )
-	head/get ;&mem ADD2 STA2
-	JMP2r
+	NIP !/<write-byte>
 
 @head/get ( -- addr* )
 	[ LIT2 &addr 0100 ] JMP2r
