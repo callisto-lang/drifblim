@@ -504,20 +504,20 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	head/get-inc ;&mem ADD2 STAk
-	( not zero ) ROT ?{ POP2 JMP2r }
-	( test zep ) OVR ?{
+	DUP head/get-inc ;&mem ADD2 STA
+	( not zero ) ?{ JMP2r }
+	( test zep ) head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	DUP2 ;&length LDA2 GTH2 ?{ POP2 JMP2r }
 	;&length STA2
 	JMP2r
 
-@head/get ( -- addr* )
-	[ LIT2 &addr 0100 ] JMP2r
-
 @head/get-inc ( -- addr* )
-	;&addr LDA2k INC2k ROT2 STA2
+	[ LIT2 &addr 0100 ] INC2k ,&addr STR2
 	JMP2r
+
+@head/get ( -- addr* )
+	,&addr LDR2 JMP2r
 
 @head/<set-rel> ( addr* -- )
 	/get ADD2
