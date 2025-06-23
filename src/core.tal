@@ -508,7 +508,6 @@
 	( not zero ) ?{ JMP2r }
 	( test zep ) head/get OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
-	DUP2 ;&length LDA2 GTH2 ?{ POP2 POP2 JMP2r }
 	;&length STA2
 	JMP2r
 
