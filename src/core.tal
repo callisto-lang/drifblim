@@ -453,13 +453,13 @@
 	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
-	/resolve-sym NIP2 !rom/<write-lowbyte-at>
+	/resolve-sym NIP2 NIP !rom/<write-byte>
 
 @refs/handle-abs2 ( ref* -- )
 	/resolve-sym NIP2 !rom/<write-short>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-sym SWP2 LDA2 /get-distance /byte-distance !rom/<write-lowbyte-at>
+	/resolve-sym SWP2 LDA2 /get-distance /byte-distance NIP !rom/<write-byte>
 
 @refs/handle-rel2 ( ref* -- )
 	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short>
@@ -511,9 +511,6 @@
 	DUP2 ;&length LDA2 GTH2 ?{ POP2 JMP2r }
 	;&length STA2
 	JMP2r
-
-@rom/<write-lowbyte-at> ( short* -- )
-	NIP !/<write-byte>
 
 @head/get ( -- addr* )
 	[ LIT2 &addr 0100 ] JMP2r
