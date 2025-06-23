@@ -504,9 +504,9 @@
 	( >> )
 
 @rom/<write-byte> ( byte -- )
-	DUP head/get-inc ;&mem ADD2 STA
-	( not zero ) ?{ JMP2r }
-	( test zep ) head/get OVR ?{
+	head/get-inc ;&mem ADD2 STAk
+	( not zero ) ROT ?{ POP2 JMP2r }
+	( test zep ) OVR ?{
 		( ! ) ;dict/zero-page ;dict/Writing err/<token> }
 	DUP2 ;&length LDA2 GTH2 ?{ POP2 JMP2r }
 	;&length STA2
