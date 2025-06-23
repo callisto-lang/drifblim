@@ -451,14 +451,10 @@
 	( ref* sym* addr* ) NIP2 JMP2r
 
 @refs/resolve-abs ( ref* -- value* addr* )
-	( value* ) /resolve-sym !/resolve
+	( value* ) /resolve-sym SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/resolve-rel ( ref* -- value* addr* )
-	( value* ) /resolve-sym OVR2 LDA2 /get-distance
-	( >> )
-
-@refs/resolve ( addr* ref* -- value* addr* )
-	SWP2 LDA2 ;rom/mem ADD2 JMP2r
+	( value* ) /resolve-sym OVR2 LDA2 /get-distance SWP2 LDA2 ;rom/mem ADD2 JMP2r
 
 @refs/handle-abs ( ref* -- )
 	/resolve-abs STA
