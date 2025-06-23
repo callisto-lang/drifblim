@@ -452,14 +452,14 @@
 	( ref* sym* value* ) NIP2 JMP2r
 
 @refs/handle-abs ( ref* -- )
-	/resolve-sym SWP2 LDA2 rom/<write-byte-at>
+	/resolve-sym NIP2 rom/<write-byte-at>
 	POP JMP2r
 
 @refs/handle-abs2 ( ref* -- )
 	/resolve-sym NIP2 !rom/<write-short-at>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-sym OVR2 LDA2 /get-distance SWP2 LDA2 OVR2 /byte-distance rom/<write-byte-at>
+	/resolve-sym OVR2 LDA2 /get-distance NIP2 DUP2 /byte-distance rom/<write-byte-at>
 	POP JMP2r
 
 @refs/handle-rel2 ( ref* -- )
@@ -515,7 +515,7 @@
 	JMP2r
 
 @rom/<write-byte-at> ( byte addr* -- )
-	POP2 head/get ;&mem ADD2 STA
+	head/get ;&mem ADD2 STA
 	JMP2r
 
 @rom/<write-short-at> ( short* addr* -- )
