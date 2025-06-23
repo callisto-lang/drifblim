@@ -374,8 +374,8 @@
 @syms/next ( sym* -- next* )
 	#0003 ADD2 !str/cap
 
-@syms/byte-distance ( addr* -- )
-	#0080 ADD2 POP ?{ JMP2r }
+@syms/byte-distance ( addr* -- addr* )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
 	( ! ) ;dict/too-far ;dict/Symbol !err/<token>
 
 (
@@ -427,7 +427,7 @@
 @refs/get-rel ( label* -- distance )
 	;&handle-rel /get-type INC2k ORA ?{
 		( undefined ) POP2 #00 JMP2r }
-	head/get /get-distance DUP2 syms/byte-distance NIP JMP2r
+	head/get /get-distance syms/byte-distance NIP JMP2r
 
 @refs/get-rel2 ( label* -- distance* )
 	;&handle-rel2 /get-type head/get
@@ -458,13 +458,13 @@
 	/resolve-sym NIP2 !rom/<write-short-at>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-sym SWP2 LDA2 /get-distance DUP2 /byte-distance !rom/<write-lowbyte-at>
+	/resolve-sym SWP2 LDA2 /get-distance /byte-distance !rom/<write-lowbyte-at>
 
 @refs/handle-rel2 ( ref* -- )
 	/resolve-sym SWP2 LDA2 /get-distance !rom/<write-short-at>
 
-@refs/byte-distance ( addr* -- )
-	#0080 ADD2 POP ?{ JMP2r }
+@refs/byte-distance ( addr* -- addr* )
+	DUP2 #0080 ADD2 POP ?{ JMP2r }
 	( ! ) ;dict/too-far
 	( >> )
 
