@@ -451,23 +451,14 @@
 		( ! ) ;dict/invalid /<error> }
 	( ref* sym* value* ) NIP2 JMP2r
 
-@refs/resolve-sym-new ( ref* -- sym/addr* )
-	LDA2k head/<set>
-	( sym* ) INC2 INC2 LDA2
-	( sym/addr* ) LDA2 INC2k ORA ?{
-		( ! ) ;dict/invalid /<error> }
-	( sym/addr* ) JMP2r
-
 @refs/handle-abs ( ref* -- )
-	/resolve-sym-new rom/<write-byte-at>
-	POP JMP2r
+	/resolve-sym NIP2 !rom/<write-lowbyte-at>
 
 @refs/handle-abs2 ( ref* -- )
-	/resolve-sym-new !rom/<write-short-at>
+	/resolve-sym NIP2 !rom/<write-short-at>
 
 @refs/handle-rel ( ref* -- )
-	/resolve-sym OVR2 LDA2 /get-distance NIP2 DUP2 /byte-distance rom/<write-byte-at>
-	POP JMP2r
+	/resolve-sym OVR2 LDA2 /get-distance NIP2 DUP2 /byte-distance !rom/<write-lowbyte-at>
 
 @refs/handle-rel2 ( ref* -- )
 	/resolve-sym OVR2 LDA2 /get-distance NIP2 !rom/<write-short-at>
@@ -521,9 +512,9 @@
 	;&length STA2
 	JMP2r
 
-@rom/<write-byte-at> ( byte addr* -- )
+@rom/<write-lowbyte-at> ( short* addr* -- )
 	head/get ;&mem ADD2 STA
-	JMP2r
+	POP JMP2r
 
 @rom/<write-short-at> ( short* addr* -- )
 	head/get ;&mem ADD2 STA2
