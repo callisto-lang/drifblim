@@ -444,12 +444,13 @@
 		( ) #0006 ADD2 GTH2k ?&>l
 	POP2 POP2 JMP2r
 
-@refs/resolve-sym ( ref* -- ref* value* )
+@refs/resolve-sym ( ref* -- ref* sym/addr* )
 	LDA2k head/<set>
 	( ref* sym* ) INC2k INC2 LDA2
-	( ref* sym/addr* ) LDA2k INC2k ORA ?{
+	( ref* sym/addr* ) LDA2
+	( ref* sym/addr* ) INC2k ORA ?{
 		( ! ) ;dict/invalid /<error> }
-	( ref* sym* value* ) NIP2 JMP2r
+	( ref* sym/addr* ) JMP2r
 
 @refs/handle-abs ( ref* -- )
 	/resolve-sym NIP2 !rom/<write-lowbyte-at>
