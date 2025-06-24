@@ -103,9 +103,9 @@
 	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl
-		LDAk /<push-byte>
-		INC2 LDAk ?&>wl
-	POP2 ;&buf JMP2r
+		LDAk DUP ?{ POP2 ;&buf JMP2r }
+		/<push-byte>
+		INC2 !&>wl
 
 (
 @|Runes )
@@ -271,9 +271,9 @@
 
 @macros/<push-word> ( t* -- )
 	&>wp
-		LDAk /<push-byte>
-		INC2 LDAk ?&>wp
-	POP2 JMP2r
+		LDAk DUP ?{ POP2 JMP2r }
+		/<push-byte>
+		INC2 !&>wp
 
 @macros/<push-byte> ( byte -- )
 	[ LIT2 &ptr =&mem ] INC2k
@@ -288,9 +288,9 @@
 	token/<new>
 	str/cap
 	&>wm
-		LDAk token/<push-byte>
-		INC2 LDAk ?&>wm
-	POP2 POP2 JMP2r
+		LDAk DUP ?{ POP2 POP2 JMP2r }
+		token/<push-byte>
+		INC2 !&>wm
 
 @macros/err-duplicate ( name* -- )
 	POP2
