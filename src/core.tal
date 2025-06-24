@@ -363,16 +363,16 @@
 @syms/<emit> ( -- )
 	;&ptr LDA2 ;&mem
 	&>ls
-		EQU2k ?&done
-		INC2k INC2 LDA .SymType/used AND ?{
-			LDA2k #0100 EQU2 ?{
-				DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-					;dict/unused err/<pstr>
-					DUP2 err/<pstr>
-					#0a err/<pchr> }
-				POP2 } }
-		/next !&>ls
-	&done POP2 POP2 !rom/<emit>
+		EQU2k ?{
+			INC2k INC2 LDA .SymType/used AND ?{
+				LDA2k #0100 EQU2 ?{
+					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+						;dict/unused err/<pstr>
+						DUP2 err/<pstr>
+						#0a err/<pchr> }
+					POP2 } }
+			/next !&>ls }
+	POP2 POP2 !rom/<emit>
 
 @syms/next ( sym* -- next* )
 	#0003 ADD2 !str/cap
@@ -442,10 +442,11 @@
 @refs/<resolve-all> ( -- )
 	,&ptr LDR2 ;&mem
 	&>l
-		NEQ2k ?{ POP2 POP2 JMP2r }
-		DUP2 ;&err STA2
-		DUP2k #0004 ADD2 LDA2 JSR2
-		( ) #0006 ADD2 !&>l
+		EQU2k ?{
+			DUP2 ;&err STA2
+			DUP2k #0004 ADD2 LDA2 JSR2
+			( ) #0006 ADD2 !&>l }
+	POP2 POP2 JMP2r
 
 @refs/resolve-sym ( ref* -- ref* sym/addr* )
 	LDA2k head/<set>
@@ -572,7 +573,8 @@
 	STH2
 	OVR2 ADD2 SWP2
 	&>l
-		LDAk LDAkr STHr NEQ ?{ INC2 INC2r GTH2k ?&>l }
+		EQU2k ?{
+			LDAk LDAkr STHr NEQ ?{ INC2 INC2r !&>l } }
 	POP2r EQU2 JMP2r
 
 (
