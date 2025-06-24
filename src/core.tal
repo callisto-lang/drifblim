@@ -103,7 +103,7 @@
 	INC2 [ LIT2 &anchor $1 _&ptr ] STR
 	[ LIT "/ ] /<push-byte>
 	&>wl
-		LDAk DUP ?{ POP2 ;&buf JMP2r }
+		LDAk DUP ?{ POP POP2 ;&buf JMP2r }
 		/<push-byte>
 		INC2 !&>wl
 
@@ -271,7 +271,7 @@
 
 @macros/<push-word> ( t* -- )
 	&>wp
-		LDAk DUP ?{ POP2 JMP2r }
+		LDAk DUP ?{ POP POP2 JMP2r }
 		/<push-byte>
 		INC2 !&>wp
 
@@ -288,7 +288,7 @@
 	token/<new>
 	str/cap
 	&>wm
-		LDAk DUP ?{ POP2 POP2 JMP2r }
+		LDAk DUP ?{ POP POP2 POP2 JMP2r }
 		token/<push-byte>
 		INC2 !&>wm
 
