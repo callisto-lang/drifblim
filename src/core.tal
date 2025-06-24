@@ -263,9 +263,10 @@
 	STH2
 	,&ptr LDR2 ;&mem
 	&>lf
+		EQU2k ?&fail
 		DUP2 STH2kr str/cmp ?{
-			str/cap str/cap GTH2k ?&>lf
-		POP2 #ffff }
+			str/cap str/cap !&>lf
+		&fail POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @macros/<push-word> ( t* -- )
@@ -317,9 +318,10 @@
 	STH2
 	;&ptr LDA2 ;&mem
 	&>lfn
+		EQU2k ?&fail
 		DUP2 #0003 ADD2 STH2kr str/cmp ?{
-			/next GTH2k ?&>lfn
-		POP2 #ffff }
+			/next !&>lfn
+		&fail POP2 #ffff }
 	NIP2 POP2r JMP2r
 
 @syms/find-addr ( addr* -- sym* )
@@ -359,17 +361,18 @@
 	JMP2r
 
 @syms/<emit> ( -- )
-	;&ptr LDA2 ;&mem EQU2k ?{
-		&>ls
-			INC2k INC2 LDA .SymType/used AND ?{
-				LDA2k #0100 EQU2 ?{
-					DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
-						;dict/unused err/<pstr>
-						DUP2 err/<pstr>
-						#0a err/<pchr> }
-					POP2 } }
-			/next GTH2k ?&>ls }
-	POP2 POP2 !rom/<emit>
+	;&ptr LDA2 ;&mem
+	&>ls
+		EQU2k ?&done
+		INC2k INC2 LDA .SymType/used AND ?{
+			LDA2k #0100 EQU2 ?{
+				DUP2 #0003 ADD2 LDAk [ LIT "A ] SUB #1a LTH ?{
+					;dict/unused err/<pstr>
+					DUP2 err/<pstr>
+					#0a err/<pchr> }
+				POP2 } }
+		/next !&>ls
+	&done POP2 POP2 !rom/<emit>
 
 @syms/next ( sym* -- next* )
 	#0003 ADD2 !str/cap
