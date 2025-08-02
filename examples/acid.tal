@@ -38,6 +38,7 @@ $/p2 &p4
 	rawzep/<test> litzep/<test>
 	labels/<test>
 	lambda/<test>
+	rewind/<test>
 
 	( | Check stacks are empty )
 	.System/wst DEI2 #0000 EQU2 { "finish 2000 } STH2r <validate>
@@ -151,6 +152,15 @@ BRK
 	#01 ( (INC) ) #01 EQU
 		AND ;&name !<validate>
 	&name "coment 2000
+
+@rewind/<test> ( -- )
+	[ LIT2 &addr $2 ] #1234 EQU2
+	;&name !<validate>
+	&name "rewind 2000
+
+@rewind/recover
+	|rewind/addr 1234
+|rewind/recover
 
 (
 @|Utils )
