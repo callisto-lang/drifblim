@@ -31,11 +31,12 @@ $/p2 &p4
 	( | Core tests )
 	padabs/<test> padrel/<test> padlab/<test>
 	coment/<test>
+	rawasc/<test>
 	rawhex/<test> lithex/<test>
 	opcode/<test>
-	rawasc/<test>
-	rawabs/<test> litabs/<test>
+	rawrel/<test> litrel/<test>
 	rawzep/<test> litzep/<test>
+	rawabs/<test> litabs/<test>
 	labels/<test>
 	lambda/<test>
 	rewind/<test>
@@ -79,6 +80,12 @@ BRK
 		AND ;&name !<validate>
 	&name "rawhex 2000
 
+@rawasc/<test> ( -- )
+	LIT "0 #30 EQU
+	LIT2 "12 #3132 EQU2
+		AND ;&name !<validate>
+	&name "rawasc 2000
+
 @lithex/<test> ( -- )
 	#12 #34 ADD #46 EQU
 	#1234 #1234 ADD2 #2468 EQU2
@@ -91,21 +98,23 @@ BRK
 		AND ;&name !<validate>
 	&name "opcode 2000
 
-@rawasc/<test> ( -- )
-	LIT "0 #30 EQU
-	LIT2 "12 #3132 EQU2
-		AND ;&name !<validate>
-	&name "rawasc 2000
-
-@rawabs/<test> ( -- )
-	LIT2 =&target #89ab EQU2
+	@rawrel/backward
+@rawrel/<test> ( -- )
+	LIT _&backward #fd EQU
+	LIT _&forward #11 EQU
+	AND
 		;&name !<validate>
-	&name "rawabs 2000
+	&name "rawrel 2000
+	&forward
 
-@litabs/<test> ( -- )
-	;&target #89ab EQU2
+	@litrel/backward
+@litrel/<test> ( -- )
+	,&backward #fd EQU
+	,&forward #11 EQU
+	AND
 		;&name !<validate>
-	&name "litabs 2000
+	&name "litrel 2000
+	&forward
 
 @rawzep/<test> ( -- )
 	LIT -&target #ab EQU
@@ -116,6 +125,16 @@ BRK
 	.&target #ab EQU
 		;&name !<validate>
 	&name "litzep 2000
+
+@rawabs/<test> ( -- )
+	LIT2 =&target #89ab EQU2
+		;&name !<validate>
+	&name "rawabs 2000
+
+@litabs/<test> ( -- )
+	;&target #89ab EQU2
+		;&name !<validate>
+	&name "litabs 2000
 
 @labels/<test> ( -- )
 	#3412 SWPk Object/<set-pos>
@@ -158,9 +177,8 @@ BRK
 	;&name !<validate>
 	&name "rewind 2000
 
-@rewind/recover
-	|rewind/addr 1234
-|rewind/recover
+	@rewind/recover |rewind/addr 1234
+	|rewind/recover
 
 (
 @|Utils )
