@@ -220,8 +220,8 @@
 (
 @|Lambda )
 
-@lambda/make-name ( -- name* )
-	[ LIT &count $1 ] INCk ,&count STR
+@lambda/make-name ( token* -- name* )
+	POP2 [ LIT &count $1 ] INCk ,&count STR
 	DUP [ LIT2 &ptr =&mem ] INC2k ,&ptr STR2
 	STA
 	( >> )
@@ -251,9 +251,9 @@
 	;dict/invalid ;dict/Name !err/<token>
 
 @name/unpack ( name* -- name* )
-	LDAk [ LIT "{ ] NEQ ?{ POP2 lambda/make-name }
-	LDAk [ LIT "/ ] NEQ ?{ scope/make-name }
-	LDAk [ LIT "& ] NEQ ?{ scope/make-name }
+	LDAk [ LIT "{ ] EQU ?lambda/make-name
+	LDAk [ LIT "/ ] EQU ?scope/make-name
+	LDAk [ LIT "& ] EQU ?scope/make-name
 	JMP2r
 
 (
