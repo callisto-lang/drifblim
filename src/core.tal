@@ -240,14 +240,11 @@
 (
 @|Name )
 
-%else-return ( bool -- ) {
-	[ JMP JMP2r ] }
-
 @name/<validate> ( name* -- name* )
 	( not hex ) str/is-hex ?&fail
 	( not runic ) LDAk runes/find INC2 ORA ?&fail
 	( not lambda ) LDAk LIT "{ EQU ?&fail
-	( not opcode ) opcodes/is-opcode else-return
+	( not opcode ) opcodes/is-opcode [ JMP JMP2r ]
 	&fail ( -- )
 	;dict/invalid ;dict/Name !err/<token>
 
@@ -548,8 +545,8 @@
 
 @chex ( addr* -- addr* <val> )
 	LDAk
-	( dec ) [ LIT "0 ] SUB DUP #09 GTH else-return
-	( hex ) #27 SUB DUP #0a SUB #05 GTH else-return
+	( dec ) [ LIT "0 ] SUB DUP #09 GTH [ JMP JMP2r ]
+	( hex ) #27 SUB DUP #0a SUB #05 GTH [ JMP JMP2r ]
 	( nil ) POP #ff JMP2r
 
 @str/hex ( str* -- value* )
