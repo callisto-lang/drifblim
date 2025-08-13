@@ -14,6 +14,12 @@ $asm examples/hello.tal
 echo "" && echo "@scope" | $as > bin/res.tal
 echo "Assembled in 0 bytes."
 
+echo "" && echo "@AAAAAAAAAAAAAAAAAAAAAAAAA &BBBBBBBBBBBBBBBBBBBBBBB @end" | $as > bin/res.tal
+echo "Symbol exceeded: &BBBBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBB"
+
+echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
+echo "Name exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
+
 echo "" && echo "Name ----------------------------------------------"
 
 echo "" && echo "@scope ; @end" | $as > bin/res.tal
@@ -52,9 +58,6 @@ echo "Name invalid: ? in scope"
 echo "" && echo "@scope # @end" | $as > bin/res.tal
 echo "Name invalid: # in scope"
 
-echo "" && echo "@scope AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA @end" | $as > bin/res.tal
-echo "Name exceeded: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in scope"
-
 echo "" && echo "Comment --------------------------------------------"
 
 echo "" && echo "@scope ( BRK @end" | $as > bin/res.tal
@@ -76,9 +79,6 @@ echo "Symbol duplicate: @label in label"
 echo "" && echo "@scope &foo &foo @end" | $as > bin/res.tal
 echo "Symbol duplicate: &foo in scope/foo"
 
-echo "" && echo "@AAAAAAAAAAAAAAAAAAAAAAAAA &BBBBBBBBBBBBBBBBBBBBBBB @end" | $as > bin/res.tal
-echo "Symbol exceeded: &BBBBBBBBBBBBBBBBBBBBBBB in AAAAAAAAAAAAAAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBB"
-
 echo "" && echo "@scope @1234 @end" | $as > bin/res.tal
 echo "Name invalid: @1234 in 1234"
 
@@ -87,6 +87,12 @@ echo "Name invalid: @-1234 in -1234"
 
 echo "" && echo "@scope @LDA @end" | $as > bin/res.tal
 echo "Name invalid: @LDA in LDA"
+
+echo "" && echo "@scope @)" | $as > bin/res.tal
+echo "Name invalid: @) in )"
+
+echo "" && echo "@scope @{" | $as > bin/res.tal
+echo "Name invalid: @{ in {"
 
 echo "" && echo "Opcode ---------------------------------------------"
 
@@ -178,3 +184,4 @@ echo "Reference too far: next in scope"
 
 echo "" && echo "@back \$7e @scope ,back @end" | $as > bin/res.tal
 echo "Symbol too far: ,back in scope"
+
