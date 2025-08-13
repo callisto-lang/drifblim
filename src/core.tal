@@ -30,7 +30,7 @@
 	JMP2r
 
 @asm-default ( t* -- )
-	( hex ) str/not-hex ?{ !rom/<write-rawhex> }
+	( hex ) str/is-hex ?rom/<write-rawhex>
 	( opc ) opcodes/is-opcode ?rom/<write-opcode>
 	LDZk runes/find INC2k ORA ?{
 		POP2
@@ -44,7 +44,7 @@
 	[ LIT2 ") 00 ] NEQ2 ?{ LITr 01 SUBr }
 	[ LIT2 "( 00 ] NEQ2 ?{ INCr }
 	STHkr [ LITr _&depth ] STRr
-	?{ !assembly/<set-default> }
+	#00 EQU ?assembly/<set-default>
 	JMP2r
 
 @asm-macro ( t* -- )
@@ -244,7 +244,7 @@
 	[ JMP JMP2r ] }
 
 @name/<validate> ( name* -- name* )
-	( not hex ) str/not-hex #00 EQU ?&fail
+	( not hex ) str/is-hex ?&fail
 	( not runic ) LDAk runes/find INC2 ORA ?&fail
 	( not lambda ) LDAk LIT "{ EQU ?&fail
 	( not opcode ) opcodes/is-opcode else-return
@@ -392,7 +392,7 @@
 @|References )
 
 @refs/get-any ( str* -- value* )
-	str/not-hex ?{ !str/hex }
+	str/is-hex ?str/hex
 	DUP2 name/unpack syms/find-name INC2 ORA ?{
 		( ! ) ;dict/invalid ;dict/Reference err/<token> }
 	!/get-ref
@@ -500,7 +500,7 @@
 	( >> )
 
 @rom/<write-rawhex> ( str* -- )
-	str/not-hex ?{
+	str/is-hex #00 EQU ?{
 		str/len DUP #02 NEQ ?{ POP str/hex NIP !/<write-byte> }
 		#04 NEQ ?{ str/hex !/<write-short> } }
 	POP2 ;dict/invalid ;dict/Number !err/<token>
@@ -562,10 +562,10 @@
 @str/len ( str* -- str* length )
 	DUP2k /cap SWP2 INC2 SUB2 NIP JMP2r
 
-@str/not-hex ( str* -- str* f )
+@str/is-hex ( str* -- str* f )
 	DUP2
 	&>wih
-		chex INC ?{ LDA JMP2r }
+		chex INC ?{ LDA #00 EQU JMP2r }
 		INC2 !&>wih
 
 @str/cap ( str* -- end* )
