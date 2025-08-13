@@ -390,15 +390,12 @@
 
 @refs/get-any ( str* -- value* )
 	str/is-hex ?str/hex
-	DUP2 name/unpack syms/find-name INC2 ORA ?{
+	DUP2 name/unpack syms/find-name INC2k ORA ?{
 		( ! ) ;dict/invalid ;dict/Reference err/<token> }
-	!/get-ref
+	LDA2 JMP2r
 
 @refs/get-type ( token* type* -- addr* )
 	,&type STR2
-	( >> )
-
-@refs/get-ref ( token* -- addr* )
 	name/unpack
 	( | find symbol or create it )
 	syms/find-alloc
