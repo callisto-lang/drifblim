@@ -8,7 +8,7 @@
 
 	@src/buf $2f &cap $1
 	@dst/buf $2f &cap $1
-	@token/buf $2f &cap $1
+	@token/buf $60 &cap $1
 	@scope/buf $2f &cap $1
 
 |100
